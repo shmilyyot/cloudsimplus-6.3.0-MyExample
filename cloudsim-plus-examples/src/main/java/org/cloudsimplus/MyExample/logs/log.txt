@@ -1,0 +1,28 @@
+Simulation started at 00:43:38.725965400
+
+
+# Created 500 Hosts that were immediately available from the Google trace file
+TaskEventFile： 3409 Cloudlets and 173 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00000-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00001-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00002-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00003-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00004-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00005-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00006-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00007-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00008-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00009-of-00500.csv.gz trace file.
+TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00010-of-00500.csv.gz trace file.
+Total 3409 Cloudlets and 173 Brokers created!
+TraceFile： 168 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00000-of-00500.csv.gz trace file.
+TraceFile： 95 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00001-of-00500.csv.gz trace file.
+TraceFile： 72 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00002-of-00500.csv.gz trace file.
+TraceFile： 50 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00003-of-00500.csv.gz trace file.
+TraceFile： 42 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00004-of-00500.csv.gz trace file.
+TraceFile： 40 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00005-of-00500.csv.gz trace file.
+TraceFile： 37 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00006-of-00500.csv.gz trace file.
+TraceFile： 36 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00007-of-00500.csv.gz trace file.
+TraceFile： 36 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00008-of-00500.csv.gz trace file.
+TraceFile： 35 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00009-of-00500.csv.gz trace file.
+TraceFile： 35 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00010-of-00500.csv.gz trace file.
+Total 35 Cloudlets and 173 Brokers created!
