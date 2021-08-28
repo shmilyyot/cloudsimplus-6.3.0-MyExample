@@ -34,7 +34,7 @@ import org.cloudbus.cloudsim.util.ResourceLoader;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.util.TraceReaderAbstract;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
-import java.util.function.Predicate;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -42,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
@@ -90,10 +91,11 @@ public class GoogleTaskEventsTraceReader extends GoogleTraceReaderAbstract<Cloud
      * @param predicate the predicate to define when a TaskEvent must be created from a line read from the workload file
      * @return
      */
-    public GoogleTaskEventsTraceReader setPredicate(final Predicate<TaskEvent> predicate) {
+    public org.cloudsimplus.traces.google.GoogleTaskEventsTraceReader setPredicate(final Predicate<TaskEvent> predicate) {
         this.predicate = predicate;
         return this;
     }
+
     /**
      * Defines the type of information missing in the trace file.
      * It represents the possible values for the MISSING_INFO field.
@@ -498,7 +500,7 @@ public class GoogleTaskEventsTraceReader extends GoogleTraceReaderAbstract<Cloud
             .setUserName(FieldIndex.USERNAME.getValue(this))
             .setJobId(FieldIndex.JOB_ID.getValue(this))
             .setTaskIndex(FieldIndex.TASK_INDEX.getValue(this))
-            .setMachineId(FieldIndex.MACHINE_ID.getValue(this)); //Eason定制修改，因为task在那里执行会变化，所以默认没有指定machineId
+            .setMachineId(org.cloudsimplus.traces.google.GoogleTaskEventsTraceReader.FieldIndex.MACHINE_ID.getValue(this)); //Eason定制修改，因为task在那里执行会变化，所以默认没有指定machineId
         return event;
     }
 

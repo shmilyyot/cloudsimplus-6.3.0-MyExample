@@ -103,10 +103,11 @@ public class standardDatacenter {
         }
 
         //从Google任务流创建数据中心代理和cloudlet任务
-        createCloudletsAndBrokersFromTraceFile();
+        createCloudletsAndBrokersFromTraceFileType1();
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
         readTaskUsageTraceFile();
+
 
         //创建vm并提交所有cloudlet
 //        brokers.forEach(broker -> broker.submitVmList(createVms()));
@@ -158,7 +159,7 @@ public class standardDatacenter {
         }
     }
 
-    private void createCloudletsAndBrokersFromTraceFile(){
+    private void createCloudletsAndBrokersFromTraceFileType1(){
         cloudlets = new HashSet<>(10000000);
         cloudletIds = new HashSet<>(10000000);
         brokers = new ArrayList<>(100000);
@@ -168,11 +169,15 @@ public class standardDatacenter {
         }
         for(String TRACE_FILENAME:TRACE_FILENAMES){
             GoogleTaskEventsTraceReader reader = GoogleTaskEventsTraceReader.getInstance(simulation, TRACE_FILENAME,this::createCloudlet);
-            if(Constant.USING_GOOGLE_HOST){
-                reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME && hostIds.contains(event.getMachineId())));
+            if(Constant.READ_INITIAL_MACHINE_CLOUDLET){
+                if(Constant.USING_GOOGLE_HOST){
+                    reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME && hostIds.contains(event.getMachineId())));
+                }else{
+                    reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
+                    reader.setMaxCloudletsToCreate(200);
+                }
             }else{
                 reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
-                reader.setMaxCloudletsToCreate(200);
             }
             if(broker != null){
                 reader.setDefaultBroker(broker);
@@ -196,6 +201,7 @@ public class standardDatacenter {
             "Total %d Cloudlets and %d Brokers created!%n",
             cloudlets.size(),brokers.size());
     }
+
 
     private Cloudlet createCloudlet(final TaskEvent event) {
         final long pesNumber = positive(event.actualCpuCores(Constant.VM_PES), Constant.VM_PES);
@@ -344,6 +350,34 @@ public class standardDatacenter {
             cloudlets.removeIf(cloudlet -> illegalCloudedIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
+    }
+    private void readTaskUsageTraceFile(int i) {
+        Set<Long> illegalCloudedIds = new HashSet<>();
+        GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers,Usage_FILENAMES.get(i));
+        if(Constant.FILTER_INSIDE_CLOUDLET){
+            reader.setPredicate(taskUsage ->
+                cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
+                    (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
+                    (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9));
+        }else{
+            reader.setPredicate(taskUsage ->{
+                if(!cloudletIds.contains(taskUsage.getUniqueTaskId())) return false;
+                if(taskUsage.getMeanCpuUsageRate()<=0.05 || taskUsage.getMeanCpuUsageRate()>=0.9 ||
+                    taskUsage.getCanonicalMemoryUsage()<=0.05 || taskUsage.getCanonicalMemoryUsage()>=0.9){
+                    illegalCloudedIds.add(taskUsage.getUniqueTaskId());
+                    cloudletIds.remove(taskUsage.getUniqueTaskId());
+                    return false;
+                }
+                return true;
+            });
+        }
+        final Collection<Cloudlet> processedCloudlets = reader.process();
+        System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), Usage_FILENAMES.get(i));
+        if(!Constant.FILTER_INSIDE_CLOUDLET){
+            cloudlets.removeIf(cloudlet -> illegalCloudedIds.contains(cloudlet.getId()));
+            System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
+        }
+        System.out.println();
     }
 
     private List<Vm> createVms() {

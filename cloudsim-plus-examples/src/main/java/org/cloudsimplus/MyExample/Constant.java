@@ -6,6 +6,7 @@ public class Constant {
      * */
     public static final double STOP_TIME = 864000.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = true;   //使用谷歌的主机模板或者自定义主机模板
+    public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
 
     /**
      * 数据中心代理相关参数设置
@@ -28,10 +29,8 @@ public class Constant {
     public static final int MAX_HOST_BW = 100*1024;   //最大host带宽速率，用不到
     public static final int MAX_HOST_MIPS = 1000;   //最大host的mips
     public static final long MAX_HOST_STORAGE = 500*1024;    //最大host存储，用不到
-    public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
     public static final boolean NUMBER_RANDOM_HOSTS = true; //只读取指定数量的随机host
     public static final int HOST_SIZE = 500;     //随机抽取指定数量的host数目
-    public static final int GOOGLE_EVENT_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
     public static final int GOOGLE_MACHINE_LINES_FILE = 12478;   //谷歌前十天machineevent所到的文件下标
 
     /**
@@ -51,6 +50,9 @@ public class Constant {
      * */
     public static final int  CLOUDLET_LENGTH = -10_000;
     public static final boolean FILTER_INSIDE_CLOUDLET = false;  //true过滤掉cloudlet里所有5~90%之外的利用率变化,false过滤掉只要出现过之外利用率的整个cloudlet
+    public static final boolean READ_INITIAL_MACHINE_CLOUDLET = false;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成
+    public static final int GOOGLE_EVENT_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
+    public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
 
     /**
      * 标准论文vm的相关参数设置,一共有四种，根据亚马逊数据中心的虚拟机归一化得到，都是单核的

@@ -47,13 +47,16 @@ public enum TaskEventType {
         @Override
         protected boolean process(final GoogleTaskEventsTraceReader reader, Predicate<TaskEvent> predicate) {
             final TaskEvent event = reader.createTaskEventFromTraceLine();
+
             /**
              * Eason定制方法：对读取的event添加限制条件，判断是否可以生成cloudlet
              * */
             if(!predicate.test(event)){
                 return false;
             }
+
             final DatacenterBroker broker = reader.getOrCreateBroker(event.getUserName());
+
             if(!reader.allowCloudletCreation()) {
                 return false;
             }
