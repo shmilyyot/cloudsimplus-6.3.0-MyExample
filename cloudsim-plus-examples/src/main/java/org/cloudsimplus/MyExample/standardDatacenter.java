@@ -410,8 +410,7 @@ public class standardDatacenter {
         java.io.File file = new java.io.File(Constant.SERIAL_CLOUDLETID_PATH);
         OutputStream os = new FileOutputStream(file);
         ObjectOutputStream oos = new ObjectOutputStream(os);
-        List<Long> ids = new ArrayList<>(cloudletIds);
-        oos.writeObject(ids);
+        oos.writeObject(cloudletIds);
         oos.close();
         os.close();
         System.out.println("cloudlets序列化完成了！");
@@ -421,10 +420,7 @@ public class standardDatacenter {
         java.io.File file = new java.io.File(Constant.SERIAL_CLOUDLETID_PATH);
         InputStream input = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(input);
-        while(ois.available()>0){
-            List<Long> oidl = (List<Long>)ois.readObject();
-            cloudletIds.addAll(oidl);
-        }
+        cloudletIds = (Set<Long>)ois.readObject();
         ois.close();
         input.close();
         System.out.println("cloudlets反序列化完成了！");

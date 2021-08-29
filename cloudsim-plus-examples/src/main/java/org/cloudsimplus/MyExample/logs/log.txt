@@ -1,8 +1,13 @@
-Simulation started at 10:59:07.376706100
+Simulation started at 11:27:12.580520500
 
 
 # Created 500 Hosts that were immediately available from the Google trace file
 cloudlets反序列化完成了！
-TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00000-of-00500.csv.gz trace file.
-TaskEventFile： 0 Cloudlets and 0 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00001-of-00500.csv.gz trace file.
-Total 0 Cloudlets and 0 Brokers created!
+TaskEventFile： 3499 Cloudlets and 168 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00000-of-00500.csv.gz trace file.
+TaskEventFile： 22 Cloudlets and 12 Brokers created from the F:\paperData\clusterdata2011\task_events\part-00001-of-00500.csv.gz trace file.
+Total 3521 Cloudlets and 180 Brokers created!
+TraceFile： 169 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00000-of-00500.csv.gz trace file.
+TraceFile： 100 Cloudlets processed from the F:\paperData\clusterdata2011\task_usage\part-00001-of-00500.csv.gz trace file.
+Total 88 Cloudlets and 180 Brokers created!
+Simulation ended at 11:28:06.655343400
+
