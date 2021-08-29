@@ -98,7 +98,7 @@ public class standardDatacenter {
             createGoogleDatacenters();
         }else{
             createModifyDatacenters();
-            hostList.forEach(host->{hostIds.add(host.getId());});
+            hostList.forEach(host-> hostIds.add(host.getId()));
         }
 
         //从Google任务流创建数据中心代理和cloudlet任务
@@ -139,7 +139,7 @@ public class standardDatacenter {
         TRACE_FILENAMES = new ArrayList<>(500);
         Usage_FILENAMES = new ArrayList<>(500);
         for(int i=0;i<=Constant.GOOGLE_EVENT_DAYS_FILE;++i){
-            String filename = "";
+            String filename;
             if(i<10){
                 filename = Constant.TASK_EVENTS_PATH+"\\part-0000"+i+"-of-00500.csv.gz";
             }else if(i<100){
@@ -150,7 +150,7 @@ public class standardDatacenter {
             TRACE_FILENAMES.add(filename);
         }
         for(int i=0;i<=Constant.GOOGLE_EVENTUSAGE_DAYS_FILE;++i){
-            String usagename = "";
+            String usagename;
             if(i<10){
                 usagename = Constant.TASK_USAGE_PATH+"\\part-0000"+i+"-of-00500.csv.gz";
             }else if(i<100){
@@ -166,9 +166,11 @@ public class standardDatacenter {
         cloudlets = new HashSet<>(30000000);
         cloudletIds = new HashSet<>(30000000);
         brokers = new ArrayList<>(100000);
-        if(checkCloudletIdsExist()){
-            Constant.CLOUDLETID_EXIST = true;
-            reverseSerializableCloudlets();
+        if(Constant.USING_EXISTANCE_CLOULETS){
+            if(checkCloudletIdsExist()){
+                Constant.CLOUDLETID_EXIST = true;
+                reverseSerializableCloudlets();
+            }
         }
         if(Constant.SINGLE_BROKER){
             broker = new DatacenterBrokerSimple(simulation);
@@ -176,7 +178,7 @@ public class standardDatacenter {
         }
         for(String TRACE_FILENAME:TRACE_FILENAMES){
             GoogleTaskEventsTraceReader reader = GoogleTaskEventsTraceReader.getInstance(simulation, TRACE_FILENAME,this::createCloudlet);
-            if(Constant.CLOUDLETID_EXIST){
+            if(Constant.USING_EXISTANCE_CLOULETS && Constant.CLOUDLETID_EXIST){
                 reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME && cloudletIds.contains(event.getUniqueTaskId()));
             }else{
                 if(Constant.READ_INITIAL_MACHINE_CLOUDLET){
