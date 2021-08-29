@@ -19,7 +19,7 @@ package org.cloudbus.cloudsim.resources;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.0
  */
-public interface Resource extends ResourceCapacity {
+public interface Resource extends ResourceCapacity  {
 
     /**
      * An attribute that implements the Null Object Design Pattern for {@link Resource}

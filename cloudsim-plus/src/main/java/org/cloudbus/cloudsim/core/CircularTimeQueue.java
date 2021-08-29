@@ -25,6 +25,7 @@ package org.cloudbus.cloudsim.core;
 
 import org.cloudsimplus.listeners.EventListener;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 
 /**
@@ -37,7 +38,7 @@ import java.util.function.Consumer;
  * @author Manoel Campos da Silva Filho
  * @see Simulation#addOnClockTickListener(EventListener)
  */
-class CircularTimeQueue {
+class CircularTimeQueue implements Serializable {
     /**
      * The simulation clock time queue.
      * It's an array that works as a circular queue with capacity for just 2 elements

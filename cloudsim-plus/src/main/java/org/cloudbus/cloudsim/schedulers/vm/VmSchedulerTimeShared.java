@@ -10,6 +10,7 @@ import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -50,7 +51,7 @@ import java.util.Map;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Toolkit 1.0
  */
-public class VmSchedulerTimeShared extends VmSchedulerAbstract {
+public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serializable {
 
     /**
      * Creates a time-shared VM scheduler.

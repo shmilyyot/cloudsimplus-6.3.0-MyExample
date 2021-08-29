@@ -12,6 +12,7 @@ import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.resources.ResourceManageable;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +27,7 @@ import java.util.Objects;
  * @author Manoel Campos da Silva Filho
  * @since 3.0.4
  */
-public abstract class ResourceProvisionerAbstract implements ResourceProvisioner {
+public abstract class ResourceProvisionerAbstract implements ResourceProvisioner, Serializable {
     /**
      * @see #getResource()
      */

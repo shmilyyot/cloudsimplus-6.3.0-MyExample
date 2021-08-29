@@ -19,6 +19,7 @@ import org.cloudbus.cloudsim.vms.VmGroup;
 import org.cloudsimplus.listeners.CloudletVmEventInfo;
 import org.cloudsimplus.listeners.EventListener;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
@@ -30,7 +31,7 @@ import static java.util.Objects.requireNonNull;
  * @author Anton Beloglazov
  * @author Manoel Campos da Silva Filho
  */
-public abstract class CloudletAbstract extends CustomerEntityAbstract implements Cloudlet {
+public abstract class CloudletAbstract extends CustomerEntityAbstract implements Cloudlet, Serializable {
 
     /** @see #getJobId() */
     private long jobId;

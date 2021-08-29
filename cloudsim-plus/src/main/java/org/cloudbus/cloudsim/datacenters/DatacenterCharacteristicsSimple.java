@@ -9,6 +9,8 @@ package org.cloudbus.cloudsim.datacenters;
 
 import org.cloudbus.cloudsim.hosts.Host;
 
+import java.io.Serializable;
+
 /**
  * Represents static properties of a Datacenter such as architecture, Operating
  * System (OS), management policy (time- or space-shared), cost and time zone at
@@ -22,7 +24,7 @@ import org.cloudbus.cloudsim.hosts.Host;
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 1.0
  */
-public class DatacenterCharacteristicsSimple implements DatacenterCharacteristics {
+public class DatacenterCharacteristicsSimple implements DatacenterCharacteristics, Serializable {
 
     /**
      * @see #getArchitecture()

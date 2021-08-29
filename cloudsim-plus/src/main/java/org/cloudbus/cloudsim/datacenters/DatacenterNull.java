@@ -11,6 +11,7 @@ import org.cloudsimplus.listeners.DatacenterVmMigrationEventInfo;
 import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.HostEventInfo;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ import java.util.stream.Stream;
  * @author Manoel Campos da Silva Filho
  * @see Datacenter#NULL
  */
-final class DatacenterNull implements Datacenter, SimEntityNullBase {
+final class DatacenterNull implements Datacenter, SimEntityNullBase, Serializable {
     private static final DatacenterStorage STORAGE = new DatacenterStorage();
 
     @Override public int compareTo(SimEntity entity) { return 0; }

@@ -34,6 +34,7 @@ import org.cloudsimplus.listeners.DatacenterVmMigrationEventInfo;
 import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.HostEventInfo;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -49,7 +50,7 @@ import static java.util.stream.Collectors.toList;
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 1.0
  */
-public class DatacenterSimple extends CloudSimEntity implements Datacenter {
+public class DatacenterSimple extends CloudSimEntity implements Datacenter, Serializable {
 
     /**
      * The last time some Host on the Datacenter was under or overloaded.

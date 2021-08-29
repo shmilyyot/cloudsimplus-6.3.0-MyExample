@@ -3,6 +3,8 @@ package org.cloudbus.cloudsim.utilizationmodels;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.core.Simulation;
 
+import java.io.Serializable;
+
 /**
  * A class that implements the Null Object Design Pattern for {@link UtilizationModel}
  * class. A {@link Cloudlet} using such a utilization model for one of its resources
@@ -11,7 +13,7 @@ import org.cloudbus.cloudsim.core.Simulation;
  * @author Manoel Campos da Silva Filho
  * @see UtilizationModel#NULL
  */
-final class UtilizationModelNull implements UtilizationModel {
+final class UtilizationModelNull implements UtilizationModel, Serializable {
     @Override public Simulation getSimulation() {
         return Simulation.NULL;
     }

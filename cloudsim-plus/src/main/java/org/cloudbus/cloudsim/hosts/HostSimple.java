@@ -25,6 +25,7 @@ import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.HostEventInfo;
 import org.cloudsimplus.listeners.HostUpdatesVmsProcessingEventInfo;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ import static java.util.stream.Collectors.toList;
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 1.0
  */
-public class HostSimple implements Host {
+public class HostSimple implements Host, Serializable {
     private static long defaultRamCapacity = (long)Conversion.gigaToMega(10);
     private static long defaultBwCapacity = 1000;
     private static long defaultStorageCapacity = (long)Conversion.gigaToMega(500);

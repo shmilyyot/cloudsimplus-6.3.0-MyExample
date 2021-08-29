@@ -18,6 +18,7 @@ import org.cloudsimplus.listeners.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -34,7 +35,7 @@ import static org.cloudbus.cloudsim.util.TimeUtil.secondsToStr;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Toolkit 1.0
  */
-public class CloudSim implements Simulation {
+public class CloudSim implements Simulation, Serializable {
     /**
      * CloudSim Plus current version.
      */

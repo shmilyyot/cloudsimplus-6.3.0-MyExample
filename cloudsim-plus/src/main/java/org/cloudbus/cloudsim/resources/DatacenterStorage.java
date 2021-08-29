@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.util.DataCloudTags;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +23,7 @@ import static java.util.Objects.requireNonNull;
  * @author Abderrahman Lahiaouni
  * @since CloudSim Plus 2.3.5
  */
-public class DatacenterStorage {
+public class DatacenterStorage implements Serializable {
 
 	/** @see #getStorageList() */
     private List<SanStorage> storageList;

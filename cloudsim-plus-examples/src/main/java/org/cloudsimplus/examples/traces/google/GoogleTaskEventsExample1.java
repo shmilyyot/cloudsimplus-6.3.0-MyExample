@@ -25,6 +25,7 @@ package org.cloudsimplus.examples.traces.google;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
+import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -33,6 +34,7 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
+import org.cloudbus.cloudsim.resources.File;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.vm.VmScheduler;
@@ -50,7 +52,9 @@ import org.cloudsimplus.traces.google.GoogleTaskEventsTraceReader;
 import org.cloudsimplus.traces.google.GoogleTaskUsageTraceReader;
 import org.cloudsimplus.traces.google.TaskEvent;
 import org.cloudsimplus.util.Log;
+import com.alibaba.fastjson.JSON;
 
+import java.io.*;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
@@ -124,11 +128,11 @@ public class GoogleTaskEventsExample1 {
     private Collection<Cloudlet> cloudlets;
     private List<Host> hostList;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         new GoogleTaskEventsExample1();
     }
 
-    private GoogleTaskEventsExample1() {
+    private GoogleTaskEventsExample1() throws IOException, ClassNotFoundException {
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
         Log.setLevel(Level.TRACE);
@@ -291,4 +295,5 @@ public class GoogleTaskEventsExample1 {
             .setTitle("Simulation results for Broker " + broker.getId() + " representing the username " + username)
             .build();
     }
+
 }

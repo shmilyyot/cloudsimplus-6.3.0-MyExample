@@ -1,5 +1,6 @@
 package org.cloudbus.cloudsim.core.events;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 4.4.2
  */
-public class DeferredQueue implements EventQueue {
+public class DeferredQueue implements EventQueue , Serializable {
     /**
      * Despite the events are sorted by time and there are
      * sorted collections such as {@link java.util.SortedSet},

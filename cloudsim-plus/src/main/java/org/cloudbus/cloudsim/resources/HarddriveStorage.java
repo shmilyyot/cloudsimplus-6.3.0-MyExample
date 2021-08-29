@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.cloudbus.cloudsim.distributions.ContinuousDistribution;
 import org.cloudbus.cloudsim.util.Conversion;
 
+import java.io.Serializable;
+
 /**
  * An implementation of a Hard Drive (HD) storage device with a specific capacity (in Megabytes).
  * It simulates the behavior of a typical hard drive.
@@ -29,7 +31,7 @@ import org.cloudbus.cloudsim.util.Conversion;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Toolkit 1.0
  */
-public class HarddriveStorage implements FileStorage {
+public class HarddriveStorage implements FileStorage, Serializable {
     /** @see #getStorage() */
     private final SimpleStorage storage;
 

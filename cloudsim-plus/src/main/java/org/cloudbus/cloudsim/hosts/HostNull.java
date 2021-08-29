@@ -16,6 +16,7 @@ import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.HostEventInfo;
 import org.cloudsimplus.listeners.HostUpdatesVmsProcessingEventInfo;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.Set;
  * @author Manoel Campos da Silva Filho
  * @see Host#NULL
  */
-final class HostNull implements Host {
+final class HostNull implements Host, Serializable {
     @Override public List<ResourceManageable> getResources() {
         return Collections.emptyList();
     }

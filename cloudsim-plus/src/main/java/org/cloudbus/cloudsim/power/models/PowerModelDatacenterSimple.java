@@ -4,6 +4,8 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.power.PowerMeasurement;
 
+import java.io.Serializable;
+
 
 /**
  * Simple power model defining the power consumption of a data center.
@@ -11,7 +13,7 @@ import org.cloudbus.cloudsim.power.PowerMeasurement;
  * <a href="https://en.wikipedia.org/wiki/Power_usage_effectiveness">Power Usage Effectiveness (PUE)</a>.
  * @since CloudSim Plus 6.0.0
  */
-public class PowerModelDatacenterSimple extends PowerModelDatacenter {
+public class PowerModelDatacenterSimple extends PowerModelDatacenter implements Serializable {
     /** @see #getPowerUsageEffectiveness() */
     private double powerUsageEffectiveness = 1;
 

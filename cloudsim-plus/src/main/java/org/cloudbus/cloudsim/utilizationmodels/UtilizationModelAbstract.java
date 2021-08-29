@@ -10,6 +10,7 @@ package org.cloudbus.cloudsim.utilizationmodels;
 
 import org.cloudbus.cloudsim.core.Simulation;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Objects;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.2
  */
-public abstract class UtilizationModelAbstract implements UtilizationModel {
+public abstract class UtilizationModelAbstract implements UtilizationModel{
     /**
      * A constant indicating that values lower or equal to this value
      * will be considered as zero.

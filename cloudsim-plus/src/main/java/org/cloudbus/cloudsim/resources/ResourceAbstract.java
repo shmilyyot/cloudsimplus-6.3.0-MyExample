@@ -25,13 +25,15 @@ package org.cloudbus.cloudsim.resources;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
+
 /**
  * An abstract implementation of a {@link Resource}.
  *
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.2.0
  */
-public abstract class ResourceAbstract implements Resource {
+public abstract class ResourceAbstract implements Resource, Serializable {
     private String unit;
 
     /** @see #getCapacity() */

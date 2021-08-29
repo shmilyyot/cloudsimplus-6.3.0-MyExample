@@ -10,6 +10,7 @@ package org.cloudbus.cloudsim.allocationpolicies;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
  * @see VmAllocationPolicyFirstFit
  * @see VmAllocationPolicyBestFit
  */
-public class VmAllocationPolicySimple extends VmAllocationPolicyAbstract {
+public class VmAllocationPolicySimple extends VmAllocationPolicyAbstract implements Serializable {
     /**
      * Instantiates a VmAllocationPolicySimple.
      */

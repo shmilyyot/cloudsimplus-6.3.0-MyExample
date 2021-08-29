@@ -4,6 +4,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.cloudbus.cloudsim.core.AbstractMachine;
 import org.cloudbus.cloudsim.resources.Resource;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Function;
 

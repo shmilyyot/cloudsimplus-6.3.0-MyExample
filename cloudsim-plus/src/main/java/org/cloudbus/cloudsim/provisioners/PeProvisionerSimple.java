@@ -10,6 +10,7 @@ package org.cloudbus.cloudsim.provisioners;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.resources.Pe;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -29,7 +30,7 @@ import java.util.Objects;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Toolkit 2.0
  */
-public class PeProvisionerSimple extends ResourceProvisionerSimple implements PeProvisioner {
+public class PeProvisionerSimple extends ResourceProvisionerSimple implements PeProvisioner , Serializable {
 
     /**
      * Instantiates a new PeProvisionerSimple. The {@link Pe} it will manage will be set

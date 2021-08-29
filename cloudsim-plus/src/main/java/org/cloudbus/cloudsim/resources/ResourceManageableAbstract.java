@@ -7,6 +7,8 @@
  */
 package org.cloudbus.cloudsim.resources;
 
+import java.io.Serializable;
+
 /**
  * A class that represents simple resources such as RAM, CPU, Bandwidth or Pe.
  * It stores, for instance, the resource capacity and amount of free available resource.
@@ -22,7 +24,7 @@ package org.cloudbus.cloudsim.resources;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.0
  */
-public abstract class ResourceManageableAbstract extends ResourceAbstract implements ResourceManageable {
+public abstract class ResourceManageableAbstract extends ResourceAbstract implements ResourceManageable , Serializable {
 
     /** @see #getAvailableResource() */
     private long availableResource;

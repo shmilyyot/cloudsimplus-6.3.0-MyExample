@@ -12,6 +12,8 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.io.Serializable;
+
 /**
  * A simple implementation of {@link DatacenterBroker} that try to host customer's VMs
  * at the first Datacenter found. If there isn't capacity in that one,
@@ -36,7 +38,10 @@ import org.cloudbus.cloudsim.vms.Vm;
  * @see DatacenterBrokerBestFit
  * @see DatacenterBrokerHeuristic
  */
-public class DatacenterBrokerSimple extends DatacenterBrokerAbstract {
+public class DatacenterBrokerSimple extends DatacenterBrokerAbstract implements Serializable {
+
+    public static final long serialVersionUID = 4L;     //broker类专属的序列化id
+
     /**
      * Index of the last VM selected from the {@link #getVmExecList()}
      * to run some Cloudlet.

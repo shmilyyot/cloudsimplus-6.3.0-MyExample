@@ -3,6 +3,8 @@ package org.cloudbus.cloudsim.core;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 
+import java.io.Serializable;
+
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -10,7 +12,7 @@ import static java.util.Objects.requireNonNull;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 4.0.3
  */
-public abstract class CustomerEntityAbstract implements CustomerEntity {
+public abstract class CustomerEntityAbstract implements CustomerEntity, Serializable {
     /**
      * @see #getId()
      */

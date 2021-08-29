@@ -2,11 +2,13 @@ package org.cloudbus.cloudsim.power.models;
 
 import org.cloudbus.cloudsim.power.PowerMeasurement;
 
+import java.io.Serializable;
+
 /**
  * Simple power model for hosts with linear power profile.
  * @since CloudSim Plus 6.0.0
  */
-public class PowerModelHostSimple extends PowerModelHost {
+public class PowerModelHostSimple extends PowerModelHost implements Serializable {
     private double maxPower;
     private double staticPower;
 

@@ -25,6 +25,7 @@ package org.cloudbus.cloudsim.utilizationmodels;
 
 import org.cloudbus.cloudsim.util.Conversion;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -41,7 +42,7 @@ import java.util.function.Function;
  * @author Manoel Campos da Silva Filho
  * @since CloudSim Plus 1.0
  */
-public class UtilizationModelDynamic extends UtilizationModelAbstract {
+public class UtilizationModelDynamic extends UtilizationModelAbstract{
     /**
      * Indicates whether the utilization model is readonly.
      * It's set to true when using the

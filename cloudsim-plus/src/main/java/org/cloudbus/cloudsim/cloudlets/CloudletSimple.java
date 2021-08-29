@@ -12,6 +12,7 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -24,7 +25,8 @@ import java.util.Objects;
  * @since CloudSim Toolkit 1.0
  * @see DatacenterBroker
  */
-public class CloudletSimple extends CloudletAbstract {
+public class CloudletSimple extends CloudletAbstract implements Serializable {
+    public static final long serialVersionUID = 3L;     //cloudlet类专属的序列化id
     /**
      * Creates a Cloudlet with no priority or id. The id is defined when the Cloudlet is submitted to
      * a {@link DatacenterBroker}. The file size and output size is defined as 1.

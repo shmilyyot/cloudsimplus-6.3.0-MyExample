@@ -1,5 +1,7 @@
 package org.cloudbus.cloudsim.datacenters;
 
+import java.io.Serializable;
+
 /**
  * A class that implements the Null Object Design Pattern for {@link Datacenter}
  * class.
@@ -7,7 +9,7 @@ package org.cloudbus.cloudsim.datacenters;
  * @author Manoel Campos da Silva Filho
  * @see DatacenterCharacteristics#NULL
  */
-final class DatacenterCharacteristicsNull implements DatacenterCharacteristics {
+final class DatacenterCharacteristicsNull implements DatacenterCharacteristics, Serializable {
     @Override public double getCostPerBw() {
         return 0;
     }

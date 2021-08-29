@@ -13,6 +13,7 @@ import org.cloudbus.cloudsim.core.events.SimEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -23,7 +24,7 @@ import java.util.function.Predicate;
  * @author Marcos Dias de Assuncao
  * @since CloudSim Toolkit 1.0
  */
-public abstract class CloudSimEntity implements SimEntity {
+public abstract class CloudSimEntity implements SimEntity, Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudSimEntity.class.getSimpleName());
 
     /** @see #getStartTime() */

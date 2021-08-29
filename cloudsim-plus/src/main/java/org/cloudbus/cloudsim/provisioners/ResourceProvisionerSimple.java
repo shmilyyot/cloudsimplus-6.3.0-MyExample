@@ -14,6 +14,7 @@ import org.cloudbus.cloudsim.resources.Resource;
 import org.cloudbus.cloudsim.resources.ResourceManageable;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -28,7 +29,7 @@ import java.util.Objects;
  * @author Manoel Campos da Silva Filho
  * @since 3.0.4
  */
-public class ResourceProvisionerSimple extends ResourceProvisionerAbstract {
+public class ResourceProvisionerSimple extends ResourceProvisionerAbstract implements Serializable {
     /**
      * Creates a new ResourceProvisionerSimple which the {@link ResourceManageable}
      * it will manage have to be set further.

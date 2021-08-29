@@ -50,10 +50,11 @@ public class Constant {
      * */
     public static final int  CLOUDLET_LENGTH = -10_000;
     public static final boolean FILTER_INSIDE_CLOUDLET = false;  //true过滤掉cloudlet里所有5~90%之外的利用率变化,false过滤掉只要出现过之外利用率的整个cloudlet
-    public static final boolean READ_INITIAL_MACHINE_CLOUDLET = false;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成
-    public static final int GOOGLE_EVENT_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
-    public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
-
+    public static final boolean READ_INITIAL_MACHINE_CLOUDLET = true;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成
+    public static final int GOOGLE_EVENT_DAYS_FILE = 1;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
+    public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 1;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
+    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
+    public static boolean CLOUDLETID_EXIST = false;     //默认没有序列化的cloudlet id存在
     /**
      * 标准论文vm的相关参数设置,一共有四种，根据亚马逊数据中心的虚拟机归一化得到，都是单核的
      * */

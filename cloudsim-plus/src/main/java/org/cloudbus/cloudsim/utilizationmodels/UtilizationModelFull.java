@@ -8,6 +8,8 @@
 
 package org.cloudbus.cloudsim.utilizationmodels;
 
+import java.io.Serializable;
+
 /**
  * A {@link UtilizationModel} that according to which, a Cloudlet always utilizes
  * a given allocated resource from its Vm at 100%, all the time.
@@ -17,7 +19,7 @@ package org.cloudbus.cloudsim.utilizationmodels;
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 2.0
  */
-public class UtilizationModelFull extends UtilizationModelAbstract {
+public class UtilizationModelFull extends UtilizationModelAbstract implements Serializable{
     /**
      * Gets the utilization percentage (in scale from [0 to 1]) of resource at a given simulation time.
      *

@@ -1,6 +1,7 @@
 package org.cloudsimplus.MyExample;
 
 import ch.qos.logback.classic.Level;
+import com.alibaba.fastjson.JSON;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicySimple;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
@@ -33,10 +34,8 @@ import org.cloudsimplus.builders.tables.TextTableColumn;
 import org.cloudsimplus.examples.traces.google.GoogleTaskEventsExample1;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalTime;
@@ -73,7 +72,7 @@ public class standardDatacenter {
     private Set<Long> hostIds;  //数据中心host的id
     private Set<Long> cloudletIds;  //系统中cloudlet的id
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         //重定向控制台输出到本地log
         try{
             System.setOut(new PrintStream(new FileOutputStream(Constant.LOG_FILE_PATH)));
@@ -85,8 +84,8 @@ public class standardDatacenter {
         //启动标准数据中心
         new standardDatacenter();
     }
-    private standardDatacenter() {
-        //模拟日志打印，记录时间
+    private standardDatacenter() throws IOException, ClassNotFoundException {
+        //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
         Log.setLevel(Level.TRACE);
@@ -130,6 +129,10 @@ public class standardDatacenter {
 //        //打印host的cpu利用率
 //        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
 //        hostList.stream().forEach(this::printHostStateHistory);
+
+        //记录结束时间
+        final double endSecs = TimeUtil.currentTimeSecs();
+        System.out.printf("Simulation ended at %s%n%n", LocalTime.now());
     }
 
     private static void buildTraceFileNames(){
@@ -146,7 +149,7 @@ public class standardDatacenter {
             }
             TRACE_FILENAMES.add(filename);
         }
-        for(int i=0;i<=Constant.GOOGLE_EVENT_DAYS_FILE;++i){
+        for(int i=0;i<=Constant.GOOGLE_EVENTUSAGE_DAYS_FILE;++i){
             String usagename = "";
             if(i<10){
                 usagename = Constant.TASK_USAGE_PATH+"\\part-0000"+i+"-of-00500.csv.gz";
@@ -159,25 +162,34 @@ public class standardDatacenter {
         }
     }
 
-    private void createCloudletsAndBrokersFromTraceFileType1(){
-        cloudlets = new HashSet<>(10000000);
-        cloudletIds = new HashSet<>(10000000);
+    private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
+        cloudlets = new HashSet<>(30000000);
+        cloudletIds = new HashSet<>(30000000);
         brokers = new ArrayList<>(100000);
+        if(checkCloudletIdsExist()){
+            Constant.CLOUDLETID_EXIST = true;
+            reverseSerializableCloudlets();
+        }
         if(Constant.SINGLE_BROKER){
             broker = new DatacenterBrokerSimple(simulation);
             brokers.add(broker);
         }
         for(String TRACE_FILENAME:TRACE_FILENAMES){
             GoogleTaskEventsTraceReader reader = GoogleTaskEventsTraceReader.getInstance(simulation, TRACE_FILENAME,this::createCloudlet);
-            if(Constant.READ_INITIAL_MACHINE_CLOUDLET){
-                if(Constant.USING_GOOGLE_HOST){
-                    reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME && hostIds.contains(event.getMachineId())));
+            if(Constant.CLOUDLETID_EXIST){
+                reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME && cloudletIds.contains(event.getUniqueTaskId()));
+            }else{
+                if(Constant.READ_INITIAL_MACHINE_CLOUDLET){
+                    if(Constant.USING_GOOGLE_HOST){
+                        reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME && hostIds.contains(event.getMachineId())));
+                    }else{
+                        reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
+                        reader.setMaxCloudletsToCreate(200);
+                    }
                 }else{
                     reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
-                    reader.setMaxCloudletsToCreate(200);
+//                reader.setMaxCloudletsToCreate(100);
                 }
-            }else{
-                reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
             }
             if(broker != null){
                 reader.setDefaultBroker(broker);
@@ -196,7 +208,10 @@ public class standardDatacenter {
                     eachfileCloudlets.size(), TRACE_FILENAME, brokers.size());
             }
         }
-        cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
+        if(!Constant.CLOUDLETID_EXIST){
+            cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
+            serializableCloudlets();
+        }
         System.out.printf(
             "Total %d Cloudlets and %d Brokers created!%n",
             cloudlets.size(),brokers.size());
@@ -351,34 +366,6 @@ public class standardDatacenter {
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
     }
-    private void readTaskUsageTraceFile(int i) {
-        Set<Long> illegalCloudedIds = new HashSet<>();
-        GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers,Usage_FILENAMES.get(i));
-        if(Constant.FILTER_INSIDE_CLOUDLET){
-            reader.setPredicate(taskUsage ->
-                cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
-                    (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
-                    (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9));
-        }else{
-            reader.setPredicate(taskUsage ->{
-                if(!cloudletIds.contains(taskUsage.getUniqueTaskId())) return false;
-                if(taskUsage.getMeanCpuUsageRate()<=0.05 || taskUsage.getMeanCpuUsageRate()>=0.9 ||
-                    taskUsage.getCanonicalMemoryUsage()<=0.05 || taskUsage.getCanonicalMemoryUsage()>=0.9){
-                    illegalCloudedIds.add(taskUsage.getUniqueTaskId());
-                    cloudletIds.remove(taskUsage.getUniqueTaskId());
-                    return false;
-                }
-                return true;
-            });
-        }
-        final Collection<Cloudlet> processedCloudlets = reader.process();
-        System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), Usage_FILENAMES.get(i));
-        if(!Constant.FILTER_INSIDE_CLOUDLET){
-            cloudlets.removeIf(cloudlet -> illegalCloudedIds.contains(cloudlet.getId()));
-            System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
-        }
-        System.out.println();
-    }
 
     private List<Vm> createVms() {
         return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
@@ -418,4 +405,34 @@ public class standardDatacenter {
             .setTitle("Simulation results for Broker " + broker.getId() + " representing the username " + username)
             .build();
     }
+
+    private void serializableCloudlets() throws IOException{
+        java.io.File file = new java.io.File(Constant.SERIAL_CLOUDLETID_PATH);
+        OutputStream os = new FileOutputStream(file);
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        List<Long> ids = new ArrayList<>(cloudletIds);
+        oos.writeObject(ids);
+        oos.close();
+        os.close();
+        System.out.println("cloudlets序列化完成了！");
+    }
+
+    private void reverseSerializableCloudlets() throws IOException, ClassNotFoundException {
+        java.io.File file = new java.io.File(Constant.SERIAL_CLOUDLETID_PATH);
+        InputStream input = new FileInputStream(file);
+        ObjectInputStream ois = new ObjectInputStream(input);
+        while(ois.available()>0){
+            List<Long> oidl = (List<Long>)ois.readObject();
+            cloudletIds.addAll(oidl);
+        }
+        ois.close();
+        input.close();
+        System.out.println("cloudlets反序列化完成了！");
+    }
+
+    private boolean checkCloudletIdsExist(){
+        java.io.File file = new java.io.File(Constant.SERIAL_CLOUDLETID_PATH);
+        return file.exists();
+    }
+
 }
