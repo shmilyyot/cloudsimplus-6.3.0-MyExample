@@ -1,15 +1,12 @@
 package org.cloudsimplus.MyExample;
 
 import ch.qos.logback.classic.Level;
-import com.alibaba.fastjson.JSON;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicySimple;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.cloudlets.CloudletSimple;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.core.CloudSimTags;
-import org.cloudbus.cloudsim.core.events.PredicateType;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
@@ -18,11 +15,9 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
-import org.cloudbus.cloudsim.schedulers.vm.VmScheduler;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
-import org.cloudbus.cloudsim.util.TraceReaderAbstract;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
@@ -31,16 +26,11 @@ import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
-import org.cloudsimplus.examples.traces.google.GoogleTaskEventsExample1;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
-
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import static org.cloudbus.cloudsim.util.Conversion.megaBytesToBytes;
@@ -139,16 +129,36 @@ public class standardDatacenter {
         cloudlets = new HashSet<>(30000000);
         cloudletIds = new HashSet<>(30000000);
         brokers = new ArrayList<>(100000);
-        if(Constant.USING_EXISTANCE_CLOULETS){
-            if(serialObjectHandler.checkCloudletIdsExist(Constant.SERIAL_CLOUDLETID_PATH)){
-                Constant.CLOUDLETID_EXIST = true;
-                cloudletIds = serialObjectHandler.reverseSerializableObject();
-            }
-        }
+
+        //使用单一代理
         if(Constant.SINGLE_BROKER){
             broker = new DatacenterBrokerSimple(simulation);
             brokers.add(broker);
         }
+
+        //使用预处理cloudlet id
+        Set<Long> finalEligibleCloudletIds;
+        if(Constant.USING_EXISTANCE_PRECLOULETS){
+            //这种方法默认读取前n天所有event，会超出java heap空间，所以要曲线救国，先读一遍usage曲线救国
+            Set<Long> eligibleCloudletIds;
+            //预处理数据，序列化到本地，把usage中所有符合利用率要求的cloudlet id先记录下来，然后再用这些id反向生成cloudlet
+            if(serialObjectHandler.checkPreCloudletIdsExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
+                eligibleCloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
+            }else{
+                eligibleCloudletIds = googleTraceHandler.filterCloudletsUsageIs(simulation);
+                serialObjectHandler.serializableObject(eligibleCloudletIds,Constant.SERIAL_PRECLOUDLETID_PATH);
+            }
+            finalEligibleCloudletIds = eligibleCloudletIds;
+        }
+
+        //使用已存在的外部cloudlet
+        if(Constant.USING_EXISTANCE_CLOULETS){
+            if(serialObjectHandler.checkCloudletIdsExist(Constant.SERIAL_CLOUDLETID_PATH)){
+                Constant.CLOUDLETID_EXIST = true;
+                cloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
+            }
+        }
+
         for(String TRACE_FILENAME: googleTraceHandler.getTRACE_FILENAMES()){
             GoogleTaskEventsTraceReader reader = GoogleTaskEventsTraceReader.getInstance(simulation, TRACE_FILENAME,this::createCloudlet);
             if(Constant.USING_EXISTANCE_CLOULETS && Constant.CLOUDLETID_EXIST){
@@ -162,17 +172,12 @@ public class standardDatacenter {
                         reader.setMaxCloudletsToCreate(200);
                     }
                 }else{
-                    //这种方法默认读取前n天所有event，会超出java heap空间，所以要曲线救国，先读一遍usage曲线救国
-                    Set<Long> eligibleCloudletIds;
-                    //预处理数据，序列化到本地，把usage中所有符合利用率要求的cloudlet id先记录下来，然后再用这些id反向生成cloudlet
-                    if(serialObjectHandler.checkPreCloudletIdsExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
-                        eligibleCloudletIds = serialObjectHandler.reverseSerializableObject();
+                    if(Constant.USING_EXISTANCE_PRECLOULETS){
+                        reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
                     }else{
-                        eligibleCloudletIds = googleTraceHandler.filterCloudletsUsageIs(simulation);
-                        serialObjectHandler.serializableObject(eligibleCloudletIds);
+                        reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
+                        reader.setMaxCloudletsToCreate(200);
                     }
-                    Set<Long> finalEligibleCloudletIds = eligibleCloudletIds;
-                    reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
 //                reader.setMaxCloudletsToCreate(100);
                 }
             }
@@ -189,8 +194,8 @@ public class standardDatacenter {
                     eachfileCloudlets.size(), eachfileBrokers.size(), TRACE_FILENAME);
             }else{
                 System.out.printf(
-                    "TaskEventFile： %d Cloudlets created from the %s trace file and total %d Brokers.%n",
-                    eachfileCloudlets.size(), TRACE_FILENAME, brokers.size());
+                    "TaskEventFile： %d Cloudlets and using Default Brokers which created from the %s trace file.%n",
+                    eachfileCloudlets.size(), TRACE_FILENAME);
             }
         }
         cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
@@ -348,7 +353,7 @@ public class standardDatacenter {
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
         if(!Constant.CLOUDLETID_EXIST){
-            serialObjectHandler.serializableObject(cloudletIds);
+            serialObjectHandler.serializableObject(cloudletIds,Constant.SERIAL_CLOUDLETID_PATH);
         }
     }
 
