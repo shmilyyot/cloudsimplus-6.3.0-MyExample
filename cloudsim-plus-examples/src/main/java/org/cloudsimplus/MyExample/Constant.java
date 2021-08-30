@@ -55,6 +55,7 @@ public class Constant {
     public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
     public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
     public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
+    public static final boolean USING_EXISTANCE_PRECLOULETS = true;    //使用外部经过预先处理的cloulet的id，不使用自己生成的
     public static final boolean USING_EXISTANCE_CLOULETS =  true;    //使用外部经过处理的cloulet的id，不使用自己生成的
     public static boolean CLOUDLETID_EXIST = false;     //默认没有序列化的cloudlet id存在
 
