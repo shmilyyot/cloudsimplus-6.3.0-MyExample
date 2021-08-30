@@ -210,10 +210,7 @@ public class standardDatacenter {
                     eachfileCloudlets.size(), TRACE_FILENAME, brokers.size());
             }
         }
-        if(!Constant.CLOUDLETID_EXIST){
-            cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
-            serializableCloudlets();
-        }
+        cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
         System.out.printf(
             "Total %d Cloudlets and %d Brokers created!%n",
             cloudlets.size(),brokers.size());
@@ -339,7 +336,7 @@ public class standardDatacenter {
         return randomHostList;
     }
 
-    private void readTaskUsageTraceFile() {
+    private void readTaskUsageTraceFile() throws IOException {
         Set<Long> illegalCloudedIds = new HashSet<>();
         for(String eachFileUsageName:Usage_FILENAMES){
             GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers, eachFileUsageName);
@@ -366,6 +363,9 @@ public class standardDatacenter {
         if(!Constant.FILTER_INSIDE_CLOUDLET){
             cloudlets.removeIf(cloudlet -> illegalCloudedIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
+        }
+        if(!Constant.CLOUDLETID_EXIST){
+            serializableCloudlets();
         }
     }
 
