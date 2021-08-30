@@ -29,12 +29,7 @@ public class serialObject {
         return set;
     }
 
-    public boolean checkCloudletIdsExist(String path){
-        java.io.File file = new java.io.File(path);
-        return file.exists();
-    }
-
-    public boolean checkPreCloudletIdsExist(String path){
+    public boolean checkObjectExist(String path){
         java.io.File file = new java.io.File(path);
         return file.exists();
     }

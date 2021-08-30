@@ -142,7 +142,7 @@ public class standardDatacenter {
             //这种方法默认读取前n天所有event，会超出java heap空间，所以要曲线救国，先读一遍usage曲线救国
             Set<Long> eligibleCloudletIds;
             //预处理数据，序列化到本地，把usage中所有符合利用率要求的cloudlet id先记录下来，然后再用这些id反向生成cloudlet
-            if(serialObjectHandler.checkPreCloudletIdsExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
+            if(serialObjectHandler.checkObjectExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
                 eligibleCloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
             }else{
                 eligibleCloudletIds = googleTraceHandler.filterCloudletsUsageIs(simulation);
@@ -153,7 +153,7 @@ public class standardDatacenter {
 
         //使用已存在的外部cloudlet
         if(Constant.USING_EXISTANCE_CLOULETS){
-            if(serialObjectHandler.checkCloudletIdsExist(Constant.SERIAL_CLOUDLETID_PATH)){
+            if(serialObjectHandler.checkObjectExist(Constant.SERIAL_CLOUDLETID_PATH)){
                 Constant.CLOUDLETID_EXIST = true;
                 cloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
             }
@@ -300,10 +300,6 @@ public class standardDatacenter {
         return cpuCoresList;
     }
 
-    private void printHostStateHistory(final Host host) {
-        new HostHistoryTableBuilder(host).setTitle(host.toString()).build();
-    }
-
     public List<Host> randomChooseHostsFromGoogleHosts(List<Host> hostList){
         int trueSize = Math.min(hostList.size(), Constant.HOST_SIZE);
         int totalHostNumber = hostList.size();
@@ -372,6 +368,10 @@ public class standardDatacenter {
 
     private long getCloudletSizeInMB(final Cloudlet cloudlet) {
         return (long)Conversion.bytesToMegaBytes(cloudlet.getFileSize());
+    }
+
+    private void printHostStateHistory(final Host host) {
+        new HostHistoryTableBuilder(host).setTitle(host.toString()).build();
     }
 
     public void printHostInfo(Host host){
