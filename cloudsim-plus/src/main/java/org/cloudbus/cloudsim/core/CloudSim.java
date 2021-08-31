@@ -689,6 +689,7 @@ public class CloudSim implements Simulation, Serializable {
      */
     private void processEvent(final SimEvent evt) {
         if (evt.getTime() < clock) {
+            System.out.println(evt.getData());
             throw new IllegalArgumentException("Past event detected. Event time: " + evt.getTime() + " Simulation clock: " + clock);
         }
 

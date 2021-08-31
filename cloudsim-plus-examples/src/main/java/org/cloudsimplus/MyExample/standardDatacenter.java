@@ -99,26 +99,26 @@ public class standardDatacenter {
         readTaskUsageTraceFile();
 
         //创建vm并提交所有cloudlet
-//        brokers.forEach(broker -> broker.submitVmList(createVms()));
+        brokers.forEach(broker -> broker.submitVmList(createVms()));
 
-//        //打印brokers和cloudlets的信息
-//        System.out.println("Brokers:");
-//        brokers.stream().sorted().forEach(b -> System.out.printf("\t%d - %s%n", b.getId(), b.getName()));
-//        System.out.println("Cloudlets:");
-//        cloudlets.stream().sorted().forEach(c -> System.out.printf("\t%s (job %d)%n", c, c.getJobId()));
-//
-//        //数据中心模拟器启动
-//        simulation.start();
-//
-//        //打印所有cloudlet运行状况
-//        brokers.stream().sorted().forEach(this::printCloudlets);
-//        System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
+        //打印brokers和cloudlets的信息
+        System.out.println("Brokers:");
+        brokers.stream().sorted().forEach(b -> System.out.printf("\t%d - %s%n", b.getId(), b.getName()));
+        System.out.println("Cloudlets:");
+        cloudlets.stream().sorted().forEach(c -> System.out.printf("\t%s (job %d)%n", c, c.getJobId()));
+
+        //数据中心模拟器启动
+        simulation.start();
+
+        //打印所有cloudlet运行状况
+        brokers.stream().sorted().forEach(this::printCloudlets);
+        System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
-//        //打印host的cpu利用率
-//        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-//        hostList.stream().forEach(this::printHostStateHistory);
+        //打印host的cpu利用率
+        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
+        hostList.stream().forEach(this::printHostStateHistory);
 
         //记录结束时间
         final double endSecs = TimeUtil.currentTimeSecs();
@@ -331,7 +331,7 @@ public class standardDatacenter {
                                 taskUsage.getStartTime() < Constant.STOP_TIME);
             }else{
                 reader.setPredicate(taskUsage ->{
-                    if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME) return false;
+                    if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME || taskUsage.getStartTime() == 0.0) return false;
                     if(!Constant.CLOUDLETID_EXIST){
                         if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
                             taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
@@ -362,7 +362,7 @@ public class standardDatacenter {
 
     private Vm createVm(final int id) {
         //Uses a CloudletSchedulerTimeShared by default
-        return new VmSimple(Constant.VM_MIPS[0], Constant.VM_PES).setRam(Constant.VM_RAM[0]).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
+        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
     }
 
     private long getVmSize(final Cloudlet cloudlet) {
