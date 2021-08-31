@@ -2,11 +2,8 @@ package org.cloudsimplus.MyExample;
 
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
-import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudsimplus.traces.google.GoogleTaskUsageTraceReader;
-
-import java.io.IOException;
 import java.util.*;
 
 public class GoogleTraceHandler {

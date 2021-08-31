@@ -25,7 +25,7 @@ public class serialObject {
         Set<Long> set = (Set<Long>)ois.readObject();
         ois.close();
         input.close();
-        System.out.println("cloudlets id反序列化完成了！");
+        System.out.println("cloudlets id反序列化完成了！大小是："+set.size());
         return set;
     }
 

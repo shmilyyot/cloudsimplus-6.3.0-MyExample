@@ -126,8 +126,8 @@ public class standardDatacenter {
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
-        cloudlets = new HashSet<>(30000000);
-        cloudletIds = new HashSet<>(30000000);
+        cloudlets = new HashSet<>(30000);
+        cloudletIds = new HashSet<>(30000);
         brokers = new ArrayList<>(100000);
 
         //使用单一代理
@@ -143,7 +143,7 @@ public class standardDatacenter {
             Set<Long> eligibleCloudletIds;
             //预处理数据，序列化到本地，把usage中所有符合利用率要求的cloudlet id先记录下来，然后再用这些id反向生成cloudlet
             if(serialObjectHandler.checkObjectExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
-                eligibleCloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
+                eligibleCloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_PRECLOUDLETID_PATH);
             }else{
                 eligibleCloudletIds = googleTraceHandler.filterCloudletsUsageIs(simulation);
                 serialObjectHandler.serializableObject(eligibleCloudletIds,Constant.SERIAL_PRECLOUDLETID_PATH);
@@ -321,32 +321,33 @@ public class standardDatacenter {
     }
 
     private void readTaskUsageTraceFile() throws IOException {
-        Set<Long> illegalCloudedIds = new HashSet<>();
         for(String eachFileUsageName: googleTraceHandler.getUsage_FILENAMES()){
             GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers, eachFileUsageName);
             if(Constant.FILTER_INSIDE_CLOUDLET){
                 reader.setPredicate(taskUsage ->
                     cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
                         (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
-                            (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9));
+                            (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9) &&
+                                taskUsage.getStartTime() < Constant.STOP_TIME);
             }else{
                 reader.setPredicate(taskUsage ->{
-                    if(!cloudletIds.contains(taskUsage.getUniqueTaskId())) return false;
-                    if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
-                        taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
-                            illegalCloudedIds.add(taskUsage.getUniqueTaskId());
+                    if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME) return false;
+                    if(!Constant.CLOUDLETID_EXIST){
+                        if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
+                            taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
                             cloudletIds.remove(taskUsage.getUniqueTaskId());
                             return false;
+                        }
                     }
                     return true;
                 });
             }
             final Collection<Cloudlet> processedCloudlets = reader.process();
             System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), eachFileUsageName);
-            System.out.printf("TraceFile： current %d Cloudlets in the System %n", cloudlets.size());
+            System.out.printf("TraceFile： current %d CloudletsIds in the System %n", cloudletIds.size());
         }
         if(!Constant.FILTER_INSIDE_CLOUDLET){
-            cloudlets.removeIf(cloudlet -> illegalCloudedIds.contains(cloudlet.getId()));
+            cloudlets.removeIf(cloudlet -> !cloudletIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
         if(!Constant.CLOUDLETID_EXIST){
@@ -355,6 +356,7 @@ public class standardDatacenter {
     }
 
     private List<Vm> createVms() {
+
         return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
     }
 
