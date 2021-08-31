@@ -336,8 +336,8 @@ public class standardDatacenter {
             }else{
                 reader.setPredicate(taskUsage ->{
                     if(!cloudletIds.contains(taskUsage.getUniqueTaskId())) return false;
-                    if(taskUsage.getMeanCpuUsageRate()<=0.05 || taskUsage.getMeanCpuUsageRate()>=0.9 ||
-                        taskUsage.getCanonicalMemoryUsage()<=0.05 || taskUsage.getCanonicalMemoryUsage()>=0.9){
+                    if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
+                        taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
                             illegalCloudedIds.add(taskUsage.getUniqueTaskId());
                             cloudletIds.remove(taskUsage.getUniqueTaskId());
                             return false;
@@ -347,6 +347,7 @@ public class standardDatacenter {
             }
             final Collection<Cloudlet> processedCloudlets = reader.process();
             System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), eachFileUsageName);
+            System.out.printf("TraceFile： current %d Cloudlets in the System %n", cloudlets.size());
         }
         if(!Constant.FILTER_INSIDE_CLOUDLET){
             cloudlets.removeIf(cloudlet -> illegalCloudedIds.contains(cloudlet.getId()));

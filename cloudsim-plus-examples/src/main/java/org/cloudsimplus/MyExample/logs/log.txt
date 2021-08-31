@@ -1,4 +1,4 @@
-Simulation started at 16:53:40.829208200
+Simulation started at 18:10:42.627237
 
 
 # Created 500 Hosts that were immediately available from the Google trace file
@@ -349,40 +349,355 @@ Existing eligible ids : 19080
 preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00172-of-00500.csv.gz
 Existing eligible ids : 19278
 序列化经过usage预处理的可能cloudletid
-cloudlets序列化完成了！
+cloudlets id序列化完成了！
 TaskEventFile： 5106 Cloudlets and 44 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00000-of-00500.csv.gz trace file.
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00000-of-00500.csv.gz
-Existing eligible ids : 4680
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00001-of-00500.csv.gz
-Existing eligible ids : 4324
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00002-of-00500.csv.gz
-Existing eligible ids : 3990
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00003-of-00500.csv.gz
-Existing eligible ids : 4009
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00004-of-00500.csv.gz
-Existing eligible ids : 3716
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00005-of-00500.csv.gz
-Existing eligible ids : 5142
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00006-of-00500.csv.gz
-Existing eligible ids : 4507
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00007-of-00500.csv.gz
-Existing eligible ids : 5635
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00008-of-00500.csv.gz
-Existing eligible ids : 8007
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00009-of-00500.csv.gz
-Existing eligible ids : 9841
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00010-of-00500.csv.gz
-Existing eligible ids : 10372
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00011-of-00500.csv.gz
-Existing eligible ids : 10489
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00012-of-00500.csv.gz
-Existing eligible ids : 11704
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00013-of-00500.csv.gz
-Existing eligible ids : 11393
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00014-of-00500.csv.gz
-Existing eligible ids : 11787
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00015-of-00500.csv.gz
-Existing eligible ids : 12285
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00016-of-00500.csv.gz
-Existing eligible ids : 12308
-preFiltering trace usage file D:/paperWork/clusterdata2011/task_usage/part-00017-of-00500.csv.gz
+TaskEventFile： 5 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00001-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00002-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00003-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00004-of-00500.csv.gz trace file.
+TaskEventFile： 1708 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00005-of-00500.csv.gz trace file.
+TaskEventFile： 15 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00006-of-00500.csv.gz trace file.
+TaskEventFile： 29 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00007-of-00500.csv.gz trace file.
+TaskEventFile： 76 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00008-of-00500.csv.gz trace file.
+TaskEventFile： 286 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00009-of-00500.csv.gz trace file.
+TaskEventFile： 32 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00010-of-00500.csv.gz trace file.
+TaskEventFile： 33 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00011-of-00500.csv.gz trace file.
+TaskEventFile： 1722 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00012-of-00500.csv.gz trace file.
+TaskEventFile： 1099 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00013-of-00500.csv.gz trace file.
+TaskEventFile： 2746 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00014-of-00500.csv.gz trace file.
+TaskEventFile： 982 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00015-of-00500.csv.gz trace file.
+TaskEventFile： 637 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00016-of-00500.csv.gz trace file.
+TaskEventFile： 93 Cloudlets and 13 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00017-of-00500.csv.gz trace file.
+TaskEventFile： 81 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00018-of-00500.csv.gz trace file.
+TaskEventFile： 71 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00019-of-00500.csv.gz trace file.
+TaskEventFile： 15 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00020-of-00500.csv.gz trace file.
+TaskEventFile： 18 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00021-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00022-of-00500.csv.gz trace file.
+TaskEventFile： 52 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00023-of-00500.csv.gz trace file.
+TaskEventFile： 55 Cloudlets and 11 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00024-of-00500.csv.gz trace file.
+TaskEventFile： 31 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00025-of-00500.csv.gz trace file.
+TaskEventFile： 115 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00026-of-00500.csv.gz trace file.
+TaskEventFile： 55 Cloudlets and 11 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00027-of-00500.csv.gz trace file.
+TaskEventFile： 42 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00028-of-00500.csv.gz trace file.
+TaskEventFile： 16 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00029-of-00500.csv.gz trace file.
+TaskEventFile： 191 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00030-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00031-of-00500.csv.gz trace file.
+TaskEventFile： 16 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00032-of-00500.csv.gz trace file.
+TaskEventFile： 274 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00033-of-00500.csv.gz trace file.
+TaskEventFile： 28 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00034-of-00500.csv.gz trace file.
+TaskEventFile： 31 Cloudlets and 13 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00035-of-00500.csv.gz trace file.
+TaskEventFile： 26 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00036-of-00500.csv.gz trace file.
+TaskEventFile： 20 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00037-of-00500.csv.gz trace file.
+TaskEventFile： 45 Cloudlets and 13 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00038-of-00500.csv.gz trace file.
+TaskEventFile： 81 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00039-of-00500.csv.gz trace file.
+TaskEventFile： 41 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00040-of-00500.csv.gz trace file.
+TaskEventFile： 320 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00041-of-00500.csv.gz trace file.
+TaskEventFile： 428 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00042-of-00500.csv.gz trace file.
+TaskEventFile： 59 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00043-of-00500.csv.gz trace file.
+TaskEventFile： 16 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00044-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00045-of-00500.csv.gz trace file.
+TaskEventFile： 3 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00046-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00047-of-00500.csv.gz trace file.
+TaskEventFile： 81 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00048-of-00500.csv.gz trace file.
+TaskEventFile： 51 Cloudlets and 17 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00049-of-00500.csv.gz trace file.
+TaskEventFile： 105 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00050-of-00500.csv.gz trace file.
+TaskEventFile： 150 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00051-of-00500.csv.gz trace file.
+TaskEventFile： 13 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00052-of-00500.csv.gz trace file.
+TaskEventFile： 26 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00053-of-00500.csv.gz trace file.
+TaskEventFile： 36 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00054-of-00500.csv.gz trace file.
+TaskEventFile： 46 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00055-of-00500.csv.gz trace file.
+TaskEventFile： 10 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00056-of-00500.csv.gz trace file.
+TaskEventFile： 11 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00057-of-00500.csv.gz trace file.
+TaskEventFile： 16 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00058-of-00500.csv.gz trace file.
+TaskEventFile： 17 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00059-of-00500.csv.gz trace file.
+TaskEventFile： 6 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00060-of-00500.csv.gz trace file.
+TaskEventFile： 18 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00061-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00062-of-00500.csv.gz trace file.
+TaskEventFile： 561 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00063-of-00500.csv.gz trace file.
+TaskEventFile： 21 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00064-of-00500.csv.gz trace file.
+TaskEventFile： 153 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00065-of-00500.csv.gz trace file.
+TaskEventFile： 10 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00066-of-00500.csv.gz trace file.
+TaskEventFile： 8 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00067-of-00500.csv.gz trace file.
+TaskEventFile： 13 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00068-of-00500.csv.gz trace file.
+TaskEventFile： 17 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00069-of-00500.csv.gz trace file.
+TaskEventFile： 96 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00070-of-00500.csv.gz trace file.
+TaskEventFile： 8 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00071-of-00500.csv.gz trace file.
+TaskEventFile： 20 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00072-of-00500.csv.gz trace file.
+TaskEventFile： 10 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00073-of-00500.csv.gz trace file.
+TaskEventFile： 4 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00074-of-00500.csv.gz trace file.
+TaskEventFile： 40 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00075-of-00500.csv.gz trace file.
+TaskEventFile： 937 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00076-of-00500.csv.gz trace file.
+TaskEventFile： 5 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00077-of-00500.csv.gz trace file.
+TaskEventFile： 26 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00078-of-00500.csv.gz trace file.
+TaskEventFile： 15 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00079-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00080-of-00500.csv.gz trace file.
+TaskEventFile： 44 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00081-of-00500.csv.gz trace file.
+TaskEventFile： 17 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00082-of-00500.csv.gz trace file.
+TaskEventFile： 13 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00083-of-00500.csv.gz trace file.
+TaskEventFile： 18 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00084-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00085-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00086-of-00500.csv.gz trace file.
+TaskEventFile： 176 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00087-of-00500.csv.gz trace file.
+TaskEventFile： 81 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00088-of-00500.csv.gz trace file.
+TaskEventFile： 10 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00089-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00090-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00091-of-00500.csv.gz trace file.
+TaskEventFile： 151 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00092-of-00500.csv.gz trace file.
+TaskEventFile： 145 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00093-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00094-of-00500.csv.gz trace file.
+TaskEventFile： 19 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00095-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00096-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00097-of-00500.csv.gz trace file.
+TaskEventFile： 6 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00098-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00099-of-00500.csv.gz trace file.
+TaskEventFile： 6 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00100-of-00500.csv.gz trace file.
+TaskEventFile： 4 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00101-of-00500.csv.gz trace file.
+TaskEventFile： 1506 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00102-of-00500.csv.gz trace file.
+TaskEventFile： 136 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00103-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00104-of-00500.csv.gz trace file.
+TaskEventFile： 37 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00105-of-00500.csv.gz trace file.
+TaskEventFile： 137 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00106-of-00500.csv.gz trace file.
+TaskEventFile： 5 Cloudlets and 2 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00107-of-00500.csv.gz trace file.
+TaskEventFile： 5 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00108-of-00500.csv.gz trace file.
+TaskEventFile： 8 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00109-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00110-of-00500.csv.gz trace file.
+TaskEventFile： 6 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00111-of-00500.csv.gz trace file.
+TaskEventFile： 11 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00112-of-00500.csv.gz trace file.
+TaskEventFile： 5 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00113-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00114-of-00500.csv.gz trace file.
+TaskEventFile： 6 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00115-of-00500.csv.gz trace file.
+TaskEventFile： 23 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00116-of-00500.csv.gz trace file.
+TaskEventFile： 11 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00117-of-00500.csv.gz trace file.
+TaskEventFile： 34 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00118-of-00500.csv.gz trace file.
+TaskEventFile： 14 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00119-of-00500.csv.gz trace file.
+TaskEventFile： 16 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00120-of-00500.csv.gz trace file.
+TaskEventFile： 24 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00121-of-00500.csv.gz trace file.
+TaskEventFile： 8 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00122-of-00500.csv.gz trace file.
+TaskEventFile： 4 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00123-of-00500.csv.gz trace file.
+TaskEventFile： 3 Cloudlets and 2 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00124-of-00500.csv.gz trace file.
+TaskEventFile： 4 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00125-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00126-of-00500.csv.gz trace file.
+TaskEventFile： 3 Cloudlets and 3 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00127-of-00500.csv.gz trace file.
+TaskEventFile： 7 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00128-of-00500.csv.gz trace file.
+TaskEventFile： 10 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00129-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00130-of-00500.csv.gz trace file.
+TaskEventFile： 9 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00131-of-00500.csv.gz trace file.
+TaskEventFile： 5 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00132-of-00500.csv.gz trace file.
+TaskEventFile： 32 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00133-of-00500.csv.gz trace file.
+TaskEventFile： 19 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00134-of-00500.csv.gz trace file.
+TaskEventFile： 5 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00135-of-00500.csv.gz trace file.
+TaskEventFile： 23 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00136-of-00500.csv.gz trace file.
+TaskEventFile： 298 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00137-of-00500.csv.gz trace file.
+TaskEventFile： 87 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00138-of-00500.csv.gz trace file.
+TaskEventFile： 91 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00139-of-00500.csv.gz trace file.
+TaskEventFile： 193 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00140-of-00500.csv.gz trace file.
+TaskEventFile： 213 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00141-of-00500.csv.gz trace file.
+TaskEventFile： 90 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00142-of-00500.csv.gz trace file.
+TaskEventFile： 96 Cloudlets and 4 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00143-of-00500.csv.gz trace file.
+TaskEventFile： 116 Cloudlets and 15 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00144-of-00500.csv.gz trace file.
+TaskEventFile： 104 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00145-of-00500.csv.gz trace file.
+TaskEventFile： 69 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00146-of-00500.csv.gz trace file.
+TaskEventFile： 66 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00147-of-00500.csv.gz trace file.
+TaskEventFile： 61 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00148-of-00500.csv.gz trace file.
+TaskEventFile： 43 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00149-of-00500.csv.gz trace file.
+TaskEventFile： 63 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00150-of-00500.csv.gz trace file.
+TaskEventFile： 46 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00151-of-00500.csv.gz trace file.
+TaskEventFile： 153 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00152-of-00500.csv.gz trace file.
+TaskEventFile： 71 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00153-of-00500.csv.gz trace file.
+TaskEventFile： 679 Cloudlets and 12 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00154-of-00500.csv.gz trace file.
+TaskEventFile： 239 Cloudlets and 11 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00155-of-00500.csv.gz trace file.
+TaskEventFile： 24 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00156-of-00500.csv.gz trace file.
+TaskEventFile： 26 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00157-of-00500.csv.gz trace file.
+TaskEventFile： 36 Cloudlets and 5 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00158-of-00500.csv.gz trace file.
+TaskEventFile： 32 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00159-of-00500.csv.gz trace file.
+TaskEventFile： 838 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00160-of-00500.csv.gz trace file.
+TaskEventFile： 21 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00161-of-00500.csv.gz trace file.
+TaskEventFile： 23 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00162-of-00500.csv.gz trace file.
+TaskEventFile： 31 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00163-of-00500.csv.gz trace file.
+TaskEventFile： 30 Cloudlets and 8 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00164-of-00500.csv.gz trace file.
+TaskEventFile： 19 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00165-of-00500.csv.gz trace file.
+TaskEventFile： 20 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00166-of-00500.csv.gz trace file.
+TaskEventFile： 14 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00167-of-00500.csv.gz trace file.
+TaskEventFile： 12 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00168-of-00500.csv.gz trace file.
+TaskEventFile： 50 Cloudlets and 10 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00169-of-00500.csv.gz trace file.
+TaskEventFile： 22 Cloudlets and 7 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00170-of-00500.csv.gz trace file.
+TaskEventFile： 20 Cloudlets and 9 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00171-of-00500.csv.gz trace file.
+TaskEventFile： 6 Cloudlets and 6 Brokers created from the D:/paperWork/clusterdata2011/task_events/part-00172-of-00500.csv.gz trace file.
+Total 26248 Cloudlets and 1202 Brokers created!
+TraceFile： 3228 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00000-of-00500.csv.gz trace file.
+TraceFile： 2140 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00001-of-00500.csv.gz trace file.
+TraceFile： 1572 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00002-of-00500.csv.gz trace file.
+TraceFile： 1216 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00003-of-00500.csv.gz trace file.
+TraceFile： 1051 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00004-of-00500.csv.gz trace file.
+TraceFile： 1008 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00005-of-00500.csv.gz trace file.
+TraceFile： 956 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00006-of-00500.csv.gz trace file.
+TraceFile： 942 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00007-of-00500.csv.gz trace file.
+TraceFile： 927 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00008-of-00500.csv.gz trace file.
+TraceFile： 910 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00009-of-00500.csv.gz trace file.
+TraceFile： 900 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00010-of-00500.csv.gz trace file.
+TraceFile： 890 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00011-of-00500.csv.gz trace file.
+TraceFile： 873 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00012-of-00500.csv.gz trace file.
+TraceFile： 865 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00013-of-00500.csv.gz trace file.
+TraceFile： 862 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00014-of-00500.csv.gz trace file.
+TraceFile： 852 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00015-of-00500.csv.gz trace file.
+TraceFile： 847 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00016-of-00500.csv.gz trace file.
+TraceFile： 835 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00017-of-00500.csv.gz trace file.
+TraceFile： 833 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00018-of-00500.csv.gz trace file.
+TraceFile： 829 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00019-of-00500.csv.gz trace file.
+TraceFile： 826 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00020-of-00500.csv.gz trace file.
+TraceFile： 825 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00021-of-00500.csv.gz trace file.
+TraceFile： 817 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00022-of-00500.csv.gz trace file.
+TraceFile： 814 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00023-of-00500.csv.gz trace file.
+TraceFile： 814 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00024-of-00500.csv.gz trace file.
+TraceFile： 813 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00025-of-00500.csv.gz trace file.
+TraceFile： 810 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00026-of-00500.csv.gz trace file.
+TraceFile： 806 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00027-of-00500.csv.gz trace file.
+TraceFile： 805 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00028-of-00500.csv.gz trace file.
+TraceFile： 806 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00029-of-00500.csv.gz trace file.
+TraceFile： 806 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00030-of-00500.csv.gz trace file.
+TraceFile： 801 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00031-of-00500.csv.gz trace file.
+TraceFile： 800 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00032-of-00500.csv.gz trace file.
+TraceFile： 798 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00033-of-00500.csv.gz trace file.
+TraceFile： 795 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00034-of-00500.csv.gz trace file.
+TraceFile： 794 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00035-of-00500.csv.gz trace file.
+TraceFile： 792 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00036-of-00500.csv.gz trace file.
+TraceFile： 792 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00037-of-00500.csv.gz trace file.
+TraceFile： 792 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00038-of-00500.csv.gz trace file.
+TraceFile： 791 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00039-of-00500.csv.gz trace file.
+TraceFile： 788 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00040-of-00500.csv.gz trace file.
+TraceFile： 786 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00041-of-00500.csv.gz trace file.
+TraceFile： 784 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00042-of-00500.csv.gz trace file.
+TraceFile： 784 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00043-of-00500.csv.gz trace file.
+TraceFile： 782 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00044-of-00500.csv.gz trace file.
+TraceFile： 770 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00045-of-00500.csv.gz trace file.
+TraceFile： 768 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00046-of-00500.csv.gz trace file.
+TraceFile： 768 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00047-of-00500.csv.gz trace file.
+TraceFile： 768 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00048-of-00500.csv.gz trace file.
+TraceFile： 767 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00049-of-00500.csv.gz trace file.
+TraceFile： 764 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00050-of-00500.csv.gz trace file.
+TraceFile： 763 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00051-of-00500.csv.gz trace file.
+TraceFile： 760 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00052-of-00500.csv.gz trace file.
+TraceFile： 759 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00053-of-00500.csv.gz trace file.
+TraceFile： 756 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00054-of-00500.csv.gz trace file.
+TraceFile： 751 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00055-of-00500.csv.gz trace file.
+TraceFile： 751 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00056-of-00500.csv.gz trace file.
+TraceFile： 751 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00057-of-00500.csv.gz trace file.
+TraceFile： 751 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00058-of-00500.csv.gz trace file.
+TraceFile： 749 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00059-of-00500.csv.gz trace file.
+TraceFile： 749 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00060-of-00500.csv.gz trace file.
+TraceFile： 749 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00061-of-00500.csv.gz trace file.
+TraceFile： 748 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00062-of-00500.csv.gz trace file.
+TraceFile： 746 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00063-of-00500.csv.gz trace file.
+TraceFile： 788 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00064-of-00500.csv.gz trace file.
+TraceFile： 744 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00065-of-00500.csv.gz trace file.
+TraceFile： 742 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00066-of-00500.csv.gz trace file.
+TraceFile： 742 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00067-of-00500.csv.gz trace file.
+TraceFile： 741 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00068-of-00500.csv.gz trace file.
+TraceFile： 740 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00069-of-00500.csv.gz trace file.
+TraceFile： 740 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00070-of-00500.csv.gz trace file.
+TraceFile： 739 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00071-of-00500.csv.gz trace file.
+TraceFile： 738 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00072-of-00500.csv.gz trace file.
+TraceFile： 737 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00073-of-00500.csv.gz trace file.
+TraceFile： 737 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00074-of-00500.csv.gz trace file.
+TraceFile： 736 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00075-of-00500.csv.gz trace file.
+TraceFile： 744 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00076-of-00500.csv.gz trace file.
+TraceFile： 734 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00077-of-00500.csv.gz trace file.
+TraceFile： 734 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00078-of-00500.csv.gz trace file.
+TraceFile： 733 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00079-of-00500.csv.gz trace file.
+TraceFile： 733 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00080-of-00500.csv.gz trace file.
+TraceFile： 730 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00081-of-00500.csv.gz trace file.
+TraceFile： 730 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00082-of-00500.csv.gz trace file.
+TraceFile： 729 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00083-of-00500.csv.gz trace file.
+TraceFile： 729 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00084-of-00500.csv.gz trace file.
+TraceFile： 728 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00085-of-00500.csv.gz trace file.
+TraceFile： 728 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00086-of-00500.csv.gz trace file.
+TraceFile： 727 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00087-of-00500.csv.gz trace file.
+TraceFile： 727 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00088-of-00500.csv.gz trace file.
+TraceFile： 727 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00089-of-00500.csv.gz trace file.
+TraceFile： 727 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00090-of-00500.csv.gz trace file.
+TraceFile： 727 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00091-of-00500.csv.gz trace file.
+TraceFile： 727 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00092-of-00500.csv.gz trace file.
+TraceFile： 726 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00093-of-00500.csv.gz trace file.
+TraceFile： 726 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00094-of-00500.csv.gz trace file.
+TraceFile： 724 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00095-of-00500.csv.gz trace file.
+TraceFile： 724 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00096-of-00500.csv.gz trace file.
+TraceFile： 724 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00097-of-00500.csv.gz trace file.
+TraceFile： 724 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00098-of-00500.csv.gz trace file.
+TraceFile： 723 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00099-of-00500.csv.gz trace file.
+TraceFile： 722 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00100-of-00500.csv.gz trace file.
+TraceFile： 721 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00101-of-00500.csv.gz trace file.
+TraceFile： 721 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00102-of-00500.csv.gz trace file.
+TraceFile： 721 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00103-of-00500.csv.gz trace file.
+TraceFile： 721 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00104-of-00500.csv.gz trace file.
+TraceFile： 719 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00105-of-00500.csv.gz trace file.
+TraceFile： 719 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00106-of-00500.csv.gz trace file.
+TraceFile： 719 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00107-of-00500.csv.gz trace file.
+TraceFile： 717 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00108-of-00500.csv.gz trace file.
+TraceFile： 715 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00109-of-00500.csv.gz trace file.
+TraceFile： 693 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00110-of-00500.csv.gz trace file.
+TraceFile： 683 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00111-of-00500.csv.gz trace file.
+TraceFile： 682 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00112-of-00500.csv.gz trace file.
+TraceFile： 682 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00113-of-00500.csv.gz trace file.
+TraceFile： 679 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00114-of-00500.csv.gz trace file.
+TraceFile： 677 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00115-of-00500.csv.gz trace file.
+TraceFile： 670 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00116-of-00500.csv.gz trace file.
+TraceFile： 670 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00117-of-00500.csv.gz trace file.
+TraceFile： 600 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00118-of-00500.csv.gz trace file.
+TraceFile： 601 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00119-of-00500.csv.gz trace file.
+TraceFile： 600 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00120-of-00500.csv.gz trace file.
+TraceFile： 599 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00121-of-00500.csv.gz trace file.
+TraceFile： 598 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00122-of-00500.csv.gz trace file.
+TraceFile： 598 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00123-of-00500.csv.gz trace file.
+TraceFile： 597 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00124-of-00500.csv.gz trace file.
+TraceFile： 597 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00125-of-00500.csv.gz trace file.
+TraceFile： 597 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00126-of-00500.csv.gz trace file.
+TraceFile： 594 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00127-of-00500.csv.gz trace file.
+TraceFile： 594 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00128-of-00500.csv.gz trace file.
+TraceFile： 593 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00129-of-00500.csv.gz trace file.
+TraceFile： 594 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00130-of-00500.csv.gz trace file.
+TraceFile： 593 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00131-of-00500.csv.gz trace file.
+TraceFile： 593 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00132-of-00500.csv.gz trace file.
+TraceFile： 593 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00133-of-00500.csv.gz trace file.
+TraceFile： 592 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00134-of-00500.csv.gz trace file.
+TraceFile： 590 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00135-of-00500.csv.gz trace file.
+TraceFile： 589 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00136-of-00500.csv.gz trace file.
+TraceFile： 589 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00137-of-00500.csv.gz trace file.
+TraceFile： 587 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00138-of-00500.csv.gz trace file.
+TraceFile： 587 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00139-of-00500.csv.gz trace file.
+TraceFile： 586 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00140-of-00500.csv.gz trace file.
+TraceFile： 586 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00141-of-00500.csv.gz trace file.
+TraceFile： 586 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00142-of-00500.csv.gz trace file.
+TraceFile： 586 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00143-of-00500.csv.gz trace file.
+TraceFile： 586 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00144-of-00500.csv.gz trace file.
+TraceFile： 580 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00145-of-00500.csv.gz trace file.
+TraceFile： 578 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00146-of-00500.csv.gz trace file.
+TraceFile： 576 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00147-of-00500.csv.gz trace file.
+TraceFile： 573 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00148-of-00500.csv.gz trace file.
+TraceFile： 570 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00149-of-00500.csv.gz trace file.
+TraceFile： 570 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00150-of-00500.csv.gz trace file.
+TraceFile： 567 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00151-of-00500.csv.gz trace file.
+TraceFile： 576 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00152-of-00500.csv.gz trace file.
+TraceFile： 562 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00153-of-00500.csv.gz trace file.
+TraceFile： 506 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00154-of-00500.csv.gz trace file.
+TraceFile： 413 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00155-of-00500.csv.gz trace file.
+TraceFile： 370 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00156-of-00500.csv.gz trace file.
+TraceFile： 364 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00157-of-00500.csv.gz trace file.
+TraceFile： 364 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00158-of-00500.csv.gz trace file.
+TraceFile： 363 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00159-of-00500.csv.gz trace file.
+TraceFile： 364 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00160-of-00500.csv.gz trace file.
+TraceFile： 364 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00161-of-00500.csv.gz trace file.
+TraceFile： 364 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00162-of-00500.csv.gz trace file.
+TraceFile： 364 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00163-of-00500.csv.gz trace file.
+TraceFile： 362 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00164-of-00500.csv.gz trace file.
+TraceFile： 358 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00165-of-00500.csv.gz trace file.
+TraceFile： 358 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00166-of-00500.csv.gz trace file.
+TraceFile： 355 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00167-of-00500.csv.gz trace file.
+TraceFile： 354 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00168-of-00500.csv.gz trace file.
+TraceFile： 353 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00169-of-00500.csv.gz trace file.
+TraceFile： 334 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00170-of-00500.csv.gz trace file.
+TraceFile： 333 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00171-of-00500.csv.gz trace file.
+TraceFile： 333 Cloudlets processed from the D:/paperWork/clusterdata2011/task_usage/part-00172-of-00500.csv.gz trace file.
+Total 392 Cloudlets and 1202 Brokers created!
+cloudlets id序列化完成了！
+Simulation ended at 11:24:01.528418600
+
