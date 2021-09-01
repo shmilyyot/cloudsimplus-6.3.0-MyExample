@@ -118,7 +118,7 @@ public class standardDatacenter {
 //        hostList.stream().forEach(this::printHostInfo);
         //打印host的cpu利用率
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-        hostList.stream().forEach(this::printHostStateHistory);
+        hostList.forEach(this::printHostStateHistory);
 
         //记录结束时间
         final double endSecs = TimeUtil.currentTimeSecs();
@@ -175,8 +175,8 @@ public class standardDatacenter {
                     if(Constant.USING_EXISTANCE_PRECLOULETS){
                         reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
                     }else{
-                        reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
-                        reader.setMaxCloudletsToCreate(200);
+                        reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME);
+                        reader.setMaxCloudletsToCreate(100);
                     }
 //                reader.setMaxCloudletsToCreate(100);
                 }
@@ -323,30 +323,36 @@ public class standardDatacenter {
     private void readTaskUsageTraceFile() throws IOException {
         for(String eachFileUsageName: googleTraceHandler.getUsage_FILENAMES()){
             GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers, eachFileUsageName);
-            if(Constant.FILTER_INSIDE_CLOUDLET){
+            if(Constant.USING_FILTER){
+                if(Constant.FILTER_INSIDE_CLOUDLET){
+                    reader.setPredicate(taskUsage ->
+                        cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
+                            (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
+                            (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9) &&
+                            taskUsage.getStartTime() < Constant.STOP_TIME);
+                }else{
+                    reader.setPredicate(taskUsage ->{
+                        if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME || taskUsage.getStartTime() == 0.0) return false;
+                        if(!Constant.CLOUDLETID_EXIST){
+                            if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
+                                taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
+                                cloudletIds.remove(taskUsage.getUniqueTaskId());
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                }
+            }else{
                 reader.setPredicate(taskUsage ->
                     cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
-                        (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
-                            (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9) &&
-                                taskUsage.getStartTime() < Constant.STOP_TIME);
-            }else{
-                reader.setPredicate(taskUsage ->{
-                    if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME || taskUsage.getStartTime() == 0.0) return false;
-                    if(!Constant.CLOUDLETID_EXIST){
-                        if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
-                            taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
-                            cloudletIds.remove(taskUsage.getUniqueTaskId());
-                            return false;
-                        }
-                    }
-                    return true;
-                });
+                        taskUsage.getStartTime() < Constant.STOP_TIME);
             }
             final Collection<Cloudlet> processedCloudlets = reader.process();
             System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), eachFileUsageName);
             System.out.printf("TraceFile： current %d CloudletsIds in the System %n", cloudletIds.size());
         }
-        if(!Constant.FILTER_INSIDE_CLOUDLET){
+        if(Constant.USING_FILTER && !Constant.FILTER_INSIDE_CLOUDLET){
             cloudlets.removeIf(cloudlet -> !cloudletIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
