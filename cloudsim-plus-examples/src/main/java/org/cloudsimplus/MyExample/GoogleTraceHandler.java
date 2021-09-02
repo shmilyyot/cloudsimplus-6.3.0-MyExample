@@ -3,6 +3,7 @@ package org.cloudsimplus.MyExample;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudsimplus.traces.google.GoogleTaskUsageTraceReader;
 import java.util.*;
 
@@ -90,6 +91,24 @@ public class GoogleTraceHandler {
         Usage_FILENAMES = new ArrayList<>(500);
         TRACE_FILENAMES.add("workload/google-traces/task-events-sample-1.csv");
         Usage_FILENAMES.add("workload/google-traces/task-usage-sample-1.csv");
+    }
+
+    public List<Host> randomChooseHostsFromGoogleHosts(List<Host> hostList,Set<Long> hostIds){
+        int trueSize = Math.min(hostList.size(), Constant.HOST_SIZE);
+        int totalHostNumber = hostList.size();
+        Random r = new Random(System.currentTimeMillis());
+        List<Host> randomHostList = new ArrayList<>(trueSize);
+        Set<Integer> pickedHostIdPos = new HashSet<>(trueSize);
+        while(pickedHostIdPos.size()<trueSize){
+            int randomHostPos = r.nextInt(totalHostNumber);
+            pickedHostIdPos.add(randomHostPos);
+        }
+        for(int hostIdPos:pickedHostIdPos){
+            Host host = hostList.get(hostIdPos);
+            randomHostList.add(host);
+            hostIds.add(host.getId());
+        }
+        return randomHostList;
     }
 
 }

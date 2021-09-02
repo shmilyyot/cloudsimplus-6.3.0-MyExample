@@ -58,24 +58,31 @@ public class standardDatacenter {
     private Set<Long> cloudletIds;  //系统中cloudlet的id
     public static GoogleTraceHandler googleTraceHandler;  //处理谷歌数据的代理
     public static serialObject serialObjectHandler;   //处理序列化的代理
+    public static DataCenterPrinter dataCenterPrinter;      //处理数据中心打印信息
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+
         //重定向控制台输出到本地log
         try{
             System.setOut(new PrintStream(new FileOutputStream(Constant.LOG_FILE_PATH)));
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }
+
         //创建序列化的代理
         serialObjectHandler = new serialObject();
         //创建谷歌数据处理代理
         googleTraceHandler = new GoogleTraceHandler();
+        //创建数据中心打印代理
+        dataCenterPrinter = new DataCenterPrinter();
         //创建所有文件路径
         googleTraceHandler.buildTraceFileNames();
+
         //启动标准数据中心
         new standardDatacenter();
     }
     private standardDatacenter() throws IOException, ClassNotFoundException {
+
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
@@ -111,14 +118,15 @@ public class standardDatacenter {
         simulation.start();
 
         //打印所有cloudlet运行状况
-        brokers.stream().sorted().forEach(this::printCloudlets);
+        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
         System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
+
         //打印host的cpu利用率
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-        hostList.forEach(this::printHostStateHistory);
+        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
 
         //记录结束时间
         final double endSecs = TimeUtil.currentTimeSecs();
@@ -231,10 +239,10 @@ public class standardDatacenter {
         for(int i = 0; i < Constant.DATACENTERS_NUMBER; i++){
             datacenters.add(new DatacenterSimple(simulation, new VmAllocationPolicySimple()));
         }
-        reader.setDatacenterForLaterHosts(datacenters.get(0));
+        reader.setDatacenterForLaterHosts(datacenters.get(1));
         List<Host> totalReadHosts = new ArrayList<>(reader.process());
         if(Constant.NUMBER_RANDOM_HOSTS){
-            hostList = randomChooseHostsFromGoogleHosts(totalReadHosts);
+            hostList = googleTraceHandler.randomChooseHostsFromGoogleHosts(totalReadHosts,hostIds);
         }else{
             int trueSize = Math.min(totalReadHosts.size(), Constant.HOST_SIZE);
             hostList = new ArrayList<>(trueSize);
@@ -300,26 +308,6 @@ public class standardDatacenter {
         return cpuCoresList;
     }
 
-    public List<Host> randomChooseHostsFromGoogleHosts(List<Host> hostList){
-        int trueSize = Math.min(hostList.size(), Constant.HOST_SIZE);
-        int totalHostNumber = hostList.size();
-        Random r = new Random(System.currentTimeMillis());
-        List<Host> randomHostList = new ArrayList<>(trueSize);
-        Set<Integer> pickedHostIdPos = new HashSet<>(trueSize);
-        Set<Long> randomHostIds = new HashSet<>(trueSize);
-        while(pickedHostIdPos.size()<trueSize){
-            int randomHostPos = r.nextInt(totalHostNumber);
-            pickedHostIdPos.add(randomHostPos);
-        }
-        for(int hostIdPos:pickedHostIdPos){
-            Host host = hostList.get(hostIdPos);
-            randomHostList.add(host);
-            randomHostIds.add(host.getId());
-        }
-        hostIds = randomHostIds;
-        return randomHostList;
-    }
-
     private void readTaskUsageTraceFile() throws IOException {
         for(String eachFileUsageName: googleTraceHandler.getUsage_FILENAMES()){
             GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers, eachFileUsageName);
@@ -371,38 +359,5 @@ public class standardDatacenter {
         return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
     }
 
-    private long getVmSize(final Cloudlet cloudlet) {
-        return cloudlet.getVm().getStorage().getCapacity();
-    }
-
-    private long getCloudletSizeInMB(final Cloudlet cloudlet) {
-        return (long)Conversion.bytesToMegaBytes(cloudlet.getFileSize());
-    }
-
-    private void printHostStateHistory(final Host host) {
-        new HostHistoryTableBuilder(host).setTitle(host.toString()).build();
-    }
-
-    public void printHostInfo(Host host){
-        System.out.println();
-        System.out.println("打印id为："+host.getId()+"的host");
-        System.out.println(host.getId()+"的cpu cores是"+host.getNumberOfPes());
-        System.out.println(host.getId()+"的MEM是"+host.getRam().getCapacity());
-        System.out.println(host.getId()+"的BW是"+host.getBw().getCapacity());
-        System.out.println(host.getId()+"的Storoge是"+host.getStorage().getCapacity());
-    }
-
-    private void printCloudlets(final DatacenterBroker broker) {
-        final String username = broker.getName().replace("Broker_", "");
-        final List<Cloudlet> list = broker.getCloudletFinishedList();
-        list.sort(Comparator.comparingLong(Cloudlet::getId));
-        new CloudletsTableBuilder(list)
-            .addColumn(0, new TextTableColumn("Job", "ID"), Cloudlet::getJobId)
-            .addColumn(7, new TextTableColumn("VM Size", "MB"), this::getVmSize)
-            .addColumn(8, new TextTableColumn("Cloudlet Size", "MB"), this::getCloudletSizeInMB)
-            .addColumn(10, new TextTableColumn("Waiting Time", "Seconds").setFormat("%.0f"), Cloudlet::getWaitingTime)
-            .setTitle("Simulation results for Broker " + broker.getId() + " representing the username " + username)
-            .build();
-    }
 
 }

@@ -514,8 +514,8 @@ public class GoogleTaskEventsTraceReader extends GoogleTraceReaderAbstract<Cloud
         final TaskEvent taskEvent = createTaskEventFromTraceLine();
 
         /**
-        * Eason定制方法：防止summit和schedule同时发生导致错误
-        * */
+         * Eason定制方法：防止summit和schedule同时发生导致错误
+         * */
         if(taskEvent.getTimestamp() == 0.0 && taskEvent.getType().ordinal() == 1){
             taskEvent.setTimestamp(0.2);
         }
