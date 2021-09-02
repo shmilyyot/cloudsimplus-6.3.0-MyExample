@@ -512,6 +512,14 @@ public class GoogleTaskEventsTraceReader extends GoogleTraceReaderAbstract<Cloud
      */
     /* default */ boolean requestCloudletStatusChange(final int tag) {
         final TaskEvent taskEvent = createTaskEventFromTraceLine();
+
+        /**
+        * Eason定制方法：防止summit和schedule同时发生导致错误
+        * */
+        if(taskEvent.getTimestamp() == 0.0 && taskEvent.getType().ordinal() == 1){
+            taskEvent.setTimestamp(0.2);
+        }
+
         final DatacenterBroker broker = getBroker(taskEvent.getUserName());
         final double delay = taskEvent.getTimestamp();
 
