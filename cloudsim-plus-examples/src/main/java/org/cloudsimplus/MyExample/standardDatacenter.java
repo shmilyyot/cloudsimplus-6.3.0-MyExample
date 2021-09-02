@@ -63,10 +63,12 @@ public class standardDatacenter {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
         //重定向控制台输出到本地log
-        try{
-            System.setOut(new PrintStream(new FileOutputStream(Constant.LOG_FILE_PATH)));
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
+        if(Constant.PRINT_LOCAL_LOG){
+            try{
+                System.setOut(new PrintStream(new FileOutputStream(Constant.LOG_FILE_PATH)));
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }
         }
 
         //创建序列化的代理
@@ -350,7 +352,7 @@ public class standardDatacenter {
     }
 
     private List<Vm> createVms() {
-
+        //每个代理都创建vms个虚拟机
         return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
     }
 

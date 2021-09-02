@@ -76,7 +76,7 @@ public class GoogleTraceHandler {
         for(int i=0;i<=Constant.GOOGLE_EVENTUSAGE_DAYS_FILE;++i){
             String usagename;
             if(i<10){
-                usagename = Constant.TASK_USAGE_PATH+"/part-0000"+i+"-of-00500.csv";
+                usagename = Constant.TASK_USAGE_PATH+"/part-0000"+i+"-of-00500.csv.gz";
             }else if(i<100){
                 usagename = Constant.TASK_USAGE_PATH+"/part-000"+i+"-of-00500.csv.gz";
             }else{

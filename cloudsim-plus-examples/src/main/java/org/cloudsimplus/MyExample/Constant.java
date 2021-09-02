@@ -4,6 +4,7 @@ public class Constant {
     /**
      * 数据中心参数设置
      * */
+    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
     public static final double STOP_TIME = 864000.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = true;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 2;     //数据中心的个数
@@ -40,8 +41,7 @@ public class Constant {
     /**
      * 自己给定的host参数设置，一共有两种host
      * */
-    public static final int HOSTS = 500;   //主机数量
-    public static final int VMS = 1;   //虚拟机数目
+    public static final int HOSTS = 250;   //主机数量
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
     public static final long[] HOST_BW = {1024,1024};  //带宽速率，用不到
@@ -63,12 +63,13 @@ public class Constant {
 //    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
 //    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
     public static final boolean USING_EXISTANCE_PRECLOULETS = false;    //使用外部经过预先处理的cloulet的id，不使用自己生成的
-    public static final boolean USING_EXISTANCE_CLOULETS =  false;    //使用外部经过处理的cloulet的id，不使用自己生成的
+    public static final boolean USING_EXISTANCE_CLOULETS =  true;    //使用外部经过处理的cloulet的id，不使用自己生成的
     public static boolean CLOUDLETID_EXIST = false;     //默认没有序列化的cloudlet id存在
 
     /**
      * 亚马逊数据中心的虚拟机归一化得到vm的相关参数设置,一共有四种，都是单核的
      * */
+    public static final int VMS = 500;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
@@ -79,6 +80,7 @@ public class Constant {
     /**
      * 自定义vm的相关参数设置
      * */
+    public static final int VMS_M = 500;   //虚拟机数目
     public static final boolean USING_MODIFY_VM = true;     //true使用自定义的虚拟机规格，false使用亚马逊数据中心的虚拟机规格
     public static final long VM_PES_M = 4;
     public static final int  VM_MIPS_M = 1000;
