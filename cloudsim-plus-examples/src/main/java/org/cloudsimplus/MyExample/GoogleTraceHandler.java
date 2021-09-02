@@ -75,7 +75,7 @@ public class GoogleTraceHandler {
         for(int i=0;i<=Constant.GOOGLE_EVENTUSAGE_DAYS_FILE;++i){
             String usagename;
             if(i<10){
-                usagename = Constant.TASK_USAGE_PATH+"/part-0000"+i+"-of-00500.csv.gz";
+                usagename = Constant.TASK_USAGE_PATH+"/part-0000"+i+"-of-00500.csv";
             }else if(i<100){
                 usagename = Constant.TASK_USAGE_PATH+"/part-000"+i+"-of-00500.csv.gz";
             }else{
@@ -83,6 +83,13 @@ public class GoogleTraceHandler {
             }
             Usage_FILENAMES.add(usagename);
         }
+    }
+
+    public void buildTraceFileNamesSample(){
+        TRACE_FILENAMES = new ArrayList<>(500);
+        Usage_FILENAMES = new ArrayList<>(500);
+        TRACE_FILENAMES.add("workload/google-traces/task-events-sample-1.csv");
+        Usage_FILENAMES.add("workload/google-traces/task-usage-sample-1.csv");
     }
 
 }

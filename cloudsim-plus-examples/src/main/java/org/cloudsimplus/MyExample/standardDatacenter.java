@@ -169,14 +169,14 @@ public class standardDatacenter {
                         reader.setPredicate(event -> (hostIds.contains(event.getMachineId()) && event.getTimestamp() <= Constant.STOP_TIME));
                     }else{
                         reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
-                        reader.setMaxCloudletsToCreate(200);
+                        reader.setMaxCloudletsToCreate(10);
                     }
                 }else{
                     if(Constant.USING_EXISTANCE_PRECLOULETS){
                         reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
                     }else{
                         reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
-                        reader.setMaxCloudletsToCreate(200);
+                        reader.setMaxCloudletsToCreate(10);
                     }
 //                reader.setMaxCloudletsToCreate(100);
                 }
@@ -212,12 +212,14 @@ public class standardDatacenter {
 //        final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * Constant.VM_SIZE_MB[0] + 1;
         final double sizeInMB    = 1;   //如只研究CPU和MEM，磁盘空间不考虑的话，象征性给个1mb意思一下
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));
-        return new CloudletSimple(Constant.CLOUDLET_LENGTH, pesNumber)
+        Cloudlet cloudlet = new CloudletSimple(Constant.CLOUDLET_LENGTH, pesNumber)
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
             .setUtilizationModelCpu(new UtilizationModelFull())
             .setUtilizationModelRam(utilizationRam);
+        cloudlet.setSubmissionDelay(Constant.SUBMISSIONDELAY);
+        return cloudlet;
     }
 
     private void createGoogleDatacenters() {
@@ -323,34 +325,40 @@ public class standardDatacenter {
     private void readTaskUsageTraceFile() throws IOException {
         for(String eachFileUsageName: googleTraceHandler.getUsage_FILENAMES()){
             GoogleTaskUsageTraceReader reader = GoogleTaskUsageTraceReader.getInstance(brokers, eachFileUsageName);
-            if(Constant.FILTER_INSIDE_CLOUDLET){
+            if(Constant.ENABLE_FILTER_USAGE){
+                if(Constant.FILTER_INSIDE_CLOUDLET){
+                    reader.setPredicate(taskUsage ->
+                        cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
+                            (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
+                            (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9) &&
+                            taskUsage.getStartTime() < Constant.STOP_TIME);
+                }else{
+                    reader.setPredicate(taskUsage ->{
+                        if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME) return false;
+                        if(!Constant.CLOUDLETID_EXIST){
+                            if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
+                                taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
+                                cloudletIds.remove(taskUsage.getUniqueTaskId());
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                }
+            }else{
                 reader.setPredicate(taskUsage ->
                     cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
-                        (taskUsage.getMeanCpuUsageRate()>0.05 && taskUsage.getMeanCpuUsageRate()<0.9) &&
-                            (taskUsage.getCanonicalMemoryUsage()>0.05 && taskUsage.getCanonicalMemoryUsage()<0.9) &&
-                                taskUsage.getStartTime() < Constant.STOP_TIME);
-            }else{
-                reader.setPredicate(taskUsage ->{
-                    if(!cloudletIds.contains(taskUsage.getUniqueTaskId()) || taskUsage.getStartTime() > Constant.STOP_TIME || taskUsage.getStartTime() == 0.0) return false;
-                    if(!Constant.CLOUDLETID_EXIST){
-                        if(taskUsage.getMeanCpuUsageRate()<0.05 || taskUsage.getMeanCpuUsageRate()>0.9 ||
-                            taskUsage.getCanonicalMemoryUsage()<0.05 || taskUsage.getCanonicalMemoryUsage()>0.9){
-                            cloudletIds.remove(taskUsage.getUniqueTaskId());
-                            return false;
-                        }
-                    }
-                    return true;
-                });
+                        taskUsage.getStartTime() < Constant.STOP_TIME);
             }
             final Collection<Cloudlet> processedCloudlets = reader.process();
             System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), eachFileUsageName);
             System.out.printf("TraceFile： current %d CloudletsIds in the System %n", cloudletIds.size());
         }
-        if(!Constant.FILTER_INSIDE_CLOUDLET){
+        if(Constant.ENABLE_FILTER_USAGE && !Constant.FILTER_INSIDE_CLOUDLET){
             cloudlets.removeIf(cloudlet -> !cloudletIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
-        if(!Constant.CLOUDLETID_EXIST){
+        if(Constant.ENABLE_FILTER_USAGE && !Constant.CLOUDLETID_EXIST){
             serialObjectHandler.serializableObject(cloudletIds,Constant.SERIAL_CLOUDLETID_PATH);
         }
     }
