@@ -2,8 +2,11 @@ package org.cloudsimplus.MyExample;
 
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
+import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.util.Conversion;
+import org.cloudbus.cloudsim.vms.HostResourceStats;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
@@ -47,6 +50,28 @@ public class DataCenterPrinter {
 
     private long getCloudletSizeInMB(final Cloudlet cloudlet) {
         return (long) Conversion.bytesToMegaBytes(cloudlet.getFileSize());
+    }
+
+    private void printHostsStatistics(List<Datacenter> datacenters,CloudSim simulation) {
+        for(Datacenter datacenter:datacenters){
+            long currentActiveHosts = datacenter.getHostList().stream().filter(Host::isActive).count();
+            System.out.printf("# %.2f: %d Active Host(s):%n", simulation.clock(), currentActiveHosts);
+            datacenter
+                .getHostList()
+                .forEach(host -> System.out.printf("\tHost %3d | VMs: %4d | Active: %s %n", host.getId(), host.getVmList().size(), host.isActive()));
+            System.out.println();
+        }
+    }
+
+    private void printHostCpuUtilizationAndPowerConsumption(final Host host) {
+        final HostResourceStats cpuStats = host.getCpuUtilizationStats();
+
+        //The total Host's CPU utilization for the time specified by the map key
+        final double utilizationPercentMean = cpuStats.getMean();
+        final double watts = host.getPowerModel().getPower(utilizationPercentMean);
+        System.out.printf(
+            "Host %2d CPU Usage mean: %6.1f%% | Power Consumption mean: %8.0f W%n",
+            host.getId(), utilizationPercentMean * 100, watts);
     }
 
 }

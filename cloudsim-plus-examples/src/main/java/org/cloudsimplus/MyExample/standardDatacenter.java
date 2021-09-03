@@ -23,9 +23,6 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
-import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
-import org.cloudsimplus.builders.tables.TextTableColumn;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
 import java.io.*;
@@ -35,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import static org.cloudbus.cloudsim.util.Conversion.megaBytesToBytes;
 import static org.cloudbus.cloudsim.util.MathUtil.positive;
-import java.util.Random;
 
 /**
  * 论文实验标准数据中心模板设置
@@ -78,7 +74,7 @@ public class standardDatacenter {
         //创建数据中心打印代理
         dataCenterPrinter = new DataCenterPrinter();
         //创建所有文件路径
-        googleTraceHandler.buildTraceFileNames();
+        googleTraceHandler.buildTraceFileNamesSample();
 
         //启动标准数据中心
         new standardDatacenter();
@@ -241,7 +237,7 @@ public class standardDatacenter {
         for(int i = 0; i < Constant.DATACENTERS_NUMBER; i++){
             datacenters.add(new DatacenterSimple(simulation, new VmAllocationPolicySimple()));
         }
-        reader.setDatacenterForLaterHosts(datacenters.get(1));
+        reader.setDatacenterForLaterHosts(datacenters.get(0));
         List<Host> totalReadHosts = new ArrayList<>(reader.process());
         if(Constant.NUMBER_RANDOM_HOSTS){
             hostList = googleTraceHandler.randomChooseHostsFromGoogleHosts(totalReadHosts,hostIds);
@@ -335,8 +331,7 @@ public class standardDatacenter {
                 }
             }else{
                 reader.setPredicate(taskUsage ->
-                    cloudletIds.contains(taskUsage.getUniqueTaskId()) &&
-                        taskUsage.getStartTime() < Constant.STOP_TIME);
+                    cloudletIds.contains(taskUsage.getUniqueTaskId()));
             }
             final Collection<Cloudlet> processedCloudlets = reader.process();
             System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), eachFileUsageName);
@@ -358,7 +353,10 @@ public class standardDatacenter {
 
     private Vm createVm(final int id) {
         //Uses a CloudletSchedulerTimeShared by default
-        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
+        Random r = new Random(System.currentTimeMillis());
+        int type = r.nextInt(4);
+//        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
+        return new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
     }
 
 
