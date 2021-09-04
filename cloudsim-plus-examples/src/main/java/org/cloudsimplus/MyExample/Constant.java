@@ -4,10 +4,15 @@ public class Constant {
     /**
      * 数据中心参数设置
      * */
-    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
+    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static final double STOP_TIME = 864000.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = false;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
+    /**
+     * Defines, between other things, the time intervals
+     * to keep Hosts CPU utilization history records.
+     */
+    public static final int SCHEDULING_INTERVAL = 10;   //调度时间间隔
 
     /**
      * 数据中心代理相关参数设置
@@ -17,14 +22,14 @@ public class Constant {
     /**
      * google真实任务数据源地址
      * */
-    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_events";
-    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage";
-    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
-    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
-//    public static final String TASK_EVENTS_PATH = "F:/paperData/clusterdata2011/task_events";
-//    public static final String TASK_USAGE_PATH = "F:/paperData/clusterdata2011/task_usage";
-//    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
-//    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+//    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_events";
+//    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage";
+//    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
+//    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+    public static final String TASK_EVENTS_PATH = "F:/paperData/clusterdata2011/task_events";
+    public static final String TASK_USAGE_PATH = "F:/paperData/clusterdata2011/task_usage";
+    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
+    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
 
     /**
      * 根据google数据源host的参数比例，在参数范围内生成host
@@ -37,6 +42,8 @@ public class Constant {
     public static final boolean NUMBER_RANDOM_HOSTS = true; //只读取指定数量的随机host
     public static final int HOST_SIZE = 5;     //随机抽取指定数量的host数目
     public static final int GOOGLE_MACHINE_LINES_FILE = 12478;   //谷歌前十天machineevent所到的文件下标
+    public static final double STATIC_POWER = 35;  //闲置能耗
+    public static final int MAX_POWER = 50;    //最大能耗
 
     /**
      * 自己给定的host参数设置，一共有两种host
@@ -58,10 +65,10 @@ public class Constant {
     public static final boolean READ_INITIAL_MACHINE_CLOUDLET = false;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成
     public static final int GOOGLE_EVENT_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
     public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 172;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
-    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
-    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
-//    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
-//    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
+//    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
+//    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
+    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
+    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
     public static final boolean USING_EXISTANCE_PRECLOULETS = false;    //使用外部经过预先处理的cloulet的id，不使用自己生成的
     public static final boolean USING_EXISTANCE_CLOULETS =  false;    //使用外部经过处理的cloulet的id，不使用自己生成的
     public static boolean CLOUDLETID_EXIST = false;     //默认没有序列化的cloudlet id存在

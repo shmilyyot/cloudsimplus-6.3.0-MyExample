@@ -5,13 +5,20 @@ import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.power.models.PowerModel;
+import org.cloudbus.cloudsim.power.models.PowerModelHost;
+import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.vms.HostResourceStats;
+import org.cloudbus.cloudsim.vms.Vm;
+import org.cloudbus.cloudsim.vms.VmResourceStats;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
 import java.util.Comparator;
 import java.util.List;
+
+import static java.util.Comparator.comparingLong;
 
 public class DataCenterPrinter {
 
@@ -63,7 +70,37 @@ public class DataCenterPrinter {
         }
     }
 
-    private void printHostCpuUtilizationAndPowerConsumption(final Host host) {
+
+    public void printVmsCpuUtilizationAndPowerConsumption(List<DatacenterBroker> brokers) {
+        for(DatacenterBroker broker:brokers){
+            List<Vm> vmList = broker.getVmCreatedList();
+            vmList.sort(comparingLong(vm -> vm.getHost().getId()));
+            for (Vm vm : vmList) {
+                final PowerModelHost powerModel = vm.getHost().getPowerModel();
+                final double hostStaticPower = powerModel instanceof PowerModelHostSimple ? ((PowerModelHostSimple)powerModel).getStaticPower() : 0;
+                final double hostStaticPowerByVm = hostStaticPower / vm.getHost().getVmCreatedList().size();
+
+                //VM CPU utilization relative to the host capacity
+                final double vmRelativeCpuUtilization = vm.getCpuUtilizationStats().getMean() / vm.getHost().getVmCreatedList().size();
+                final double vmPower = powerModel.getPower(vmRelativeCpuUtilization) - hostStaticPower + hostStaticPowerByVm; // W
+                final VmResourceStats cpuStats = vm.getCpuUtilizationStats();
+                System.out.printf(
+                    "Vm   %2d CPU Usage Mean: %6.1f%% | Power Consumption Mean: %8.0f W%n",
+                    vm.getId(), cpuStats.getMean() *100, vmPower);
+            }
+        }
+    }
+
+
+    public void printHostsCpuUtilizationAndPowerConsumption(List<Host> hostList) {
+        System.out.println();
+        for (final Host host : hostList) {
+            printHostCpuUtilizationAndPowerConsumption(host);
+        }
+        System.out.println();
+    }
+
+    public void printHostCpuUtilizationAndPowerConsumption(final Host host) {
         final HostResourceStats cpuStats = host.getCpuUtilizationStats();
 
         //The total Host's CPU utilization for the time specified by the map key

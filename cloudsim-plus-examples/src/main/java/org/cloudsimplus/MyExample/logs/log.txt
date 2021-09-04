@@ -1,4 +1,4 @@
-Simulation started at 17:05:58.194328
+Simulation started at 23:00:35.671250500
 
 
 # Created 4 Hosts from modified setting
@@ -6,7 +6,6 @@ TaskEventFile： 10 Cloudlets and using Default Brokers which created from the w
 Total 10 Cloudlets and 1 Brokers created!
 TraceFile： 10 Cloudlets processed from the workload/google-traces/task-usage-sample-1.csv trace file.
 TraceFile： current 10 CloudletsIds in the System 
-cloudlets id序列化完成了！
 Brokers:
 	2 - DatacenterBrokerSimple2
 Cloudlets:
@@ -65,42 +64,64 @@ Cloudlets:
 [0;39m[39mTRACE 10.00: DatacenterBrokerSimple2: Cloudlet 10 resource usage changed: CPU Utilization: 100.0 -> 10.0% | RAM Utilization: 0.0 -> 20.0% | 
 [0;39m[39mTRACE 10.00: DatacenterBrokerSimple2: Cloudlet 11 resource usage changed: CPU Utilization: 100.0 -> 10.0% | RAM Utilization: 0.0 -> 20.0% | 
 [0;39m[39mTRACE 10.00: DatacenterBrokerSimple2: Cloudlet 43 resource usage changed: CPU Utilization: 100.0 -> 40.0% | RAM Utilization: 0.0 -> 60.0% | 
-[0;39m[34mINFO  12.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 20 (job 2) received.
+[0;39m
+[34mINFO  12.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 20 (job 2) received.
 [0;39m[39mTRACE 12.00: DatacenterBrokerSimple2: Cloudlet 20 resource usage changed: CPU Utilization: 100.0 -> 30.0% | RAM Utilization: 0.0 -> 60.0% | 
-[0;39m[34mINFO  14.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 21 (job 2) received.
+[0;39m
+[34mINFO  14.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 21 (job 2) received.
 [0;39m[39mTRACE 14.00: DatacenterBrokerSimple2: Cloudlet 21 resource usage changed: CPU Utilization: 100.0 -> 30.0% | RAM Utilization: 0.0 -> 60.0% | 
-[0;39m[34mINFO  16.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 22 (job 2) received.
+[0;39m
+[34mINFO  16.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 22 (job 2) received.
 [0;39m[39mTRACE 16.00: DatacenterBrokerSimple2: Cloudlet 22 resource usage changed: CPU Utilization: 100.0 -> 30.0% | RAM Utilization: 0.0 -> 60.0% | 
-[0;39m[34mINFO  25.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 30 (job 3) received.
+[0;39m
+
+
+
+[34mINFO  25.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 30 (job 3) received.
 [0;39m[34mINFO  25.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 41 (job 4) received.
 [0;39m[34mINFO  25.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 40 (job 4) received.
 [0;39m[39mTRACE 25.00: DatacenterBrokerSimple2: Cloudlet 30 resource usage changed: CPU Utilization: 100.0 -> 40.0% | RAM Utilization: 0.0 -> 60.0% | 
 [0;39m[39mTRACE 25.00: DatacenterBrokerSimple2: Cloudlet 40 resource usage changed: CPU Utilization: 100.0 -> 40.0% | RAM Utilization: 0.0 -> 60.0% | 
 [0;39m[39mTRACE 25.00: DatacenterBrokerSimple2: Cloudlet 41 resource usage changed: CPU Utilization: 100.0 -> 40.0% | RAM Utilization: 0.0 -> 60.0% | 
-[0;39m[34mINFO  30.00: DatacenterBrokerSimple2: Request to de-schedule (pause) Cloudlet 20 (job 2) received.
+[0;39m
+[34mINFO  30.00: DatacenterBrokerSimple2: Request to de-schedule (pause) Cloudlet 20 (job 2) received.
 [0;39m[34mINFO  30.00: DatacenterBrokerSimple2: Request to start executing Cloudlet 42 (job 4) received.
 [0;39m[39mTRACE 30.00: DatacenterBrokerSimple2: Cloudlet 42 resource usage changed: CPU Utilization: 100.0 -> 40.0% | RAM Utilization: 0.0 -> 60.0% | 
-[0;39m[34mINFO  42.00: DatacenterBrokerSimple2: Request to resume execution of Cloudlet 20 (job 2) received.
+[0;39m
+
+
+[34mINFO  42.00: DatacenterBrokerSimple2: Request to resume execution of Cloudlet 20 (job 2) received.
 [0;39m[39mTRACE 42.00: DatacenterBrokerSimple2: Cloudlet 20 resource usage changed: RAM Utilization: 8.7 -> 50.0% | 
-[0;39m[34mINFO  50.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 10 (job 1) received.
+[0;39m
+
+[34mINFO  50.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 10 (job 1) received.
 [0;39m[34mINFO  50.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 11 (job 1) received.
 [0;39m[34mINFO  50.00: DatacenterBrokerSimple2: Cloudlet 10 finished in Vm 0 and returned to broker.
 [0;39m[34mINFO  50.00: DatacenterBrokerSimple2: Cloudlet 11 finished in Vm 1 and returned to broker.
-[0;39m[34mINFO  60.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 20 (job 2) received.
+[0;39m
+
+
+[34mINFO  60.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 20 (job 2) received.
 [0;39m[34mINFO  60.00: DatacenterBrokerSimple2: Cloudlet 20 finished in Vm 2 and returned to broker.
-[0;39m[34mINFO  65.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 21 (job 2) received.
+[0;39m
+[34mINFO  65.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 21 (job 2) received.
 [0;39m[34mINFO  65.00: DatacenterBrokerSimple2: Cloudlet 21 finished in Vm 3 and returned to broker.
 [0;39m[34mINFO  70.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 40 (job 4) received.
 [0;39m[34mINFO  70.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 30 (job 3) received.
 [0;39m[34mINFO  70.00: DatacenterBrokerSimple2: Cloudlet 40 finished in Vm 6 and returned to broker.
 [0;39m[34mINFO  70.00: DatacenterBrokerSimple2: Cloudlet 30 finished in Vm 5 and returned to broker.
-[0;39m[34mINFO  80.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 41 (job 4) received.
+[0;39m
+
+[34mINFO  80.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 41 (job 4) received.
 [0;39m[34mINFO  80.00: DatacenterBrokerSimple2: Cloudlet 41 finished in Vm 7 and returned to broker.
-[0;39m[34mINFO  90.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 42 (job 4) received.
+[0;39m
+[34mINFO  90.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 42 (job 4) received.
 [0;39m[34mINFO  90.00: DatacenterBrokerSimple2: Request to finish running Cloudlet 43 (job 4) received.
 [0;39m[34mINFO  90.00: DatacenterBrokerSimple2: Cloudlet 42 finished in Vm 0 and returned to broker.
 [0;39m[34mINFO  90.00: DatacenterBrokerSimple2: Cloudlet 43 finished in Vm 1 and returned to broker.
-[0;39m[34mINFO  112.00: Processing last events before simulation shutdown.
+[0;39m
+
+[34mINFO  112.00: Processing last events before simulation shutdown.
 [0;39m[39mTRACE 112.00: Datacenter 1: Unknown event -1 received.
 [0;39m[34mINFO  112.00: DatacenterBrokerSimple2 is shutting down...
 [0;39m[34mINFO  112.00: DatacenterBrokerSimple2: Requesting Vm 7 destruction.
@@ -144,7 +165,7 @@ Job|Cloudlet|Status |DC|Host|Host PEs |VM|VM Size|Cloudlet Size|VM PEs   |Waitin
   4|      42|SUCCESS| 1|   0|        2| 0|   1000|            1|        1|           0|      33955|          1|        0|        90|      90
   4|      43|SUCCESS| 1|   0|        2| 1|   1000|            1|        1|           0|      23949|          1|       10|        90|      80
 --------------------------------------------------------------------------------------------------------------------------------------------
-Simulation finished at 17:05:58.504326400. Execution time: 0.32 seconds
+Simulation finished at 23:00:36.299252100. Execution time: 0.65 seconds
 
 Hosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)
 
@@ -419,5 +440,5 @@ Time |Requested|Allocated|Used|Host Active|Host Total MIPS|Host Total Usage
   110|     2000|        0|  0%|       true|           5320|            0.0%
   112|     2000|        0|  0%|       true|           5320|            0.0%
 ---------------------------------------------------------------------------
-Simulation ended at 17:05:58.560330400
+Simulation ended at 23:00:36.405253900
 

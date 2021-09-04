@@ -33,3 +33,5 @@ Test.java
 ~$*
 
 deploy.sh
+/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/
+/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/

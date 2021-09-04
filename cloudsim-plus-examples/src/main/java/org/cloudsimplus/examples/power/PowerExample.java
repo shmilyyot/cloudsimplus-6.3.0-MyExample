@@ -141,7 +141,7 @@ public class PowerExample {
     }
 
     private PowerExample() {
-        Log.setLevel(Level.WARN);
+        Log.setLevel(Level.TRACE);
 
         simulation = new CloudSim();
         hostList = new ArrayList<>(HOSTS);

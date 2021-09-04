@@ -12,10 +12,13 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
+import org.cloudbus.cloudsim.power.models.PowerModelHost;
+import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
+import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
@@ -24,6 +27,7 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
 import java.io.*;
@@ -56,6 +60,7 @@ public class standardMigrationDatacenter {
     public static GoogleTraceHandler googleTraceHandler;  //处理谷歌数据的代理
     public static serialObject serialObjectHandler;   //处理序列化的代理
     public static DataCenterPrinter dataCenterPrinter;      //处理数据中心打印信息
+    private double lastClockTime;   //上一个时钟时间
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
@@ -117,6 +122,9 @@ public class standardMigrationDatacenter {
         System.out.println("Cloudlets:");
         cloudlets.stream().sorted().forEach(c -> System.out.printf("\t%s (job %d)%n", c, c.getJobId()));
 
+        //添加定时监听事件
+        simulation.addOnClockTickListener(this::clockTickListener);
+
         //数据中心模拟器启动
         simulation.start();
 
@@ -130,6 +138,10 @@ public class standardMigrationDatacenter {
         //打印host的cpu利用率
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
         hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
+
+        //打印能耗
+        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
+        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //记录结束时间
         final double endSecs = TimeUtil.currentTimeSecs();
@@ -240,7 +252,9 @@ public class standardMigrationDatacenter {
         reader.setMaxLinesToRead(Constant.GOOGLE_MACHINE_LINES_FILE);
         //Creates Datacenters with no hosts.
         for(int i = 0; i < Constant.DATACENTERS_NUMBER; i++){
-            datacenters.add(new DatacenterSimple(simulation, new VmAllocationPolicyBestFit()));
+            Datacenter datacenter = new DatacenterSimple(simulation,new VmAllocationPolicyBestFit());
+            datacenter.setSchedulingInterval(Constant.SCHEDULING_INTERVAL);
+            datacenters.add(datacenter);
         }
         reader.setDatacenterForLaterHosts(datacenters.get(0));
         List<Host> totalReadHosts = new ArrayList<>(reader.process());
@@ -276,27 +290,33 @@ public class standardMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         //默认只有一个datacenter，所以只提交一个hostlist
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
-            datacenters.add(new DatacenterSimple(simulation,new VmAllocationPolicyBestFit()));
+            Datacenter datacenter = new DatacenterSimple(simulation,new VmAllocationPolicyBestFit());
+            datacenter.setSchedulingInterval(Constant.SCHEDULING_INTERVAL);
+            datacenters.add(datacenter);
         }
         datacenters.get(0).addHostList(hostList);
     }
 
     private Host createHost(final MachineEvent event) {
+        final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
         final Host host = new HostSimple(event.getRam(), Constant.MAX_HOST_BW, Constant.MAX_HOST_STORAGE, createPesList(event.getCpuCores()))
             .setVmScheduler(new VmSchedulerTimeShared())
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple());
+        host.setPowerModel(powerModel);
         host.setId(event.getMachineId());
         hostIds.add(host.getId());
         host.enableStateHistory();
+        host.enableUtilizationStats();
         return host;
     }
     private Host createHost(int hostType) {
+        final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
         final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType))
             .setVmScheduler(new VmSchedulerTimeShared())
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple());
-
+        host.setPowerModel(powerModel);
         //host创建之后的活跃状态
         final boolean activateHost = true;
         host.setActive(activateHost);
@@ -307,6 +327,7 @@ public class standardMigrationDatacenter {
 
         //启用host记录历史状态
         host.enableStateHistory();
+        host.enableUtilizationStats();
         return host;
     }
 
@@ -360,7 +381,7 @@ public class standardMigrationDatacenter {
             cloudlets.removeIf(cloudlet -> !cloudletIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
-        if(!Constant.CLOUDLETID_EXIST){
+        if(Constant.USING_FILTER && !Constant.CLOUDLETID_EXIST){
             serialObjectHandler.serializableObject(cloudletIds,Constant.SERIAL_CLOUDLETID_PATH);
         }
     }
@@ -375,7 +396,24 @@ public class standardMigrationDatacenter {
         Random r = new Random(System.currentTimeMillis());
         int type = r.nextInt(4);
 //        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
-        return new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
+        Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
+        vm.enableUtilizationStats();
+        return vm;
+    }
+
+    /**
+     * Event listener which is called every time the simulation clock advances.
+     * Then, if the time defined in the Constant.SCHEDULING_INTERVAL has passed,
+     * something happen
+     *
+     * @param info information about the event happened.
+     */
+    private void clockTickListener(final EventInfo info) {
+        final double time = Math.floor(info.getTime());
+        if(time > lastClockTime && time % Constant.SCHEDULING_INTERVAL == 0) {
+            System.out.println();
+        }
+        lastClockTime = time;
     }
 
 

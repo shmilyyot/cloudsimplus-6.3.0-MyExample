@@ -341,7 +341,7 @@ public class standardDatacenter {
             cloudlets.removeIf(cloudlet -> !cloudletIds.contains(cloudlet.getId()));
             System.out.printf("Total %d Cloudlets and %d Brokers created!%n", cloudlets.size(),brokers.size());
         }
-        if(!Constant.CLOUDLETID_EXIST){
+        if(Constant.USING_FILTER && !Constant.CLOUDLETID_EXIST){
             serialObjectHandler.serializableObject(cloudletIds,Constant.SERIAL_CLOUDLETID_PATH);
         }
     }
