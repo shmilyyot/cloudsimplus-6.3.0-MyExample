@@ -15,6 +15,8 @@ import org.cloudbus.cloudsim.vms.VmResourceStats;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
+import org.cloudsimplus.listeners.CloudletVmEventInfo;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -107,8 +109,22 @@ public class DataCenterPrinter {
         final double utilizationPercentMean = cpuStats.getMean();
         final double watts = host.getPowerModel().getPower(utilizationPercentMean);
         System.out.printf(
-            "Host %2d CPU Usage mean: %6.1f%% | Power Consumption mean: %8.0f W%n",
+            "Host %2d CPU Usage mean: %6.1f%% | Power Consumption mean: %8.0f W | Total Power Consumption: null W%n",
             host.getId(), utilizationPercentMean * 100, watts);
+    }
+
+    public void onUpdateCloudletProcessingListener(CloudletVmEventInfo eventInfo) {
+        Cloudlet c = eventInfo.getCloudlet();
+        double cpuUsage = c.getUtilizationModelCpu().getUtilization(eventInfo.getTime())*100;
+        double ramUsage = c.getUtilizationModelRam().getUtilization(eventInfo.getTime())*100;
+        double bwUsage  = c.getUtilizationModelBw().getUtilization(eventInfo.getTime())*100;
+        System.out.printf(
+            "\t#EventListener: Time %.0f: Updated Cloudlet %d execution inside Vm %d",
+            eventInfo.getTime(), c.getId(), eventInfo.getVm().getId());
+        System.out.printf(
+            "\tCurrent Cloudlet resource usage: CPU %3.0f%%, RAM %3.0f%%, BW %3.0f%%%n",
+            cpuUsage,  ramUsage, bwUsage);
+        System.out.println();
     }
 
 }

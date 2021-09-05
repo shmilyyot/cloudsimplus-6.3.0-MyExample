@@ -122,8 +122,8 @@ public class standardMigrationDatacenter {
         System.out.println("Cloudlets:");
         cloudlets.stream().sorted().forEach(c -> System.out.printf("\t%s (job %d)%n", c, c.getJobId()));
 
-        //添加定时监听事件
-        simulation.addOnClockTickListener(this::clockTickListener);
+//        //添加定时监听事件
+//        simulation.addOnClockTickListener(this::clockTickListener);
 
         //数据中心模拟器启动
         simulation.start();
@@ -239,8 +239,10 @@ public class standardMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelFull())
-            .setUtilizationModelRam(utilizationRam);
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.9))
+            .setUtilizationModelRam(utilizationRam)
+//            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
+            ;
     }
 
     private void createGoogleDatacenters() {
@@ -299,11 +301,19 @@ public class standardMigrationDatacenter {
 
     private Host createHost(final MachineEvent event) {
         final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
-        final Host host = new HostSimple(event.getRam(), Constant.MAX_HOST_BW, Constant.MAX_HOST_STORAGE, createPesList(event.getCpuCores()))
+        final Host host = new HostSimple(event.getRam(), Constant.MAX_HOST_BW, Constant.MAX_HOST_STORAGE, createPesList(event.getCpuCores()));
+        host
             .setVmScheduler(new VmSchedulerTimeShared())
             .setRamProvisioner(new ResourceProvisionerSimple())
-            .setBwProvisioner(new ResourceProvisionerSimple());
-        host.setPowerModel(powerModel);
+            .setBwProvisioner(new ResourceProvisionerSimple())
+            .setPowerModel(powerModel);
+//        //host创建之后的活跃状态
+//        final boolean activateHost = true;
+//        host.setActive(activateHost);
+//
+//        //当虚拟机限制多久之后会被关闭
+//        final int shutdownDeadlineSeconds = 1;
+//        host.setIdleShutdownDeadline(shutdownDeadlineSeconds);
         host.setId(event.getMachineId());
         hostIds.add(host.getId());
         host.enableStateHistory();
@@ -312,18 +322,19 @@ public class standardMigrationDatacenter {
     }
     private Host createHost(int hostType) {
         final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
-        final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType))
+        final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType));
+        host
             .setVmScheduler(new VmSchedulerTimeShared())
             .setRamProvisioner(new ResourceProvisionerSimple())
-            .setBwProvisioner(new ResourceProvisionerSimple());
-        host.setPowerModel(powerModel);
-        //host创建之后的活跃状态
-        final boolean activateHost = true;
-        host.setActive(activateHost);
-
-        //当虚拟机限制多久之后会被关闭
-        final int shutdownDeadlineSeconds = 1;
-        host.setIdleShutdownDeadline(shutdownDeadlineSeconds);
+            .setBwProvisioner(new ResourceProvisionerSimple())
+            .setPowerModel(powerModel);
+//        //host创建之后的活跃状态
+//        final boolean activateHost = true;
+//        host.setActive(activateHost);
+//
+//        //当虚拟机限制多久之后会被关闭
+//        final int shutdownDeadlineSeconds = 1;
+//        host.setIdleShutdownDeadline(shutdownDeadlineSeconds);
 
         //启用host记录历史状态
         host.enableStateHistory();

@@ -4,15 +4,14 @@ public class Constant {
     /**
      * 数据中心参数设置
      * */
-    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
+    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
     public static final double STOP_TIME = 864000.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = false;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
     /**
-     * Defines, between other things, the time intervals
-     * to keep Hosts CPU utilization history records.
+     * 决定系统多久更新一次cloudlet的相关状态，如vm和host的能耗，vm运行的指令数等等，不影响cloudlet的运行，越小计算越精确
      */
-    public static final int SCHEDULING_INTERVAL = 10;   //调度时间间隔
+    public static final int SCHEDULING_INTERVAL = 1;   //调度时间间隔
 
     /**
      * 数据中心代理相关参数设置

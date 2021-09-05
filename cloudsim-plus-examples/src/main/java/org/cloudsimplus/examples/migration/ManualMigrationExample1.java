@@ -87,7 +87,7 @@ import java.util.List;
  * @see MigrationExample1
  * @since CloudSim Plus 5.0.4
  */
-public final class ManualMigrationExample1 {
+public final class  ManualMigrationExample1 {
     /**
      * @see Datacenter#getSchedulingInterval()
      */
