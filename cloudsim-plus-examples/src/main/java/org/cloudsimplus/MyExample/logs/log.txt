@@ -1,4 +1,4 @@
-Simulation started at 22:07:01.573338600
+Simulation started at 13:23:56.828325800
 
 [34mINFO  Automatically enabling computation of utilization statistics for VMs on Host could not be performed because it doesn't have VMs yet. You need to enable it for each VM created.
 [0;39m[34mINFO  Automatically enabling computation of utilization statistics for VMs on Host could not be performed because it doesn't have VMs yet. You need to enable it for each VM created.
@@ -147,7 +147,7 @@ Job|Cloudlet|Status |DC|Host|Host PEs |VM|VM Size|Cloudlet Size|VM PEs   |Waitin
   4|      42|SUCCESS| 1|   0|        2| 0|   1000|            1|        1|           0|      33385|          1|        0|        90|      90
   4|      43|SUCCESS| 1|   0|        2| 1|   1000|            1|        1|           0|      23861|          1|       10|        90|      80
 --------------------------------------------------------------------------------------------------------------------------------------------
-Simulation finished at 22:07:02.287341800. Execution time: 0.74 seconds
+Simulation finished at 13:23:57.225333600. Execution time: 0.41 seconds
 
 Hosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)
 
@@ -848,5 +848,6 @@ Host  1 CPU Usage mean:   10.1% | Power Consumption mean:       37 W | Total Pow
 Host  2 CPU Usage mean:   16.8% | Power Consumption mean:       38 W | Total Power Consumption: null W
 Host  3 CPU Usage mean:   17.7% | Power Consumption mean:       38 W | Total Power Consumption: null W
 
-Simulation ended at 22:07:02.562342200
+数据中心能耗：140.0
+Simulation ended at 13:23:57.362339900
 

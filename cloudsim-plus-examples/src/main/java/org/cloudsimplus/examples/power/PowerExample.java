@@ -34,6 +34,8 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
+import org.cloudbus.cloudsim.power.PowerMeasurement;
+import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
@@ -156,6 +158,7 @@ public class PowerExample {
 
         simulation.start();
 
+
         System.out.println("------------------------------- SIMULATION FOR SCHEDULING INTERVAL = " + SCHEDULING_INTERVAL+" -------------------------------");
         final List<Cloudlet> finishedCloudlets = broker0.getCloudletFinishedList();
         final Comparator<Cloudlet> hostComparator = comparingLong(cl -> cl.getVm().getHost().getId());
@@ -164,6 +167,7 @@ public class PowerExample {
         new CloudletsTableBuilder(finishedCloudlets).build();
         printHostsCpuUtilizationAndPowerConsumption();
         printVmsCpuUtilizationAndPowerConsumption();
+
     }
 
     /**
@@ -229,10 +233,11 @@ public class PowerExample {
 
     private void printHostCpuUtilizationAndPowerConsumption(final Host host) {
         final HostResourceStats cpuStats = host.getCpuUtilizationStats();
-
+//        host.getPowerModel()
         //The total Host's CPU utilization for the time specified by the map key
         final double utilizationPercentMean = cpuStats.getMean();
         final double watts = host.getPowerModel().getPower(utilizationPercentMean);
+        final double u = cpuStats.getVariance();
         System.out.printf(
             "Host %2d CPU Usage mean: %6.1f%% | Power Consumption mean: %8.0f W%n",
             host.getId(), utilizationPercentMean * 100, watts);

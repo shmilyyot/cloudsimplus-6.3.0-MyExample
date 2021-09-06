@@ -1,8 +1,11 @@
 package org.cloudsimplus.MyExample;
 
 import ch.qos.logback.classic.Level;
+import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicyBestFit;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicySimple;
+import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationBestFitStaticThreshold;
+import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationStaticThreshold;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
 import org.cloudbus.cloudsim.cloudlets.Cloudlet;
@@ -12,14 +15,18 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
+import org.cloudbus.cloudsim.power.PowerMeter;
+import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
+import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
@@ -27,7 +34,10 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
 import org.cloudsimplus.listeners.EventInfo;
+import org.cloudsimplus.listeners.EventListener;
+import org.cloudsimplus.listeners.VmHostEventInfo;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
 import java.io.*;
@@ -54,6 +64,7 @@ public class standardMigrationDatacenter {
     private Collection<Cloudlet> cloudlets;    //数据中心的任务
     private List<Host> hostList;    //主机列表
     private List<DatacenterBroker> brokers;    //数据中心的多个代理
+    private List<Vm> vmList;    //虚拟机列表
     private DatacenterBroker broker;    //数据中心的单个代理
     private Set<Long> hostIds;  //数据中心host的id
     private Set<Long> cloudletIds;  //系统中cloudlet的id
@@ -61,6 +72,9 @@ public class standardMigrationDatacenter {
     public static serialObject serialObjectHandler;   //处理序列化的代理
     public static DataCenterPrinter dataCenterPrinter;      //处理数据中心打印信息
     private double lastClockTime;   //上一个时钟时间
+    private List<PowerMeter> powerMeterList;    //计算消耗的总能量
+    private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
+    private int migrationsNumber = 0;   //迁移次数
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
@@ -90,7 +104,7 @@ public class standardMigrationDatacenter {
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
-        Log.setLevel(Level.TRACE);
+        Log.setLevel(DatacenterBroker.LOGGER,Level.WARN);
 
         //创建模拟仿真
         simulation = new CloudSim();
@@ -103,6 +117,9 @@ public class standardMigrationDatacenter {
             hostList.forEach(host-> hostIds.add(host.getId()));
         }
 
+        //创建数据中心能耗跟踪模型
+        datacenters.forEach(datacenter -> powerMeterList.add(new PowerMeter(simulation,datacenter)));
+
         //从Google任务流创建数据中心代理和cloudlet任务
         createCloudletsAndBrokersFromTraceFileType1();
 
@@ -110,11 +127,8 @@ public class standardMigrationDatacenter {
         readTaskUsageTraceFile();
 
         //创建vm并提交所有cloudlet
-        //虚拟机闲置0.2s之后销毁
-        brokers.forEach(broker ->{
-            broker.submitVmList(createVms());
-//                broker.setVmDestructionDelay(0.2);
-        });
+        vmList = new ArrayList<>();
+        brokers.forEach(this::createAndSubmitVms);
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -124,13 +138,14 @@ public class standardMigrationDatacenter {
 
 //        //添加定时监听事件
 //        simulation.addOnClockTickListener(this::clockTickListener);
+        //虚拟机创建监听事件
+        brokers.forEach(broker -> broker.addOnVmsCreatedListener(this::onVmsCreatedListener));
 
         //数据中心模拟器启动
         simulation.start();
 
         //打印所有cloudlet运行状况
         brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
-        System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
@@ -143,9 +158,15 @@ public class standardMigrationDatacenter {
         dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
         dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
+        //打印数据中心能耗
+        dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeterList);
+
+        //打印迁移次数
+        System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
+
         //记录结束时间
         final double endSecs = TimeUtil.currentTimeSecs();
-        System.out.printf("Simulation ended at %s%n%n", LocalTime.now());
+        System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
@@ -292,10 +313,20 @@ public class standardMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         //默认只有一个datacenter，所以只提交一个hostlist
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
-            Datacenter datacenter = new DatacenterSimple(simulation,new VmAllocationPolicyBestFit());
-            datacenter.setSchedulingInterval(Constant.SCHEDULING_INTERVAL);
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
+            Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
+            datacenter
+                .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
+                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
             datacenters.add(datacenter);
         }
+        dataCenterPrinter.printHostsInformation(hostList);
         datacenters.get(0).addHostList(hostList);
     }
 
@@ -412,6 +443,16 @@ public class standardMigrationDatacenter {
         return vm;
     }
 
+    public void createAndSubmitVms(DatacenterBroker broker) {
+        //虚拟机闲置0.2s之后销毁
+        //broker.setVmDestructionDelay(0.2);
+        final List<Vm> list = IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
+        vmList.addAll(list);
+        broker.submitVmList(list);
+        list.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));
+        list.forEach(vm -> vm.addOnMigrationFinishListener(this::finishMigration));
+    }
+
     /**
      * Event listener which is called every time the simulation clock advances.
      * Then, if the time defined in the Constant.SCHEDULING_INTERVAL has passed,
@@ -425,6 +466,87 @@ public class standardMigrationDatacenter {
             System.out.println();
         }
         lastClockTime = time;
+    }
+
+    /**
+     * A listener method that is called when a VM migration starts.
+     * @param info information about the happened event
+     *
+     * @see #createAndSubmitVms(DatacenterBroker)
+     * @see Vm#addOnMigrationFinishListener(EventListener)
+     */
+    private void startMigration(final VmHostEventInfo info) {
+        final Vm vm = info.getVm();
+        final Host targetHost = info.getHost();
+        System.out.printf(
+            "# %.2f: %s started migrating to %s (you can perform any operation you want here)%n",
+            info.getTime(), vm, targetHost);
+        showVmAllocatedMips(vm, targetHost, info.getTime());
+        //VM current host (source)
+        showHostAllocatedMips(info.getTime(), vm.getHost());
+        //Migration host (target)
+        showHostAllocatedMips(info.getTime(), targetHost);
+        System.out.println();
+
+        migrationsNumber++;
+        if(migrationsNumber > 1){
+            return;
+        }
+
+        //After the first VM starts being migrated, tracks some metrics along simulation time
+        simulation.addOnClockTickListener(clock -> {
+            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
+                showVmAllocatedMips(vm, targetHost, clock.getTime());
+        });
+    }
+
+    private void showVmAllocatedMips(final Vm vm, final Host targetHost, final double time) {
+        final String msg = String.format("# %.2f: %s in %s: total allocated", time, vm, targetHost);
+        final MipsShare allocatedMips = targetHost.getVmScheduler().getAllocatedMips(vm);
+        final String msg2 = allocatedMips.totalMips() == vm.getMips() * 0.9 ? " - reduction due to migration overhead" : "";
+        System.out.printf("%s %.0f MIPs (divided by %d PEs)%s\n", msg, allocatedMips.totalMips(), allocatedMips.pes(), msg2);
+    }
+
+    /**
+     * A listener method that is called when a VM migration finishes.
+     * @param info information about the happened event
+     *
+     * @see #createAndSubmitVms(DatacenterBroker)
+     * @see Vm#addOnMigrationStartListener(EventListener)
+     */
+    private void finishMigration(final VmHostEventInfo info) {
+        final Host host = info.getHost();
+        System.out.printf(
+            "# %.2f: %s finished migrating to %s (you can perform any operation you want here)%n",
+            info.getTime(), info.getVm(), host);
+        System.out.print("\t\t");
+        showHostAllocatedMips(info.getTime(), hostList.get(1));
+        System.out.print("\t\t");
+        showHostAllocatedMips(info.getTime(), host);
+    }
+
+    private void showHostAllocatedMips(final double time, final Host host) {
+        System.out.printf(
+            "%.2f: %s allocated %.2f MIPS from %.2f total capacity%n",
+            time, host, host.getTotalAllocatedMips(), host.getTotalMipsCapacity());
+    }
+
+    /**
+     * A listener that is called after all VMs from a broker are created,
+     * setting the allocation policy to the default value
+     * so that some Hosts will be overloaded with the placed VMs and migration will be fired.
+     *
+     * The listener is removed after finishing, so that it's called just once,
+     * even if new VMs are submitted and created latter on.
+     */
+    private void onVmsCreatedListener(final DatacenterBrokerEventInfo info) {
+        allocationPolicy.setOverUtilizationThreshold(Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+        broker.removeOnVmsCreatedListener(info.getListener());
+        vmList.forEach(vm -> showVmAllocatedMips(vm, vm.getHost(), info.getTime()));
+
+        System.out.println();
+        hostList.forEach(host -> showHostAllocatedMips(info.getTime(), host));
+        System.out.println();
     }
 
 
