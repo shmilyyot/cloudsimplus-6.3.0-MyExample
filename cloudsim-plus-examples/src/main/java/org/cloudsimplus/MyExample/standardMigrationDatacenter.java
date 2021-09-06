@@ -64,7 +64,7 @@ public class standardMigrationDatacenter {
     private Collection<Cloudlet> cloudlets;    //数据中心的任务
     private List<Host> hostList;    //主机列表
     private List<DatacenterBroker> brokers;    //数据中心的多个代理
-    private List<Vm> vmList;    //虚拟机列表
+    private List<Vm> vmList = new ArrayList<>();    //虚拟机列表
     private DatacenterBroker broker;    //数据中心的单个代理
     private Set<Long> hostIds;  //数据中心host的id
     private Set<Long> cloudletIds;  //系统中cloudlet的id
@@ -118,6 +118,7 @@ public class standardMigrationDatacenter {
         }
 
         //创建数据中心能耗跟踪模型
+        powerMeterList = new ArrayList<>();
         datacenters.forEach(datacenter -> powerMeterList.add(new PowerMeter(simulation,datacenter)));
 
         //从Google任务流创建数据中心代理和cloudlet任务
@@ -127,7 +128,6 @@ public class standardMigrationDatacenter {
         readTaskUsageTraceFile();
 
         //创建vm并提交所有cloudlet
-        vmList = new ArrayList<>();
         brokers.forEach(this::createAndSubmitVms);
 
         //打印brokers和cloudlets的信息
@@ -548,6 +548,5 @@ public class standardMigrationDatacenter {
         hostList.forEach(host -> showHostAllocatedMips(info.getTime(), host));
         System.out.println();
     }
-
 
 }
