@@ -64,7 +64,7 @@ public class standardMigrationDatacenter {
     private Collection<Cloudlet> cloudlets;    //数据中心的任务
     private List<Host> hostList;    //主机列表
     private List<DatacenterBroker> brokers;    //数据中心的多个代理
-    private List<Vm> vmList = new ArrayList<>();    //虚拟机列表
+    private final List<Vm> vmList = new ArrayList<>();    //虚拟机列表
     private DatacenterBroker broker;    //数据中心的单个代理
     private Set<Long> hostIds;  //数据中心host的id
     private Set<Long> cloudletIds;  //系统中cloudlet的id
@@ -72,7 +72,6 @@ public class standardMigrationDatacenter {
     public static serialObject serialObjectHandler;   //处理序列化的代理
     public static DataCenterPrinter dataCenterPrinter;      //处理数据中心打印信息
     private double lastClockTime;   //上一个时钟时间
-    private List<PowerMeter> powerMeterList;    //计算消耗的总能量
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
 
@@ -99,12 +98,13 @@ public class standardMigrationDatacenter {
         //启动标准数据中心
         new standardMigrationDatacenter();
     }
+
     private standardMigrationDatacenter() throws IOException, ClassNotFoundException {
 
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
-        Log.setLevel(DatacenterBroker.LOGGER,Level.WARN);
+        Log.setLevel(DatacenterBroker.LOGGER,Level.TRACE);
 
         //创建模拟仿真
         simulation = new CloudSim();
@@ -116,10 +116,6 @@ public class standardMigrationDatacenter {
             createModifyDatacenters();
             hostList.forEach(host-> hostIds.add(host.getId()));
         }
-
-        //创建数据中心能耗跟踪模型
-        powerMeterList = new ArrayList<>();
-        datacenters.forEach(datacenter -> powerMeterList.add(new PowerMeter(simulation,datacenter)));
 
         //从Google任务流创建数据中心代理和cloudlet任务
         createCloudletsAndBrokersFromTraceFileType1();
@@ -141,6 +137,10 @@ public class standardMigrationDatacenter {
         //虚拟机创建监听事件
         brokers.forEach(broker -> broker.addOnVmsCreatedListener(this::onVmsCreatedListener));
 
+        //创建数据中心能耗跟踪模型
+        //记录每个数据中心的能耗
+        PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
+
         //数据中心模拟器启动
         simulation.start();
 
@@ -158,8 +158,8 @@ public class standardMigrationDatacenter {
         dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
         dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
-        //打印数据中心能耗
-        dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeterList);
+        //计算并打印数据中心能耗
+        dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
 
         //打印迁移次数
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
@@ -273,12 +273,23 @@ public class standardMigrationDatacenter {
         reader.setMaxRamCapacity(Constant.MAX_HOST_MEM);
         reader.setMaxCpuCores(Constant.MAX_HOST_CORES);
         reader.setMaxLinesToRead(Constant.GOOGLE_MACHINE_LINES_FILE);
+
         //Creates Datacenters with no hosts.
-        for(int i = 0; i < Constant.DATACENTERS_NUMBER; i++){
-            Datacenter datacenter = new DatacenterSimple(simulation,new VmAllocationPolicyBestFit());
-            datacenter.setSchedulingInterval(Constant.SCHEDULING_INTERVAL);
+        for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
+            Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
+            datacenter
+                .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
+                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
             datacenters.add(datacenter);
         }
+
         reader.setDatacenterForLaterHosts(datacenters.get(0));
         List<Host> totalReadHosts = new ArrayList<>(reader.process());
         if(Constant.NUMBER_RANDOM_HOSTS){
@@ -296,6 +307,7 @@ public class standardMigrationDatacenter {
 //        System.out.printf("# %d Hosts will be removed later on (according to the trace timestamp)%n%n", reader.getNumberOfHostsForRemoval());
         //Finally, the immediately created Hosts are added to the first Datacenter
         datacenters.get(0).addHostList(hostList);
+        dataCenterPrinter.printHostsInformation(hostList);
     }
 
     private void createModifyDatacenters() {
@@ -311,7 +323,6 @@ public class standardMigrationDatacenter {
         }
         System.out.println();
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
-        //默认只有一个datacenter，所以只提交一个hostlist
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
             this.allocationPolicy =
                 new VmAllocationPolicyMigrationBestFitStaticThreshold(
@@ -326,8 +337,9 @@ public class standardMigrationDatacenter {
                 .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
             datacenters.add(datacenter);
         }
-        dataCenterPrinter.printHostsInformation(hostList);
+        //默认只有一个datacenter，所以只提交一个hostlist
         datacenters.get(0).addHostList(hostList);
+        dataCenterPrinter.printHostsInformation(hostList);
     }
 
     private Host createHost(final MachineEvent event) {

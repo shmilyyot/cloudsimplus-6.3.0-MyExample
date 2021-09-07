@@ -111,7 +111,7 @@ public class DataCenterPrinter {
         final double utilizationPercentMean = cpuStats.getMean();
         final double watts = host.getPowerModel().getPower(utilizationPercentMean);
         System.out.printf(
-            "Host %2d CPU Usage mean: %6.1f%% | Power Consumption mean: %8.0f W | Total Power Consumption: null W%n",
+            "Host %2d CPU Usage mean: %6.1f%% | Power Consumption mean: %8.0f W%n",
             host.getId(), utilizationPercentMean * 100, watts);
     }
 
@@ -129,15 +129,13 @@ public class DataCenterPrinter {
         System.out.println();
     }
 
-    public void printDataCenterTotalEnergyComsumption(List<PowerMeter> powerMeterList){
-//        double TotalEnergyComsumption = 0.0;
-//        for(PowerMeter powerMeter:powerMeterList){
-//            List<PowerMeasurement> powerMeasurementList = powerMeter.getPowerMeasurements();
-//            for(PowerMeasurement powerMeasurement:powerMeasurementList){
-//                System.out.println("current powerCumsumption is " + powerMeasurement.getTotalPower());
-//                double energy = TotalEnergyComsumption / (3600 * 1000);
-//            }
-//        }
+    public void printDataCenterTotalEnergyComsumption(PowerMeter powerMeter){
+        double totalDataCenterPowerConsumption = 0.0;
+        for(PowerMeasurement powerMeasurement:powerMeter.getPowerMeasurements()){
+            totalDataCenterPowerConsumption += powerMeasurement.getTotalPower();
+        }
+        double totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600 * 1000);
+        System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
     }
 
     public void printHostsInformation(List<Host> hostList){

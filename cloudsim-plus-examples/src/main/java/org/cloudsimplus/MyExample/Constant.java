@@ -6,7 +6,7 @@ public class Constant {
     /**
      * 数据中心参数设置
      * */
-    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
+    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static final double STOP_TIME = 864000.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = false;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
@@ -54,7 +54,7 @@ public class Constant {
     /**
      * 自己给定的host参数设置，一共有两种host
      * */
-    public static final int HOSTS = 5;   //主机数量
+    public static final int HOSTS = 8;   //主机数量,请取偶数，因为默认对半分
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
     public static final long[] HOST_BW = {1024,1024};  //带宽速率，用不到
