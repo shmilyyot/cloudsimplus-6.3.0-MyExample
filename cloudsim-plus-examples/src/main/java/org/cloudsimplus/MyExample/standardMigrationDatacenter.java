@@ -2,8 +2,6 @@ package org.cloudsimplus.MyExample;
 
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
-import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicyBestFit;
-import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicySimple;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationBestFitStaticThreshold;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationStaticThreshold;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
@@ -16,7 +14,6 @@ import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
 import org.cloudbus.cloudsim.power.PowerMeter;
-import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
@@ -24,14 +21,12 @@ import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
-import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
-import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
@@ -52,6 +47,7 @@ import static org.cloudbus.cloudsim.util.MathUtil.positive;
  * 论文实验标准数据中心模板设置
  * 本模板所有参数和功能分支皆可在同一目录下的{@link Constant}文件中修改，无需特意改动本文件
  * 若多个cloudlet分配到同一个vm，cpu资源会对半分，然后继续占各自的部分比例
+ * TODO： 还没实现SLA违反指标
  * */
 
 public class standardMigrationDatacenter {
@@ -501,15 +497,15 @@ public class standardMigrationDatacenter {
         System.out.println();
 
         migrationsNumber++;
-        if(migrationsNumber > 1){
-            return;
-        }
+//        if(migrationsNumber > 1){
+//            return;
+//        }
 
-        //After the first VM starts being migrated, tracks some metrics along simulation time
-        simulation.addOnClockTickListener(clock -> {
-            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
-                showVmAllocatedMips(vm, targetHost, clock.getTime());
-        });
+//        //After the first VM starts being migrated, tracks some metrics along simulation time
+//        simulation.addOnClockTickListener(clock -> {
+//            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
+//                showVmAllocatedMips(vm, targetHost, clock.getTime());
+//        });
     }
 
     private void showVmAllocatedMips(final Vm vm, final Host targetHost, final double time) {
