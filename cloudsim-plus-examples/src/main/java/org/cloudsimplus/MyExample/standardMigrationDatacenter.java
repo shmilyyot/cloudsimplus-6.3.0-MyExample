@@ -64,7 +64,7 @@ public class standardMigrationDatacenter {
     private Collection<Cloudlet> cloudlets;    //数据中心的任务
     private List<Host> hostList;    //主机列表
     private List<DatacenterBroker> brokers;    //数据中心的多个代理
-    private List<Vm> vmList = new ArrayList<>();    //虚拟机列表
+    private final List<Vm> vmList = new ArrayList<>();    //虚拟机列表
     private DatacenterBroker broker;    //数据中心的单个代理
     private Set<Long> hostIds;  //数据中心host的id
     private Set<Long> cloudletIds;  //系统中cloudlet的id
@@ -72,7 +72,7 @@ public class standardMigrationDatacenter {
     public static serialObject serialObjectHandler;   //处理序列化的代理
     public static DataCenterPrinter dataCenterPrinter;      //处理数据中心打印信息
     private double lastClockTime;   //上一个时钟时间
-    private List<PowerMeter> powerMeterList;    //计算消耗的总能量
+    private final List<PowerMeter> powerMeterList = new ArrayList<>();    //计算消耗的总能量
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
 
@@ -95,7 +95,6 @@ public class standardMigrationDatacenter {
         dataCenterPrinter = new DataCenterPrinter();
         //创建所有文件路径
         googleTraceHandler.buildTraceFileNamesSample();
-
         //启动标准数据中心
         new standardMigrationDatacenter();
     }
@@ -104,11 +103,11 @@ public class standardMigrationDatacenter {
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
-        Log.setLevel(DatacenterBroker.LOGGER,Level.WARN);
 
         //创建模拟仿真
         simulation = new CloudSim();
-
+//        Log.setLevel(Level.TRACE);
+        Log.setLevel(CloudSim.LOGGER, Level.WARN);
         //使用谷歌数据中心主机模板或自定义数据中心主机模板
         if(Constant.USING_GOOGLE_HOST){
             createGoogleDatacenters();
@@ -118,7 +117,6 @@ public class standardMigrationDatacenter {
         }
 
         //创建数据中心能耗跟踪模型
-        powerMeterList = new ArrayList<>();
         datacenters.forEach(datacenter -> powerMeterList.add(new PowerMeter(simulation,datacenter)));
 
         //从Google任务流创建数据中心代理和cloudlet任务
@@ -126,7 +124,7 @@ public class standardMigrationDatacenter {
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
         readTaskUsageTraceFile();
-
+        Log.setLevel(DatacenterBroker.LOGGER,Level.WARN);
         //创建vm并提交所有cloudlet
         brokers.forEach(this::createAndSubmitVms);
 
@@ -446,7 +444,11 @@ public class standardMigrationDatacenter {
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
         //broker.setVmDestructionDelay(0.2);
-        final List<Vm> list = IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
+        final List<Vm> list = new ArrayList<>();
+        for(int i=0;i<Constant.VMS;++i){
+            list.add(createVm(i));
+        }
+//            IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
         vmList.addAll(list);
         broker.submitVmList(list);
         list.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));
@@ -489,15 +491,15 @@ public class standardMigrationDatacenter {
         System.out.println();
 
         migrationsNumber++;
-        if(migrationsNumber > 1){
-            return;
-        }
-
-        //After the first VM starts being migrated, tracks some metrics along simulation time
-        simulation.addOnClockTickListener(clock -> {
-            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
-                showVmAllocatedMips(vm, targetHost, clock.getTime());
-        });
+//        if(migrationsNumber > 1){
+//            return;
+//        }
+//
+//        //After the first VM starts being migrated, tracks some metrics along simulation time
+//        simulation.addOnClockTickListener(clock -> {
+//            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
+//                showVmAllocatedMips(vm, targetHost, clock.getTime());
+//        });
     }
 
     private void showVmAllocatedMips(final Vm vm, final Host targetHost, final double time) {

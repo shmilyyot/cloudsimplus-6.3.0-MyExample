@@ -1,4 +1,5 @@
-Simulation started at 20:27:07.222803700
+aaa
+Simulation started at 23:15:08.321184100
 
 [34mINFO  Automatically enabling computation of utilization statistics for VMs on Host could not be performed because it doesn't have VMs yet. You need to enable it for each VM created.
 [0;39m[34mINFO  Automatically enabling computation of utilization statistics for VMs on Host could not be performed because it doesn't have VMs yet. You need to enable it for each VM created.
@@ -27,19 +28,60 @@ Cloudlets:
 	Cloudlet 41 (job 4)
 	Cloudlet 42 (job 4)
 	Cloudlet 43 (job 4)
-[34mINFO  
-================== Starting CloudSim Plus 6.3.0 ==================
+[34mINFO  0.00: DatacenterSimple1 is starting...
+[0;39m# 0.10: Vm 0 in Host 0/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 1 in Host 0/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 2 in Host 0/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 3 in Host 0/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 4 in Host 0/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 5 in Host 0/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 6 in Host 1/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 7 in Host 1/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 8 in Host 1/DC 1: total allocated 500 MIPs (divided by 1 PEs)
+# 0.10: Vm 9 in Host 1/DC 1: total allocated 500 MIPs (divided by 1 PEs)
 
-[0;39m[34mINFO  0.00: DatacenterSimple1 is starting...
-[0;39m[34mINFO  Entities started.
-[0;39m[31mWARN  0.00: VmAllocationPolicyMigrationBestFitStaticThreshold: No suitable host found for Vm 4 in Datacenter 1
-[0;39m[31mWARN  0.00: VmAllocationPolicyMigrationBestFitStaticThreshold: No suitable host found for Vm 5 in Datacenter 1
-[0;39m[31mWARN  0.00: VmAllocationPolicyMigrationBestFitStaticThreshold: No suitable host found for Vm 6 in Datacenter 1
-[0;39m[31mWARN  0.00: VmAllocationPolicyMigrationBestFitStaticThreshold: No suitable host found for Vm 7 in Datacenter 1
-[0;39m[31mWARN  0.00: VmAllocationPolicyMigrationBestFitStaticThreshold: No suitable host found for Vm 8 in Datacenter 1
-[0;39m[31mWARN  0.00: VmAllocationPolicyMigrationBestFitStaticThreshold: No suitable host found for Vm 9 in Datacenter 1
-[0;39m[1;31mERROR 0.10: DatacenterBrokerSimple3: 6 of the requested 10 VMs couldn't be created because suitable Hosts weren't found in any available Datacenter.
-[0;39m[34mINFO  91.00: Processing last events before simulation shutdown.
-[0;39m[34mINFO  Simulation: No more future events
+0.10: Host 0/DC 1 allocated 3000.00 MIPS from 3720.00 total capacity
+0.10: Host 1/DC 1 allocated 2000.00 MIPS from 5320.00 total capacity
+0.10: Host 2/DC 1 allocated 0.00 MIPS from 3720.00 total capacity
+0.10: Host 3/DC 1 allocated 0.00 MIPS from 5320.00 total capacity
 
+[31mWARN  1.10: VmAllocationPolicy: Overloaded hosts in Datacenter 1:
+      Host 0 (upper CPU threshold 0.70, current utilization: 0.73)
+[0;39m[34mINFO  1.10: DatacenterSimple1: Migration of Vm 0 from Host 0/DC 1 to Host 1/DC 1 is started. It's expected to finish in 9.58 seconds, considering the 50% of bandwidth allowed for migration and the VM RAM size.
+[0;39m# 1.10: Vm 0 started migrating to Host 1/DC 1 (you can perform any operation you want here)
+# 1.10: Vm 0 in Host 1/DC 1: total allocated 50 MIPs (divided by 1 PEs)
+1.10: Host 0/DC 1 allocated 3000.00 MIPS from 3720.00 total capacity
+1.10: Host 1/DC 1 allocated 2500.00 MIPS from 5320.00 total capacity
+
+[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m[31mWARN  : Host 0/DC 1: 50 MIPS not allocated for each one of the 1 PEs from Vm 0 due to migration overhead.
+[0;39m[34mINFO  : Host 0/DC 1: Vm 0 is migrating out 
+[0;39m# 10.68: Vm 0 finished migrating to Host 1/DC 1 (you can perform any operation you want here)
+		10.68: Host 1/DC 1 allocated 2500.00 MIPS from 5320.00 total capacity
+		10.68: Host 1/DC 1 allocated 2500.00 MIPS from 5320.00 total capacity
+[34mINFO  10.68: Migration of Vm 0 to Host 1/DC 1 is completed
 [0;39m
