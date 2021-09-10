@@ -54,7 +54,7 @@ public class Constant {
     /**
      * 自己给定的host参数设置，一共有两种host
      * */
-    public static final int HOSTS = 8;   //主机数量,请取偶数，因为默认对半分
+    public static final int HOSTS = 5;   //主机数量,请取偶数，因为默认对半分
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
     public static final long[] HOST_BW = {1024,1024};  //带宽速率，用不到

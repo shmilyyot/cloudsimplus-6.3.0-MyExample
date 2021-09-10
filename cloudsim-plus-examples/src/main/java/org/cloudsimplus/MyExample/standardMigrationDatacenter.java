@@ -27,6 +27,7 @@ import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
+import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
@@ -120,7 +121,9 @@ public class standardMigrationDatacenter {
         readTaskUsageTraceFile();
 
         //创建vm并提交所有cloudlet
+        //当虚拟机创建失败，放弃创建
         brokers.forEach(this::createAndSubmitVms);
+//        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -146,13 +149,13 @@ public class standardMigrationDatacenter {
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
 
-        //打印host的cpu利用率
-        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
+//        //打印host的cpu利用率
+//        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
+//        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
 
-        //打印能耗
-        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
-        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
+//        //打印能耗
+//        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
+//        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
         dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
@@ -282,7 +285,8 @@ public class standardMigrationDatacenter {
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
-                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
+//                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
+                ;
             datacenters.add(datacenter);
         }
 
@@ -330,7 +334,8 @@ public class standardMigrationDatacenter {
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
-                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
+//                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
+            ;
             datacenters.add(datacenter);
         }
         //默认只有一个datacenter，所以只提交一个hostlist

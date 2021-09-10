@@ -120,7 +120,9 @@ public class myImplementationMigrationDatacenter {
         readTaskUsageTraceFile();
 
         //创建vm并提交所有cloudlet
+        //当虚拟机创建失败，放弃创建
         brokers.forEach(this::createAndSubmitVms);
+//        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
