@@ -9,7 +9,7 @@ public class serialObject {
     }
 
     public void serializableObject(Set<Long> set,String path) throws IOException {
-        java.io.File file = new java.io.File(path);
+        File file = new File(path);
         OutputStream os = new FileOutputStream(file);
         ObjectOutputStream oos = new ObjectOutputStream(os);
         oos.writeObject(set);
@@ -19,7 +19,7 @@ public class serialObject {
     }
 
     public Set<Long> reverseSerializableObject(String path) throws IOException, ClassNotFoundException {
-        java.io.File file = new java.io.File(path);
+        File file = new File(path);
         InputStream input = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(input);
         Set<Long> set = (Set<Long>)ois.readObject();
@@ -30,7 +30,7 @@ public class serialObject {
     }
 
     public boolean checkObjectExist(String path){
-        java.io.File file = new java.io.File(path);
+        File file = new File(path);
         return file.exists();
     }
 

@@ -89,7 +89,11 @@ public class myImplementationMigrationDatacenter {
         //创建数据中心打印代理
         dataCenterPrinter = new DataCenterPrinter();
         //创建所有文件路径
-        googleTraceHandler.buildTraceFileNamesSample();
+        if(Constant.TEST_TRACE){
+            googleTraceHandler.buildTraceFileNamesSample();
+        }else{
+            googleTraceHandler.buildTraceFileNames();
+        }
 
         //启动标准数据中心
         new myImplementationMigrationDatacenter();
@@ -483,7 +487,7 @@ public class myImplementationMigrationDatacenter {
      * @param info information about the happened event
      *
      * @see #createAndSubmitVms(DatacenterBroker)
-     * @see Vm#addOnMigrationFinishListener(org.cloudsimplus.listeners.EventListener)
+     * @see Vm#addOnMigrationFinishListener(EventListener)
      */
     private void startMigration(final VmHostEventInfo info) {
         final Vm vm = info.getVm();

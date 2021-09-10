@@ -220,7 +220,7 @@ public final class MigrationExample1 {
         if(HOST_PES.length != HOST_RAM.length){
             throw new IllegalStateException("The length of arrays HOST_PES and HOST_RAM must match.");
         }
-
+        Log.setLevel(Datacenter.LOGGER,Level.TRACE);
         System.out.println("Starting " + getClass().getSimpleName());
         simulation = new CloudSim();
         Log.setLevel(CloudSim.LOGGER, Level.WARN);
