@@ -27,7 +27,6 @@ import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
-import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
@@ -51,7 +50,7 @@ import static org.cloudbus.cloudsim.util.MathUtil.positive;
  * TODO： 还没实现SLA违反指标
  * */
 
-public class standardMigrationDatacenter {
+public class myImplementationMigrationDatacenter {
 
     /**
      * cloudsim仿真数据中心相关设置
@@ -93,15 +92,15 @@ public class standardMigrationDatacenter {
         googleTraceHandler.buildTraceFileNamesSample();
 
         //启动标准数据中心
-        new standardMigrationDatacenter();
+        new myImplementationMigrationDatacenter();
     }
 
-    private standardMigrationDatacenter() throws IOException, ClassNotFoundException {
+    private myImplementationMigrationDatacenter() throws IOException, ClassNotFoundException {
 
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
-        Log.setLevel(DatacenterBroker.LOGGER,Level.TRACE);
+        Log.setLevel(DatacenterBroker.LOGGER, Level.TRACE);
 
         //创建模拟仿真
         simulation = new CloudSim();
@@ -149,13 +148,13 @@ public class standardMigrationDatacenter {
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
 
-//        //打印host的cpu利用率
-//        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-//        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
+        //打印host的cpu利用率
+        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
+        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
 
-//        //打印能耗
-//        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
-//        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
+        //打印能耗
+        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
+        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
         dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
@@ -285,8 +284,7 @@ public class standardMigrationDatacenter {
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
-//                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
-                ;
+                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
             datacenters.add(datacenter);
         }
 
@@ -334,8 +332,7 @@ public class standardMigrationDatacenter {
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
-//                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
-            ;
+                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
             datacenters.add(datacenter);
         }
         //默认只有一个datacenter，所以只提交一个hostlist
@@ -486,7 +483,7 @@ public class standardMigrationDatacenter {
      * @param info information about the happened event
      *
      * @see #createAndSubmitVms(DatacenterBroker)
-     * @see Vm#addOnMigrationFinishListener(EventListener)
+     * @see Vm#addOnMigrationFinishListener(org.cloudsimplus.listeners.EventListener)
      */
     private void startMigration(final VmHostEventInfo info) {
         final Vm vm = info.getVm();
