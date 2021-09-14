@@ -69,6 +69,7 @@ public class myImplementationMigrationDatacenter {
     public static GoogleTraceHandler googleTraceHandler;  //处理谷歌数据的代理
     public static serialObject serialObjectHandler;   //处理序列化的代理
     public static DataCenterPrinter dataCenterPrinter;      //处理数据中心打印信息
+    public static MathHandler mathHandler;      //处理科学计算
     private double lastClockTime;   //上一个时钟时间
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
@@ -90,6 +91,8 @@ public class myImplementationMigrationDatacenter {
         googleTraceHandler = new GoogleTraceHandler();
         //创建数据中心打印代理
         dataCenterPrinter = new DataCenterPrinter();
+        //创建科学计算代理
+        mathHandler = new MathHandler();
         //创建所有文件路径
         if(Constant.TEST_TRACE){
             googleTraceHandler.buildTraceFileNamesSample();
