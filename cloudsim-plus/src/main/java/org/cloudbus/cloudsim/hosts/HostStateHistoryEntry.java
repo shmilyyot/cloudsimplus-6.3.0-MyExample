@@ -32,6 +32,16 @@ public final class HostStateHistoryEntry {
     private final double requestedMips;
 
     /**
+     * @see #getAllocatedRam()
+     */
+    private final double allocatedRam;
+
+    /**
+     * @see #getRequestedRam()
+     */
+    private final double requestedRam;
+
+    /**
      * @see #isActive()
      */
     private final boolean active;
@@ -44,10 +54,12 @@ public final class HostStateHistoryEntry {
      * @param requestedMips the total MIPS requested by running VMs to all PEs of the Host at the recorded time
      * @param active        if the Host is active at the given time
      */
-    public HostStateHistoryEntry(final double time, final double allocatedMips, final double requestedMips, final boolean active) {
+    public HostStateHistoryEntry(final double time, final double allocatedMips, final double allocatedRam, final double requestedMips,final double requestedRam, final boolean active) {
         this.time = time;
         this.allocatedMips = allocatedMips;
         this.requestedMips = requestedMips;
+        this.allocatedRam = allocatedRam;
+        this.requestedRam = requestedRam;
         this.active = active;
     }
 
@@ -70,12 +82,30 @@ public final class HostStateHistoryEntry {
     }
 
     /**
+     * Gets the total Ram of the Host, to running VMs, at the recorded time.
+     *
+     * @return the allocated Ram
+     */
+    public double getAllocatedRam() {
+        return allocatedRam;
+    }
+
+    /**
      * Gets the total MIPS requested by running VMs to all PEs of the Host at the recorded time.
      *
      * @return the requested mips
      */
     public double getRequestedMips() {
         return requestedMips;
+    }
+
+    /**
+     * Gets the total Ram requested by running VMs  of the Host at the recorded time.
+     *
+     * @return the requested Ram
+     */
+    public double getRequestedRam() {
+        return requestedRam;
     }
 
     /**

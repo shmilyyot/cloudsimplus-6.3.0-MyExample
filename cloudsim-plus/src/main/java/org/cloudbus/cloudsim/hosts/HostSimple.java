@@ -1309,15 +1309,18 @@ public class HostSimple implements Host, Serializable {
             return;
         }
 
-        double hostTotalRequestedMips = 0;
+        double hostTotalRequestedMips = 0.0;
+        double hostTotalRequestedRam = 0.0;
 
         for (final Vm vm : getVmList()) {
             final double totalRequestedMips = vm.getCurrentRequestedTotalMips();
+            final double totalRequestedRam = vm.getCurrentRequestedRam();
             addVmResourceUseToHistoryIfNotMigratingIn(vm, currentTime);
             hostTotalRequestedMips += totalRequestedMips;
+            hostTotalRequestedRam += totalRequestedRam;
         }
 
-        addStateHistoryEntry(currentTime, getCpuMipsUtilization(), hostTotalRequestedMips, active);
+        addStateHistoryEntry(currentTime, getCpuMipsUtilization(),getRamUtilization(),hostTotalRequestedMips,hostTotalRequestedRam, active);
     }
 
     /**
@@ -1332,9 +1335,11 @@ public class HostSimple implements Host, Serializable {
         final double time,
         final double allocatedMips,
         final double requestedMips,
+        final double allocatedRam,
+        final double requestedRam,
         final boolean isActive)
     {
-        final HostStateHistoryEntry newState = new HostStateHistoryEntry(time, allocatedMips, requestedMips, isActive);
+        final HostStateHistoryEntry newState = new HostStateHistoryEntry(time, allocatedMips,allocatedRam, requestedMips,requestedRam,isActive);
         if (!stateHistory.isEmpty()) {
             final HostStateHistoryEntry previousState = stateHistory.get(stateHistory.size() - 1);
             if (previousState.getTime() == time) {
