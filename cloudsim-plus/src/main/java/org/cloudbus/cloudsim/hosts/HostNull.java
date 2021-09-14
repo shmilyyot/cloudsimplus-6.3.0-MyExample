@@ -164,6 +164,7 @@ final class HostNull implements Host, Serializable {
     @Override public List<Pe> getBusyPeList() { return Collections.emptyList(); }
     @Override public List<Pe> getFreePeList() { return Collections.emptyList(); }
     @Override public double getCpuPercentUtilization() { return 0.0; }
+    @Override public double getRamPercentUtilization() { return 0.0; }
     @Override public double getCpuMipsUtilization() { return 0.0; }
     @Override public long getBwUtilization() { return 0; }
     @Override public long getRamUtilization() { return 0; }

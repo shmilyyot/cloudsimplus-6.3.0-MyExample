@@ -139,6 +139,7 @@ public class HostSimple implements Host, Serializable {
 
     private boolean lazySuitabilityEvaluation;
     protected HostResourceStats cpuUtilizationStats;
+    protected HostResourceStats ramUtilizationStats;
 
     /**
      * Creates and powers on a Host without a pre-defined ID,
@@ -277,6 +278,7 @@ public class HostSimple implements Host, Serializable {
         this.onStartupListeners = new HashSet<>();
         this.onShutdownListeners = new HashSet<>();
         this.cpuUtilizationStats = HostResourceStats.NULL;
+        this.ramUtilizationStats = HostResourceStats.NULL;
 
         this.resources = new ArrayList<>();
         this.vmCreatedList = new ArrayList<>();
@@ -357,6 +359,7 @@ public class HostSimple implements Host, Serializable {
 
         notifyOnUpdateProcessingListeners(currentTime);
         cpuUtilizationStats.add(currentTime);
+        ramUtilizationStats.add(currentTime);
         addStateHistory(currentTime);
         if (!vmList.isEmpty()) {
             lastBusyTime = currentTime;
@@ -1178,6 +1181,20 @@ public class HostSimple implements Host, Serializable {
     }
 
     @Override
+    public double getRamPercentUtilization() {
+        return computeRamUtilizationPercent(getRamUtilization());
+    }
+
+    private double computeRamUtilizationPercent(final long ramUsage){
+        final double totalRam = ramProvisioner.getCapacity();
+        if(totalRam == 0){
+            return 0;
+        }
+        final double utilization = ramUsage/ totalRam;
+        return (utilization > 1 && utilization < 1.01 ? 1 : utilization);
+    }
+
+    @Override
     public long getBwUtilization() {
         return bwProvisioner.getTotalAllocatedResource();
     }
@@ -1187,13 +1204,22 @@ public class HostSimple implements Host, Serializable {
         return cpuUtilizationStats;
     }
 
+    public HostResourceStats getRamUtilizationStats() {
+        return ramUtilizationStats;
+    }
+
     @Override
     public void enableUtilizationStats() {
         if (cpuUtilizationStats != null && cpuUtilizationStats != HostResourceStats.NULL) {
             return;
         }
 
+        if (ramUtilizationStats != null && ramUtilizationStats != HostResourceStats.NULL) {
+            return;
+        }
+
         this.cpuUtilizationStats = new HostResourceStats(this, Host::getCpuPercentUtilization);
+        this.ramUtilizationStats = new HostResourceStats(this, Host::getRamPercentUtilization);
         if(vmList.isEmpty()){
             final String host = this.getId() > -1 ? this.toString() : "Host";
             LOGGER.info("Automatically enabling computation of utilization statistics for VMs on {} could not be performed because it doesn't have VMs yet. You need to enable it for each VM created.", host);

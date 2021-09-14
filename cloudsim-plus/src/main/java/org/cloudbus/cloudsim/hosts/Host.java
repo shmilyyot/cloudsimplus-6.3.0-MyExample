@@ -611,6 +611,13 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
     double getCpuPercentUtilization();
 
     /**
+     * Gets current utilization of RAM in percentage (between [0 and 1]),
+     *
+     * @return
+     */
+    double getRamPercentUtilization();
+
+    /**
      * {@inheritDoc}
      * It uses the utilization statistics from its VMs to provide the overall Host's CPU utilization.
      * However, for this method to return any data, you need to enable
