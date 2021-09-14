@@ -16,6 +16,7 @@ import org.cloudbus.cloudsim.hosts.HostSimple;
 import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
+import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.Pe;
@@ -27,6 +28,7 @@ import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
+import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
@@ -262,7 +264,7 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0.9))
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0))
             .setUtilizationModelRam(utilizationRam)
 //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
             ;
@@ -366,7 +368,12 @@ public class myImplementationMigrationDatacenter {
         return host;
     }
     private Host createHost(int hostType) {
-        final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
+        PowerModelHost powerModel;
+        if(hostType == 0){
+            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G4_SPEC_POWER));
+        }else{
+            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G5_SPEC_POWER));
+        }
         final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType));
         host
             .setVmScheduler(new VmSchedulerTimeShared())
@@ -449,8 +456,9 @@ public class myImplementationMigrationDatacenter {
 
     private Vm createVm(final int id) {
         //Uses a CloudletSchedulerTimeShared by default
-        Random r = new Random(System.currentTimeMillis());
-        int type = r.nextInt(4);
+//        Random r = new Random(System.currentTimeMillis());
+//        int type = r.nextInt(4);
+        int type = id%Constant.VM_TYPE.length;
 //        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
         Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
         vm.enableUtilizationStats();
@@ -459,12 +467,12 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-        //broker.setVmDestructionDelay(0.2);
-        final List<Vm> list = IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
-        vmList.addAll(list);
-        broker.submitVmList(list);
-        list.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));
-        list.forEach(vm -> vm.addOnMigrationFinishListener(this::finishMigration));
+//        broker.setVmDestructionDelay(1);
+        final List<Vm> vms = createVms();
+        vmList.addAll(vms);
+        broker.submitVmList(vms);
+        vms.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));
+        vms.forEach(vm -> vm.addOnMigrationFinishListener(this::finishMigration));
     }
 
     /**

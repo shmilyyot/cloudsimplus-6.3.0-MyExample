@@ -55,12 +55,15 @@ public class Constant {
     /**
      * 自己给定的host参数设置，一共有两种host
      * */
-    public static final int HOSTS = 5;   //主机数量,请取偶数，因为默认对半分
+    public static final int HOSTS = 8;   //主机数量,请取偶数，因为默认对半分
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
     public static final long[] HOST_BW = {1024,1024};  //带宽速率，用不到
     public static final long[] HOST_STORAGE = {1_000_000,1_000_000};  //硬盘大小，用不到
     public static final double[] HOST_MIPS = {1860,2660};  //cpu处理速率
+    public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗
+    public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗
+
 
     /**
      * cloudlet相关设置

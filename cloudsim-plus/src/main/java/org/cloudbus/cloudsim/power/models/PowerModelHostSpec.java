@@ -52,7 +52,7 @@ public class PowerModelHostSpec extends PowerModelHost {
      */
     public PowerModelHostSpec(final List<Double> powerSpec) {
         Objects.requireNonNull(powerSpec, "powerSpec cannot be null");
-        if (powerSpec.size() >= 2) {
+        if (powerSpec.size() < 2) {
             throw new IllegalArgumentException("powerSpec has to contain at least 2 elements " +
                 "(utilizazion at 0% and 100% load)");
         }
