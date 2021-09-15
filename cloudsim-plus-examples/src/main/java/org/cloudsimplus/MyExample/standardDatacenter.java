@@ -36,7 +36,7 @@ import static org.cloudbus.cloudsim.util.MathUtil.positive;
 /**
  * 论文实验标准数据中心模板设置
  * 本模板所有参数和功能分支皆可在同一目录下的{@link Constant}文件中修改，无需特意改动本文件
- * 若多个cloudlet分配到同一个vm，cpu资源会对半分，然后继续占各自的部分比例
+ * 只考虑CPU利用率
  * */
 
 public class standardDatacenter {
@@ -213,8 +213,9 @@ public class standardDatacenter {
 
     private Cloudlet createCloudlet(final TaskEvent event) {
         final long pesNumber = positive(event.actualCpuCores(Constant.VM_PES), Constant.VM_PES);
-        final double maxRamUsagePercent = positive(event.getResourceRequestForRam(), Conversion.HUNDRED_PERCENT);
-        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(0, maxRamUsagePercent);
+        double RamUsagePercent = event.getResourceRequestForRam();
+        RamUsagePercent = RamUsagePercent > 1 ? Conversion.HUNDRED_PERCENT : 0.0;
+        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(RamUsagePercent,Conversion.HUNDRED_PERCENT);
 //        final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * Constant.VM_SIZE_MB[0] + 1;
         final double sizeInMB    = 1;   //如只研究CPU和MEM，磁盘空间不考虑的话，象征性给个1mb意思一下
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));

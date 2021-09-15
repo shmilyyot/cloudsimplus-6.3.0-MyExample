@@ -139,7 +139,6 @@ public class HostSimple implements Host, Serializable {
 
     private boolean lazySuitabilityEvaluation;
     protected HostResourceStats cpuUtilizationStats;
-    protected HostResourceStats ramUtilizationStats;
 
     /**
      * Creates and powers on a Host without a pre-defined ID,
@@ -278,7 +277,6 @@ public class HostSimple implements Host, Serializable {
         this.onStartupListeners = new HashSet<>();
         this.onShutdownListeners = new HashSet<>();
         this.cpuUtilizationStats = HostResourceStats.NULL;
-        this.ramUtilizationStats = HostResourceStats.NULL;
 
         this.resources = new ArrayList<>();
         this.vmCreatedList = new ArrayList<>();
@@ -359,7 +357,6 @@ public class HostSimple implements Host, Serializable {
 
         notifyOnUpdateProcessingListeners(currentTime);
         cpuUtilizationStats.add(currentTime);
-        ramUtilizationStats.add(currentTime);
         addStateHistory(currentTime);
         if (!vmList.isEmpty()) {
             lastBusyTime = currentTime;
@@ -1187,6 +1184,7 @@ public class HostSimple implements Host, Serializable {
 
     private double computeRamUtilizationPercent(final long ramUsage){
         final double totalRam = ramProvisioner.getCapacity();
+//        if(this.getId() == 4) System.out.println(ramUsage);
         if(totalRam == 0){
             return 0;
         }
@@ -1204,9 +1202,6 @@ public class HostSimple implements Host, Serializable {
         return cpuUtilizationStats;
     }
 
-    public HostResourceStats getRamUtilizationStats() {
-        return ramUtilizationStats;
-    }
 
     @Override
     public void enableUtilizationStats() {
@@ -1214,12 +1209,7 @@ public class HostSimple implements Host, Serializable {
             return;
         }
 
-        if (ramUtilizationStats != null && ramUtilizationStats != HostResourceStats.NULL) {
-            return;
-        }
-
         this.cpuUtilizationStats = new HostResourceStats(this, Host::getCpuPercentUtilization);
-        this.ramUtilizationStats = new HostResourceStats(this, Host::getRamPercentUtilization);
         if(vmList.isEmpty()){
             final String host = this.getId() > -1 ? this.toString() : "Host";
             LOGGER.info("Automatically enabling computation of utilization statistics for VMs on {} could not be performed because it doesn't have VMs yet. You need to enable it for each VM created.", host);
@@ -1310,17 +1300,14 @@ public class HostSimple implements Host, Serializable {
         }
 
         double hostTotalRequestedMips = 0.0;
-        double hostTotalRequestedRam = 0.0;
 
         for (final Vm vm : getVmList()) {
             final double totalRequestedMips = vm.getCurrentRequestedTotalMips();
-            final double totalRequestedRam = vm.getCurrentRequestedRam();
             addVmResourceUseToHistoryIfNotMigratingIn(vm, currentTime);
             hostTotalRequestedMips += totalRequestedMips;
-            hostTotalRequestedRam += totalRequestedRam;
         }
 
-        addStateHistoryEntry(currentTime, getCpuMipsUtilization(),getRamUtilization(),hostTotalRequestedMips,hostTotalRequestedRam, active);
+        addStateHistoryEntry(currentTime, getCpuMipsUtilization(),hostTotalRequestedMips,active);
     }
 
     /**
@@ -1335,11 +1322,9 @@ public class HostSimple implements Host, Serializable {
         final double time,
         final double allocatedMips,
         final double requestedMips,
-        final double allocatedRam,
-        final double requestedRam,
         final boolean isActive)
     {
-        final HostStateHistoryEntry newState = new HostStateHistoryEntry(time, allocatedMips,allocatedRam, requestedMips,requestedRam,isActive);
+        final HostStateHistoryEntry newState = new HostStateHistoryEntry(time, allocatedMips,requestedMips,isActive);
         if (!stateHistory.isEmpty()) {
             final HostStateHistoryEntry previousState = stateHistory.get(stateHistory.size() - 1);
             if (previousState.getTime() == time) {

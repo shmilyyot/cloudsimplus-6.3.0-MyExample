@@ -137,24 +137,24 @@ public class myImplementationMigrationDatacenter {
         //从Google任务流创建数据中心代理和cloudlet任务
         createCloudletsAndBrokersFromTraceFileType1();
 
-        //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
-
         //创建vm并提交所有cloudlet
         //当虚拟机创建失败，放弃创建
         brokers.forEach(this::createAndSubmitVms);
 //        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
 
+        //初始化ram记录
         initializeUtilizationHistory();
+        //添加定时监听事件
+        simulation.addOnClockTickListener(this::clockTickListener);
+
+        //从GoogleUsageTrace读取系统中Cloudlet的利用率
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
         brokers.stream().sorted().forEach(b -> System.out.printf("\t%d - %s%n", b.getId(), b.getName()));
         System.out.println("Cloudlets:");
         cloudlets.stream().sorted().forEach(c -> System.out.printf("\t%s (job %d)%n", c, c.getJobId()));
-
-        //添加定时监听事件
-        simulation.addOnClockTickListener(this::clockTickListener);
 
         //虚拟机创建监听事件
         brokers.forEach(broker -> broker.addOnVmsCreatedListener(this::onVmsCreatedListener));
@@ -175,7 +175,6 @@ public class myImplementationMigrationDatacenter {
         //打印host的cpu利用率
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
         hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
-//        hostList.forEach(host->dataCenterPrinter.printhosttest(host,allHostsRamUtilizationHistory));
 
         //打印能耗
         dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
@@ -274,8 +273,9 @@ public class myImplementationMigrationDatacenter {
 
     private Cloudlet createCloudlet(final TaskEvent event) {
         final long pesNumber = positive(event.actualCpuCores(Constant.VM_PES), Constant.VM_PES);
-        final double maxRamUsagePercent = positive(event.getResourceRequestForRam(), Conversion.HUNDRED_PERCENT);
-        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(0, maxRamUsagePercent);
+        double RamUsagePercent = event.getResourceRequestForRam();
+        RamUsagePercent = RamUsagePercent > 1 ? Conversion.HUNDRED_PERCENT : 0.0;
+        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(RamUsagePercent,Conversion.HUNDRED_PERCENT);
 //        final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * Constant.VM_SIZE_MB[0] + 1;
         final double sizeInMB    = 1;   //如只研究CPU和MEM，磁盘空间不考虑的话，象征性给个1mb意思一下
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));
@@ -309,7 +309,8 @@ public class myImplementationMigrationDatacenter {
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
-                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
+//                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
+            ;
             datacenters.add(datacenter);
         }
 
@@ -357,7 +358,8 @@ public class myImplementationMigrationDatacenter {
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
-                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY);
+//                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
+            ;
             datacenters.add(datacenter);
         }
         //默认只有一个datacenter，所以只提交一个hostlist
@@ -522,11 +524,11 @@ public class myImplementationMigrationDatacenter {
         System.out.printf(
             "# %.2f: %s started migrating to %s (you can perform any operation you want here)%n",
             info.getTime(), vm, targetHost);
-        showVmAllocatedMips(vm, targetHost, info.getTime());
+        dataCenterPrinter.showVmAllocatedMips(vm, targetHost, info.getTime());
         //VM current host (source)
-        showHostAllocatedMips(info.getTime(), vm.getHost());
+        dataCenterPrinter.showHostAllocatedMips(info.getTime(), vm.getHost());
         //Migration host (target)
-        showHostAllocatedMips(info.getTime(), targetHost);
+        dataCenterPrinter.showHostAllocatedMips(info.getTime(), targetHost);
         System.out.println();
 
         migrationsNumber++;
@@ -539,13 +541,6 @@ public class myImplementationMigrationDatacenter {
 //            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
 //                showVmAllocatedMips(vm, targetHost, clock.getTime());
 //        });
-    }
-
-    private void showVmAllocatedMips(final Vm vm, final Host targetHost, final double time) {
-        final String msg = String.format("# %.2f: %s in %s: total allocated", time, vm, targetHost);
-        final MipsShare allocatedMips = targetHost.getVmScheduler().getAllocatedMips(vm);
-        final String msg2 = allocatedMips.totalMips() == vm.getMips() * 0.9 ? " - reduction due to migration overhead" : "";
-        System.out.printf("%s %.0f MIPs (divided by %d PEs)%s\n", msg, allocatedMips.totalMips(), allocatedMips.pes(), msg2);
     }
 
     /**
@@ -561,15 +556,9 @@ public class myImplementationMigrationDatacenter {
             "# %.2f: %s finished migrating to %s (you can perform any operation you want here)%n",
             info.getTime(), info.getVm(), host);
         System.out.print("\t\t");
-        showHostAllocatedMips(info.getTime(), hostList.get(1));
+        dataCenterPrinter.showHostAllocatedMips(info.getTime(), hostList.get(1));
         System.out.print("\t\t");
-        showHostAllocatedMips(info.getTime(), host);
-    }
-
-    private void showHostAllocatedMips(final double time, final Host host) {
-        System.out.printf(
-            "%.2f: %s allocated %.2f MIPS from %.2f total capacity%n",
-            time, host, host.getTotalAllocatedMips(), host.getTotalMipsCapacity());
+        dataCenterPrinter.showHostAllocatedMips(info.getTime(), host);
     }
 
     /**
@@ -583,26 +572,18 @@ public class myImplementationMigrationDatacenter {
     private void onVmsCreatedListener(final DatacenterBrokerEventInfo info) {
         allocationPolicy.setOverUtilizationThreshold(Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
         broker.removeOnVmsCreatedListener(info.getListener());
-        vmList.forEach(vm -> {
-            if(vm != null){
-                showVmAllocatedMips(vm, vm.getHost(), info.getTime());
-            }
-        });
+        vmList.forEach(vm -> dataCenterPrinter.showVmAllocatedMips(vm, vm.getHost(), info.getTime()));
 
         System.out.println();
-        hostList.forEach(host -> showHostAllocatedMips(info.getTime(), host));
+        hostList.forEach(host -> dataCenterPrinter.showHostAllocatedMips(info.getTime(), host));
         System.out.println();
     }
 
     public void initializeUtilizationHistory() {
         allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
-        for (Vm vm : vmList) {
-            allVmsRamUtilizationHistory.put(vm, new TreeMap<>());
-        }
+        vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
         allHostsRamUtilizationHistory = new HashMap<>();
-        for(Host host:hostList){
-            allHostsRamUtilizationHistory.put(host,new TreeMap<>());
-        }
+        hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
     }
 
     /**
@@ -615,29 +596,14 @@ public class myImplementationMigrationDatacenter {
      */
     private void collectVmResourceUtilization(final Map<Vm, Map<Double, Double>> allVmsUtilizationHistory, double systemTime ,Class<? extends ResourceManageable> resourceClass) {
         for (Vm vm : vmList) {
-            /*Gets the internal resource utilization map for the current VM.
-             * The key of this map is the time the usage was collected (in seconds)
-             * and the value the percentage of utilization (from 0 to 1). */
             final Map<Double, Double> vmUtilizationHistory = allVmsUtilizationHistory.get(vm);
-            Resource vmResource = vm.getResource(resourceClass);
-            vmUtilizationHistory.put(systemTime, vmResource.getPercentUtilization());
-//            Host host = vm.getHost();
-//            allHostsRamUtilizationHistory.get(host).put(systemTime,allHostsRamUtilizationHistory.get(host).getOrDefault(systemTime,0.0)+vmResource.getAllocatedResource());
+            vmUtilizationHistory.put(systemTime, vm.getResource(resourceClass).getPercentUtilization());
         }
 
     }
 
     private void collectHostRamResourceUtilization(double systemTime){
-        for(Host host:hostList){
-//            double currentTotalRam = 0.0;
-            Map<Double,Double> ramUtilizationHistory = allHostsRamUtilizationHistory.get(host);
-//            for(Vm vm:host.getVmList()){
-//                currentTotalRam += allVmsRamUtilizationHistory.get(vm).get(systemTime) * vm.getRam().getCapacity();
-//            }
-            double currentRamUtilization = (double)host.getRamUtilization()/host.getRam().getCapacity();
-//            ramUtilizationHistory.put(systemTime,currentTotalRam/host.getRam().getCapacity());
-            ramUtilizationHistory.put(systemTime,host.getRamPercentUtilization());
-        }
+        hostList.forEach(host -> allHostsRamUtilizationHistory.get(host).put(systemTime,host.getRamPercentUtilization()));
     }
 
 }

@@ -10,6 +10,7 @@ import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
+import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.vms.HostResourceStats;
 import org.cloudbus.cloudsim.vms.Vm;
@@ -161,6 +162,40 @@ public class DataCenterPrinter {
             System.out.printf(
                 "Time: %10.1f secs | RAM Utilization: %10.2f%%%n",
                 time, hostRamUtilization.get(time) * 100);
+        }
+
+        System.out.printf("----------------------------------------------------------------------------------%n%n");
+    }
+
+    public void showVmAllocatedMips(final Vm vm, final Host targetHost, final double time) {
+        final String msg = String.format("# %.2f: %s in %s: total allocated", time, vm, targetHost);
+        final MipsShare allocatedMips = targetHost.getVmScheduler().getAllocatedMips(vm);
+        final String msg2 = allocatedMips.totalMips() == vm.getMips() * 0.9 ? " - reduction due to migration overhead" : "";
+        System.out.printf("%s %.0f MIPs (divided by %d PEs)%s\n", msg, allocatedMips.totalMips(), allocatedMips.pes(), msg2);
+    }
+
+    public void showHostAllocatedMips(final double time, final Host host) {
+        System.out.printf(
+            "%.2f: %s allocated %.2f MIPS from %.2f total capacity%n",
+            time, host, host.getTotalAllocatedMips(), host.getTotalMipsCapacity());
+    }
+
+    /**
+     * Prints the RAM and BW utilization history of a given Vm.
+     */
+    public void printVmUtilizationHistory(Vm vm,Map<Vm, Map<Double, Double>> allVmsRamUtilizationHistory) {
+        System.out.println(vm + " RAM and BW utilization history");
+        System.out.println("----------------------------------------------------------------------------------");
+
+        //A set containing all resource utilization collected times
+        final Set<Double> timeSet = allVmsRamUtilizationHistory.get(vm).keySet();
+
+        final Map<Double, Double> vmRamUtilization = allVmsRamUtilizationHistory.get(vm);
+
+        for (final double time : timeSet) {
+            System.out.printf(
+                "Time: %10.1f secs | RAM Utilization: %10.2f%% %n",
+                time, vmRamUtilization.get(time) * 100);
         }
 
         System.out.printf("----------------------------------------------------------------------------------%n%n");
