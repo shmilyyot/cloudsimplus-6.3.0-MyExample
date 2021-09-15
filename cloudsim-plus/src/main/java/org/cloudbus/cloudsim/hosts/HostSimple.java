@@ -1177,7 +1177,7 @@ public class HostSimple implements Host, Serializable {
 
     @Override
     public long getRamUtilization() {
-        return ramProvisioner.getTotalAllocatedResource();
+        return vmList.stream().mapToLong(Vm::getCurrentRequestedRam).sum();
     }
 
     @Override

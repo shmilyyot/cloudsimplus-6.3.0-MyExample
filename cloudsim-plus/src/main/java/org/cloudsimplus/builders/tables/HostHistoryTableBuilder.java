@@ -26,6 +26,8 @@ package org.cloudsimplus.builders.tables;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostStateHistoryEntry;
 
+import java.util.Map;
+
 /**
  * Builds a table for printing {@link HostStateHistoryEntry} entries from the
  * {@link Host#getStateHistory()}.
@@ -41,6 +43,7 @@ import org.cloudbus.cloudsim.hosts.HostStateHistoryEntry;
  */
 public class HostHistoryTableBuilder extends TableBuilderAbstract<HostStateHistoryEntry>{
     private final Host host;
+    private Map<Double,Double> hostRamUtilizationHistory = null;
 
     /**
      * Instantiates a builder to print the history of a Host using the a
@@ -52,6 +55,12 @@ public class HostHistoryTableBuilder extends TableBuilderAbstract<HostStateHisto
     public HostHistoryTableBuilder(final Host host) {
         super(host.getStateHistory());
         this.host = host;
+    }
+
+    public HostHistoryTableBuilder(final Host host, Map<Double,Double> hostRamUtilizationHistory) {
+        super(host.getStateHistory());
+        this.host = host;
+        this.hostRamUtilizationHistory = hostRamUtilizationHistory;
     }
 
     /**
@@ -88,7 +97,11 @@ public class HostHistoryTableBuilder extends TableBuilderAbstract<HostStateHisto
         col = getTable().addColumn("Host CPU Total Usage").setFormat("%5.1f%%");
         addColumnDataFunction(col, history -> history.getAllocatedMips()/host.getTotalMipsCapacity()*100);
 
+//        col = getTable().addColumn("Host RAM Total Usage").setFormat("%5.2f%%");
+//        addColumnDataFunction(col, history->hostRamUtilizationHistory == null ? 0:(hostRamUtilizationHistory.get(history.getTime()) == null ? 0 :hostRamUtilizationHistory.get(history.getTime()) * 100));
+
         col = getTable().addColumn("Host RAM Total Usage").setFormat("%5.1f%%");
-        addColumnDataFunction(col, history -> history.getAllocatedRam()/host.getRam().getCapacity()*100);
+        addColumnDataFunction(col, history->hostRamUtilizationHistory == null ? 0:(hostRamUtilizationHistory.get(history.getTime()) == null ? 0 :hostRamUtilizationHistory.get(history.getTime()) * 100));
+
     }
 }

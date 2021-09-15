@@ -21,12 +21,18 @@ import org.cloudsimplus.listeners.CloudletVmEventInfo;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Comparator.comparingLong;
 
 public class DataCenterPrinter {
 
     public DataCenterPrinter() {
+    }
+
+    public void printHostStateHistory(final Host host,Map<Double,Double> hostRamUtilizationHistory) {
+        new HostHistoryTableBuilder(host,hostRamUtilizationHistory).setTitle(host.toString()).build();
     }
 
     public void printHostStateHistory(final Host host) {
@@ -144,6 +150,20 @@ public class DataCenterPrinter {
                 "# Created %s with %.0f MIPS x %d PEs (%.0f total MIPS)%n",
                 host, host.getMips(), host.getNumberOfPes(), host.getTotalMipsCapacity());
         }
+    }
+
+    public void printhosttest(Host host,Map<Host,Map<Double,Double>> allHostsRamUtilizationHistory){
+        System.out.println(host + " RAM utilization history");
+        System.out.println("----------------------------------------------------------------------------------");
+        final Set<Double> timeSet = allHostsRamUtilizationHistory.get(host).keySet();
+        final Map<Double, Double> hostRamUtilization = allHostsRamUtilizationHistory.get(host);
+        for (final double time : timeSet) {
+            System.out.printf(
+                "Time: %10.1f secs | RAM Utilization: %10.2f%%%n",
+                time, hostRamUtilization.get(time) * 100);
+        }
+
+        System.out.printf("----------------------------------------------------------------------------------%n%n");
     }
 
 }

@@ -1,6 +1,7 @@
 package org.cloudsimplus.MyExample;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class MathHandler {
 
@@ -66,5 +67,8 @@ public class MathHandler {
         return sum;
     }
 
+    public void ARIMRPrediction(List<Double> dataHistory){
+
+    }
 
 }

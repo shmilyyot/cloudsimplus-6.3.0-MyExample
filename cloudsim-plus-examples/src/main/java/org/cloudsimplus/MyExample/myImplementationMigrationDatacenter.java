@@ -19,8 +19,7 @@ import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
-import org.cloudbus.cloudsim.resources.Pe;
-import org.cloudbus.cloudsim.resources.PeSimple;
+import org.cloudbus.cloudsim.resources.*;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
@@ -74,6 +73,18 @@ public class myImplementationMigrationDatacenter {
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
 
+    /**
+     * A map to store RAM utilization history for every VM.
+     * Each key is a VM and each value is another map.
+     * This entire data structure is usually called a multi-map.
+     *
+     * Such an internal map stores RAM utilization for a VM.
+     * The keys of this internal map are the time the utilization was collected (in seconds)
+     * and the value the utilization percentage (from 0 to 1).
+     */
+    private static Map<Vm, Map<Double, Double>> allVmsRamUtilizationHistory;
+    private static Map<Host,Map<Double,Double>> allHostsRamUtilizationHistory;
+
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
         //重定向控制台输出到本地log
@@ -93,6 +104,7 @@ public class myImplementationMigrationDatacenter {
         dataCenterPrinter = new DataCenterPrinter();
         //创建科学计算代理
         mathHandler = new MathHandler();
+
         //创建所有文件路径
         if(Constant.TEST_TRACE){
             googleTraceHandler.buildTraceFileNamesSample();
@@ -133,14 +145,17 @@ public class myImplementationMigrationDatacenter {
         brokers.forEach(this::createAndSubmitVms);
 //        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
 
+        initializeUtilizationHistory();
+
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
         brokers.stream().sorted().forEach(b -> System.out.printf("\t%d - %s%n", b.getId(), b.getName()));
         System.out.println("Cloudlets:");
         cloudlets.stream().sorted().forEach(c -> System.out.printf("\t%s (job %d)%n", c, c.getJobId()));
 
-//        //添加定时监听事件
-//        simulation.addOnClockTickListener(this::clockTickListener);
+        //添加定时监听事件
+        simulation.addOnClockTickListener(this::clockTickListener);
+
         //虚拟机创建监听事件
         brokers.forEach(broker -> broker.addOnVmsCreatedListener(this::onVmsCreatedListener));
 
@@ -159,7 +174,8 @@ public class myImplementationMigrationDatacenter {
 
         //打印host的cpu利用率
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host));
+        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
+//        hostList.forEach(host->dataCenterPrinter.printhosttest(host,allHostsRamUtilizationHistory));
 
         //打印能耗
         dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
@@ -486,11 +502,11 @@ public class myImplementationMigrationDatacenter {
      * @param info information about the event happened.
      */
     private void clockTickListener(final EventInfo info) {
-        final double time = Math.floor(info.getTime());
-        if(time > lastClockTime && time % Constant.SCHEDULING_INTERVAL == 0) {
-            System.out.println();
-        }
-        lastClockTime = time;
+        double systemTime = simulation.clock();
+        //收集每个时刻每个虚拟机的RAM利用率
+        collectVmResourceUtilization(allVmsRamUtilizationHistory, systemTime, Ram.class);
+        //收集每个时刻每个host的RAM利用率
+        collectHostRamResourceUtilization(systemTime);
     }
 
     /**
@@ -567,11 +583,61 @@ public class myImplementationMigrationDatacenter {
     private void onVmsCreatedListener(final DatacenterBrokerEventInfo info) {
         allocationPolicy.setOverUtilizationThreshold(Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
         broker.removeOnVmsCreatedListener(info.getListener());
-        vmList.forEach(vm -> showVmAllocatedMips(vm, vm.getHost(), info.getTime()));
+        vmList.forEach(vm -> {
+            if(vm != null){
+                showVmAllocatedMips(vm, vm.getHost(), info.getTime());
+            }
+        });
 
         System.out.println();
         hostList.forEach(host -> showHostAllocatedMips(info.getTime(), host));
         System.out.println();
+    }
+
+    public void initializeUtilizationHistory() {
+        allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
+        for (Vm vm : vmList) {
+            allVmsRamUtilizationHistory.put(vm, new TreeMap<>());
+        }
+        allHostsRamUtilizationHistory = new HashMap<>();
+        for(Host host:hostList){
+            allHostsRamUtilizationHistory.put(host,new TreeMap<>());
+        }
+    }
+
+    /**
+     * Collects the utilization percentage of a given VM resource for every VM.
+     * CloudSim Plus already has built-in features to obtain VM's CPU utilization.
+     * Check {@link org.cloudsimplus.examples.power.PowerExample}.
+     *
+     * @param allVmsUtilizationHistory the map where the collected utilization for every VM will be stored
+     * @param resourceClass the kind of resource to collect its utilization (usually {@link Ram} or {@link Bandwidth}).
+     */
+    private void collectVmResourceUtilization(final Map<Vm, Map<Double, Double>> allVmsUtilizationHistory, double systemTime ,Class<? extends ResourceManageable> resourceClass) {
+        for (Vm vm : vmList) {
+            /*Gets the internal resource utilization map for the current VM.
+             * The key of this map is the time the usage was collected (in seconds)
+             * and the value the percentage of utilization (from 0 to 1). */
+            final Map<Double, Double> vmUtilizationHistory = allVmsUtilizationHistory.get(vm);
+            Resource vmResource = vm.getResource(resourceClass);
+            vmUtilizationHistory.put(systemTime, vmResource.getPercentUtilization());
+//            Host host = vm.getHost();
+//            allHostsRamUtilizationHistory.get(host).put(systemTime,allHostsRamUtilizationHistory.get(host).getOrDefault(systemTime,0.0)+vmResource.getAllocatedResource());
+        }
+
+    }
+
+    private void collectHostRamResourceUtilization(double systemTime){
+        for(Host host:hostList){
+//            double currentTotalRam = 0.0;
+            Map<Double,Double> ramUtilizationHistory = allHostsRamUtilizationHistory.get(host);
+//            for(Vm vm:host.getVmList()){
+//                currentTotalRam += allVmsRamUtilizationHistory.get(vm).get(systemTime) * vm.getRam().getCapacity();
+//            }
+            double currentRamUtilization = (double)host.getRamUtilization()/host.getRam().getCapacity();
+//            ramUtilizationHistory.put(systemTime,currentTotalRam/host.getRam().getCapacity());
+            ramUtilizationHistory.put(systemTime,host.getRamPercentUtilization());
+        }
     }
 
 }
