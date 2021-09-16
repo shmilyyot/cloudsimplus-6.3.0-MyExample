@@ -13,6 +13,7 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
+import org.cloudbus.cloudsim.hosts.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
@@ -479,7 +480,7 @@ public class myImplementationMigrationDatacenter {
         //Uses a CloudletSchedulerTimeShared by default
 //        Random r = new Random(System.currentTimeMillis());
 //        int type = r.nextInt(4);
-        int type = id%Constant.VM_TYPE.length;
+        int type = id % Constant.VM_TYPE.length;
 //        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
         Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
         vm.enableUtilizationStats();
@@ -573,7 +574,6 @@ public class myImplementationMigrationDatacenter {
         allocationPolicy.setOverUtilizationThreshold(Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
         broker.removeOnVmsCreatedListener(info.getListener());
         vmList.forEach(vm -> dataCenterPrinter.showVmAllocatedMips(vm, vm.getHost(), info.getTime()));
-
         System.out.println();
         hostList.forEach(host -> dataCenterPrinter.showHostAllocatedMips(info.getTime(), host));
         System.out.println();
@@ -582,7 +582,7 @@ public class myImplementationMigrationDatacenter {
     public void initializeUtilizationHistory() {
         allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
         vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
-        allHostsRamUtilizationHistory = new HashMap<>();
+        allHostsRamUtilizationHistory = new HashMap<>(100000);
         hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
     }
 
@@ -595,15 +595,34 @@ public class myImplementationMigrationDatacenter {
      * @param resourceClass the kind of resource to collect its utilization (usually {@link Ram} or {@link Bandwidth}).
      */
     private void collectVmResourceUtilization(final Map<Vm, Map<Double, Double>> allVmsUtilizationHistory, double systemTime ,Class<? extends ResourceManageable> resourceClass) {
-        for (Vm vm : vmList) {
-            final Map<Double, Double> vmUtilizationHistory = allVmsUtilizationHistory.get(vm);
-            vmUtilizationHistory.put(systemTime, vm.getResource(resourceClass).getPercentUtilization());
-        }
-
+        vmList.forEach(vm -> allVmsUtilizationHistory.get(vm).put(systemTime, vm.getResource(resourceClass).getPercentUtilization()));
     }
 
     private void collectHostRamResourceUtilization(double systemTime){
         hostList.forEach(host -> allHostsRamUtilizationHistory.get(host).put(systemTime,host.getRamPercentUtilization()));
+    }
+
+    private void processHostUsage(){
+        for(Host host:hostList){
+            List<HostStateHistoryEntry> hostStateHistoryEntries = host.getStateHistory();
+            Map<Double,Double> hostRamUtilizationHistory = allHostsRamUtilizationHistory.get(host);
+            Iterator<HostStateHistoryEntry> itHistory = hostStateHistoryEntries.iterator();
+            while(itHistory.hasNext()){
+                var history = itHistory.next();
+                double time = history.getTime();
+                double ramUsage = hostRamUtilizationHistory.get(time);
+                double cpuUsage = history.getAllocatedMips()/host.getTotalMipsCapacity()*100;
+                if(ramUsage == 0.0 && cpuUsage != 0.0){
+                    itHistory.remove();
+                    hostRamUtilizationHistory.remove(time);
+                    continue;
+                }
+                if(ramUsage != 0.0 && cpuUsage == 0.0){
+                    itHistory.remove();
+                    hostRamUtilizationHistory.remove(time);
+                }
+            }
+        }
     }
 
 }

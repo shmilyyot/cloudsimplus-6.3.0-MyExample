@@ -77,7 +77,7 @@ public class HostHistoryTableBuilder extends TableBuilderAbstract<HostStateHisto
 
     @Override
     protected void createTableColumns() {
-        TableColumn col = getTable().addColumn("Time ").setFormat("%5.0f");
+        TableColumn col = getTable().addColumn("Time ").setFormat("%5.1f");
         addColumnDataFunction(col, HostStateHistoryEntry::getTime);
 
         col = getTable().addColumn("Requested").setFormat("%9.0f");
@@ -95,13 +95,30 @@ public class HostHistoryTableBuilder extends TableBuilderAbstract<HostStateHisto
         addColumnDataFunction(col, history -> host.getTotalMipsCapacity());
 
         col = getTable().addColumn("Host CPU Total Usage").setFormat("%5.1f%%");
-        addColumnDataFunction(col, history -> history.getAllocatedMips()/host.getTotalMipsCapacity()*100);
+        addColumnDataFunction(col, history -> {
+            double ramUsage = hostRamUtilizationHistory.get(history.getTime()) * 100;
+            double cpuUsage = history.getAllocatedMips()/host.getTotalMipsCapacity() * 100;
+            return ramUsage == 0.0 ? 0.0 : cpuUsage;
+        });
 
 //        col = getTable().addColumn("Host RAM Total Usage").setFormat("%5.2f%%");
 //        addColumnDataFunction(col, history->hostRamUtilizationHistory == null ? 0:(hostRamUtilizationHistory.get(history.getTime()) == null ? 0 :hostRamUtilizationHistory.get(history.getTime()) * 100));
 
         col = getTable().addColumn("Host RAM Total Usage").setFormat("%5.1f%%");
-        addColumnDataFunction(col, history->hostRamUtilizationHistory == null ? 0:(hostRamUtilizationHistory.get(history.getTime()) == null ? 0 :hostRamUtilizationHistory.get(history.getTime()) * 100));
+        addColumnDataFunction(col, history->{
+            if(hostRamUtilizationHistory == null) return 0.0;
+            else{
+                double ramUsage = hostRamUtilizationHistory.get(history.getTime()) * 100;
+                double cpuUsage = history.getAllocatedMips()/host.getTotalMipsCapacity() * 100;
+                return cpuUsage == 0.0 ? 0.0 : ramUsage;
+//                if(cpuUsage == 0){
+//                    hostRamUtilizationHistory.put(history.getTime(),0.0);
+//                    return 0.0;
+//                } else {
+//                    return ramUsage;
+//                }
+            }
+        });
 
     }
 }
