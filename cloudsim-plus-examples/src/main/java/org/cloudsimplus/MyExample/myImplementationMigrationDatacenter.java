@@ -602,6 +602,7 @@ public class myImplementationMigrationDatacenter {
         hostList.forEach(host -> allHostsRamUtilizationHistory.get(host).put(systemTime,host.getRamPercentUtilization()));
     }
 
+    //直接移除不对其的cpu和ram利用率，不建议开启
     private void processHostUsage(){
         for(Host host:hostList){
             List<HostStateHistoryEntry> hostStateHistoryEntries = host.getStateHistory();
