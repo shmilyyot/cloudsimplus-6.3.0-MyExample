@@ -533,15 +533,6 @@ public class myImplementationMigrationDatacenter {
         System.out.println();
 
         migrationsNumber++;
-//        if(migrationsNumber > 1){
-//            return;
-//        }
-
-//        //After the first VM starts being migrated, tracks some metrics along simulation time
-//        simulation.addOnClockTickListener(clock -> {
-//            if (clock.getTime() <= 2 || (clock.getTime() >= 11 && clock.getTime() <= 15))
-//                showVmAllocatedMips(vm, targetHost, clock.getTime());
-//        });
     }
 
     /**
@@ -602,7 +593,7 @@ public class myImplementationMigrationDatacenter {
         hostList.forEach(host -> allHostsRamUtilizationHistory.get(host).put(systemTime,host.getRamPercentUtilization()));
     }
 
-    //直接移除不对其的cpu和ram利用率，不建议开启
+    //直接移除不对齐的cpu和ram利用率，不建议开启
     private void processHostUsage(){
         for(Host host:hostList){
             List<HostStateHistoryEntry> hostStateHistoryEntries = host.getStateHistory();
