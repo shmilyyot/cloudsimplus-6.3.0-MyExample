@@ -96,6 +96,7 @@ public class HostHistoryTableBuilder extends TableBuilderAbstract<HostStateHisto
 
         col = getTable().addColumn("Host CPU Total Usage").setFormat("%5.1f%%");
         addColumnDataFunction(col, history -> {
+            if(hostRamUtilizationHistory == null) return 0.0;
             double ramUsage = hostRamUtilizationHistory.get(history.getTime()) * 100;
             double cpuUsage = history.getAllocatedMips()/host.getTotalMipsCapacity() * 100;
             return ramUsage == 0.0 ? 0.0 : cpuUsage;

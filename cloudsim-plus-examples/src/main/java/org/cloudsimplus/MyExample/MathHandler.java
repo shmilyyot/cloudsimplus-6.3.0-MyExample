@@ -14,6 +14,10 @@ public class MathHandler {
         return up/down;
     }
 
+    public double reverseCosSimilarity(double[] x,double[] y){
+        return 1-cosSimilarity(x,y);
+    }
+
     //皮尔森相关系数
     public double pearsonCorrelation(double[] x,double[] y){
         double xMean = getMean(x);
@@ -68,6 +72,10 @@ public class MathHandler {
     }
 
     public void ARIMRPrediction(List<Double> dataHistory){
+
+    }
+
+    public void DGMPredicting(List<Double> dataHistory){
 
     }
 
