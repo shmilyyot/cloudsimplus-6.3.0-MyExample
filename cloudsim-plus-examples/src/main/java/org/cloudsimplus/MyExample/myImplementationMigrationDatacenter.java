@@ -143,13 +143,13 @@ public class myImplementationMigrationDatacenter {
         brokers.forEach(this::createAndSubmitVms);
 //        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
 
-        //初始化ram记录
-        initializeUtilizationHistory();
-        //添加定时监听事件
-        simulation.addOnClockTickListener(this::clockTickListener);
+//        //初始化ram记录
+//        initializeUtilizationHistory();
+//        //添加定时监听事件
+//        simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -159,7 +159,7 @@ public class myImplementationMigrationDatacenter {
 
         //虚拟机创建监听事件
         brokers.forEach(broker -> broker.addOnVmsCreatedListener(this::onVmsCreatedListener));
-
+//
         //创建数据中心能耗跟踪模型
         //记录每个数据中心的能耗
         PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
@@ -172,7 +172,7 @@ public class myImplementationMigrationDatacenter {
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
-
+//
         //打印能耗
         dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
         dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
@@ -194,9 +194,9 @@ public class myImplementationMigrationDatacenter {
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
-        cloudlets = new HashSet<>(30000);
-        cloudletIds = new HashSet<>(30000);
-        brokers = new ArrayList<>(100000);
+        cloudlets = new HashSet<>(1000);
+        cloudletIds = new HashSet<>(1000);
+        brokers = new ArrayList<>(1);
 
         //使用单一代理
         if(Constant.SINGLE_BROKER){
