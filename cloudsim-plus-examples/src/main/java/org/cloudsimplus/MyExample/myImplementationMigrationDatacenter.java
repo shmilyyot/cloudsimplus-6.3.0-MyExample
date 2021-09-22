@@ -149,7 +149,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
+//        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -173,10 +173,6 @@ public class myImplementationMigrationDatacenter {
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
 
-        //打印host的cpu利用率
-        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
-
         //打印能耗
         dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
         dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
@@ -190,6 +186,11 @@ public class myImplementationMigrationDatacenter {
         //记录结束时间
         final double endSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
+
+        //打印host的cpu利用率
+        System.setOut(new PrintStream(new FileOutputStream(Constant.HOST_LOG_FILE_PATH)));
+        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
+        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
