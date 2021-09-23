@@ -29,6 +29,7 @@ import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
+import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
@@ -149,7 +150,7 @@ public class myImplementationMigrationDatacenter {
 //        simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
+//        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -187,10 +188,10 @@ public class myImplementationMigrationDatacenter {
         final double endSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
 
-        //打印host的cpu利用率
-        System.setOut(new PrintStream(new FileOutputStream(Constant.HOST_LOG_FILE_PATH)));
-        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
-        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
+//        //打印host的cpu利用率
+//        System.setOut(new PrintStream(new FileOutputStream(Constant.HOST_LOG_FILE_PATH)));
+//        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
+//        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
@@ -285,7 +286,7 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0))
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
             .setUtilizationModelRam(utilizationRam)
 //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
             ;
@@ -386,8 +387,8 @@ public class myImplementationMigrationDatacenter {
 //        host.setIdleShutdownDeadline(shutdownDeadlineSeconds);
         host.setId(event.getMachineId());
         hostIds.add(host.getId());
-        host.enableStateHistory();
-        host.enableUtilizationStats();
+//        host.enableStateHistory();
+//        host.enableUtilizationStats();
         return host;
     }
     private Host createHost(int hostType) {
@@ -412,7 +413,7 @@ public class myImplementationMigrationDatacenter {
 //        host.setIdleShutdownDeadline(shutdownDeadlineSeconds);
 
         //启用host记录历史状态
-        host.enableStateHistory();
+//        host.enableStateHistory();
         host.enableUtilizationStats();
         return host;
     }
@@ -574,7 +575,7 @@ public class myImplementationMigrationDatacenter {
     public void initializeUtilizationHistory() {
         allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
         vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
-        allHostsRamUtilizationHistory = new HashMap<>(100000);
+        allHostsRamUtilizationHistory = new HashMap<>(800);
         hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
     }
 

@@ -6,11 +6,16 @@ public class Constant {
     /**
      * 数据中心参数设置
      * */
-    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static final double STOP_TIME = 864000.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = false;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
     public static final int SCHEDULING_INTERVAL = 1;   //调度时间间隔，决定系统多久更新一次cloudlet的相关状态，如vm和host的能耗，vm运行的指令数等等，不影响cloudlet的运行，越小计算越精确
+
+    /**
+     * 数据中心日志设置
+     */
+    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
+    public static int LogLength = 24;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
 
     /**
      * 数据中心迁移相关设置
@@ -30,7 +35,7 @@ public class Constant {
      * */
 //    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_events";
 //    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage";
-    public static final String TASK_EVENTS_PATH = "D:\\paperWork\\clusterdata2011\\task_event_process_firstDay_Between_Ramdom1000";
+    public static final String TASK_EVENTS_PATH = "D:\\paperWork\\clusterdata2011\\finishId";
     public static final String TASK_USAGE_PATH = "D:\\paperWork\\clusterdata2011\\task_usage_process_firstDay_Between_Ramdom1000";
     public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
     public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
@@ -59,7 +64,7 @@ public class Constant {
     /**
      * 自己给定的host参数设置，一共有两种host
      * */
-    public static final int HOSTS = 1000;   //主机数量,请取偶数，因为默认对半分
+    public static final int HOSTS = 800;   //主机数量,请取偶数，因为默认对半分
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
     public static final long[] HOST_BW = {1024,1024};  //带宽速率，用不到

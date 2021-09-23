@@ -41,6 +41,7 @@ import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
+import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
@@ -70,8 +71,8 @@ public class VmsCpuUsageExample {
     private List<Cloudlet> cloudletList;
     private List<Vm> vmlist;
     private DatacenterBroker broker;
-    private static final int VMS = 2;
-    private static final int HOSTS = 3;
+    private static final int VMS = 1000;
+    private static final int HOSTS = 1000;
 
     /**
      * Starts the example execution.
@@ -123,7 +124,7 @@ public class VmsCpuUsageExample {
     }
 
     private Cloudlet createCloudlet(final int pesNumber) {
-        final long length = 10000;
+        final long length = 1000000000;
         final long fileSize = 300;
         final long outputSize = 300;
         UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.25);
@@ -132,7 +133,7 @@ public class VmsCpuUsageExample {
         Cloudlet cloudlet = new CloudletSimple(length, pesNumber);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(utilizationModelCpu)
+            .setUtilizationModelCpu(new UtilizationModelStochastic())
             .setUtilizationModelBw(utilizationModelDynamic)
             .setUtilizationModelRam(utilizationModelDynamic);
         return cloudlet;

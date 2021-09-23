@@ -65,11 +65,11 @@ public class GoogleTraceHandler {
         for(int i=0;i<=Constant.GOOGLE_EVENT_DAYS_FILE;++i){
             String filename;
             if(i<10){
-                filename = Constant.TASK_EVENTS_PATH+"/part-0000"+i+"-of-00500.csv.gz";
+                filename = Constant.TASK_EVENTS_PATH+"/part-0000"+i+"-of-00500.csv";
             }else if(i<100){
-                filename = Constant.TASK_EVENTS_PATH+"/part-000"+i+"-of-00500.csv.gz";
+                filename = Constant.TASK_EVENTS_PATH+"/part-000"+i+"-of-00500.csv";
             }else{
-                filename = Constant.TASK_EVENTS_PATH+"/part-00"+i+"-of-00500.csv.gz";
+                filename = Constant.TASK_EVENTS_PATH+"/part-00"+i+"-of-00500.csv";
             }
             TRACE_FILENAMES.add(filename);
         }
