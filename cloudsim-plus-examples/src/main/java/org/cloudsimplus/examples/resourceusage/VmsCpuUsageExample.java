@@ -124,7 +124,7 @@ public class VmsCpuUsageExample {
     }
 
     private Cloudlet createCloudlet(final int pesNumber) {
-        final long length = 1000000000;
+        final long length = 100000000;
         final long fileSize = 300;
         final long outputSize = 300;
         UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.25);
@@ -205,7 +205,7 @@ public class VmsCpuUsageExample {
             .setBwProvisioner(new ResourceProvisionerSimple())
             .setVmScheduler(new VmSchedulerTimeShared());
         host.setId(id);
-        host.enableStateHistory();
+//        host.enableStateHistory();
         return host;
     }
 }

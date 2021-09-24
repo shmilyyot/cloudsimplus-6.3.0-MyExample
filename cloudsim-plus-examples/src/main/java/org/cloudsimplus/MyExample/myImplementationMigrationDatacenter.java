@@ -86,6 +86,10 @@ public class myImplementationMigrationDatacenter {
      */
     private static Map<Vm, Map<Double, Double>> allVmsRamUtilizationHistory;
     private static Map<Host,Map<Double,Double>> allHostsRamUtilizationHistory;
+    private static Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
+    private static Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue;
+    private static Map<Host,ArrayList<Double>> allHostsRamUtilizationHistoryAL;
+    private static Map<Host,ArrayList<Double>> allHostsCpuUtilizationHistoryAL;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
@@ -123,7 +127,8 @@ public class myImplementationMigrationDatacenter {
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
-        Log.setLevel(DatacenterBroker.LOGGER, Level.TRACE);
+//        Log.setLevel(DatacenterBroker.LOGGER, Level.TRACE);
+        Log.setLevel(Level.TRACE);
 
         //创建模拟仿真
         simulation = new CloudSim();
@@ -144,10 +149,10 @@ public class myImplementationMigrationDatacenter {
         brokers.forEach(this::createAndSubmitVms);
 //        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
 
-//        //初始化ram记录
-//        initializeUtilizationHistory();
-//        //添加定时监听事件
-//        simulation.addOnClockTickListener(this::clockTickListener);
+        //初始化cpu,ram记录
+        initializeUtilizationHistory();
+        //添加定时监听事件
+        simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
 //        readTaskUsageTraceFile();
@@ -174,9 +179,9 @@ public class myImplementationMigrationDatacenter {
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
 //
-        //打印能耗
-        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
-        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
+//        //打印能耗
+//        dataCenterPrinter.printVmsCpuUtilizationAndPowerConsumption(brokers);
+//        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
         dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
@@ -205,72 +210,83 @@ public class myImplementationMigrationDatacenter {
             brokers.add(broker);
         }
 
-        //使用预处理cloudlet id
-        Set<Long> finalEligibleCloudletIds;
-        if(Constant.USING_EXISTANCE_PRECLOULETS){
-            //这种方法默认读取前n天所有event，会超出java heap空间，所以要曲线救国，先读一遍usage曲线救国
-            Set<Long> eligibleCloudletIds;
-            //预处理数据，序列化到本地，把usage中所有符合利用率要求的cloudlet id先记录下来，然后再用这些id反向生成cloudlet
-            if(serialObjectHandler.checkObjectExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
-                eligibleCloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_PRECLOUDLETID_PATH);
-            }else{
-                eligibleCloudletIds = googleTraceHandler.filterCloudletsUsageIs(simulation);
-                serialObjectHandler.serializableObject(eligibleCloudletIds,Constant.SERIAL_PRECLOUDLETID_PATH);
-            }
-            finalEligibleCloudletIds = eligibleCloudletIds;
-        }
-
-        //使用已存在的外部cloudlet
-        if(Constant.USING_EXISTANCE_CLOULETS){
-            if(serialObjectHandler.checkObjectExist(Constant.SERIAL_CLOUDLETID_PATH)){
-                Constant.CLOUDLETID_EXIST = true;
-                cloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
-            }
-        }
-
-        for(String TRACE_FILENAME: googleTraceHandler.getTRACE_FILENAMES()){
-            GoogleTaskEventsTraceReader reader = GoogleTaskEventsTraceReader.getInstance(simulation, TRACE_FILENAME,this::createCloudlet);
-            if(Constant.USING_EXISTANCE_CLOULETS && Constant.CLOUDLETID_EXIST){
-                reader.setPredicate(event -> cloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME);
-            }else{
-                if(Constant.READ_INITIAL_MACHINE_CLOUDLET){
-                    if(Constant.USING_GOOGLE_HOST){
-                        reader.setPredicate(event -> (hostIds.contains(event.getMachineId()) && event.getTimestamp() <= Constant.STOP_TIME));
-                    }else{
-                        reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
-                        reader.setMaxCloudletsToCreate(200);
-                    }
+        if(!Constant.USING_TEST_CLOUDLET){
+            //使用预处理cloudlet id
+            Set<Long> finalEligibleCloudletIds;
+            if(Constant.USING_EXISTANCE_PRECLOULETS){
+                //这种方法默认读取前n天所有event，会超出java heap空间，所以要曲线救国，先读一遍usage曲线救国
+                Set<Long> eligibleCloudletIds;
+                //预处理数据，序列化到本地，把usage中所有符合利用率要求的cloudlet id先记录下来，然后再用这些id反向生成cloudlet
+                if(serialObjectHandler.checkObjectExist(Constant.SERIAL_PRECLOUDLETID_PATH)){
+                    eligibleCloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_PRECLOUDLETID_PATH);
                 }else{
-                    if(Constant.USING_EXISTANCE_PRECLOULETS){
-                        reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
-                    }else{
-                        reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME);
-                        reader.setMaxCloudletsToCreate(100);
-                    }
-//                reader.setMaxCloudletsToCreate(100);
+                    eligibleCloudletIds = googleTraceHandler.filterCloudletsUsageIs(simulation);
+                    serialObjectHandler.serializableObject(eligibleCloudletIds,Constant.SERIAL_PRECLOUDLETID_PATH);
+                }
+                finalEligibleCloudletIds = eligibleCloudletIds;
+            }
+
+            //使用已存在的外部cloudlet
+            if(Constant.USING_EXISTANCE_CLOULETS){
+                if(serialObjectHandler.checkObjectExist(Constant.SERIAL_CLOUDLETID_PATH)){
+                    Constant.CLOUDLETID_EXIST = true;
+                    cloudletIds = serialObjectHandler.reverseSerializableObject(Constant.SERIAL_CLOUDLETID_PATH);
                 }
             }
-            if(broker != null){
-                reader.setDefaultBroker(broker);
+
+            for(String TRACE_FILENAME: googleTraceHandler.getTRACE_FILENAMES()){
+                GoogleTaskEventsTraceReader reader = GoogleTaskEventsTraceReader.getInstance(simulation, TRACE_FILENAME,this::createCloudlet);
+                if(Constant.USING_EXISTANCE_CLOULETS && Constant.CLOUDLETID_EXIST){
+                    reader.setPredicate(event -> cloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME);
+                }else{
+                    if(Constant.READ_INITIAL_MACHINE_CLOUDLET){
+                        if(Constant.USING_GOOGLE_HOST){
+                            reader.setPredicate(event -> (hostIds.contains(event.getMachineId()) && event.getTimestamp() <= Constant.STOP_TIME));
+                        }else{
+                            reader.setPredicate(event -> (event.getTimestamp() <= Constant.STOP_TIME));
+                            reader.setMaxCloudletsToCreate(200);
+                        }
+                    }else{
+                        if(Constant.USING_EXISTANCE_PRECLOULETS){
+                            reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
+                        }else{
+                            reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME);
+                            reader.setMaxCloudletsToCreate(100);
+                        }
+//                reader.setMaxCloudletsToCreate(100);
+                    }
+                }
+                if(broker != null){
+                    reader.setDefaultBroker(broker);
+                }
+                Collection<Cloudlet> eachfileCloudlets = reader.process();
+                cloudlets.addAll(eachfileCloudlets);
+                if(broker == null){
+                    List<DatacenterBroker> eachfileBrokers = reader.getBrokers();
+                    brokers.addAll(eachfileBrokers);
+                    System.out.printf(
+                        "TaskEventFile： %d Cloudlets and %d Brokers created from the %s trace file.%n",
+                        eachfileCloudlets.size(), eachfileBrokers.size(), TRACE_FILENAME);
+                }else{
+                    System.out.printf(
+                        "TaskEventFile： %d Cloudlets and using Default Brokers which created from the %s trace file.%n",
+                        eachfileCloudlets.size(), TRACE_FILENAME);
+                }
             }
-            Collection<Cloudlet> eachfileCloudlets = reader.process();
-            cloudlets.addAll(eachfileCloudlets);
-            if(broker == null){
-                List<DatacenterBroker> eachfileBrokers = reader.getBrokers();
-                brokers.addAll(eachfileBrokers);
-                System.out.printf(
-                    "TaskEventFile： %d Cloudlets and %d Brokers created from the %s trace file.%n",
-                    eachfileCloudlets.size(), eachfileBrokers.size(), TRACE_FILENAME);
-            }else{
-                System.out.printf(
-                    "TaskEventFile： %d Cloudlets and using Default Brokers which created from the %s trace file.%n",
-                    eachfileCloudlets.size(), TRACE_FILENAME);
+            cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
+            System.out.printf(
+                "Total %d Cloudlets and %d Brokers created!%n",
+                cloudlets.size(),brokers.size());
+        }else{
+            List<Cloudlet> list = new ArrayList<>();
+            for(int i=0;i<1000;++i){
+                Cloudlet cloudlet = createCloudlet();
+                list.add(cloudlet);
+                cloudlets.add(cloudlet);
             }
+            list.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
+            broker.submitCloudletList(list);
         }
-        cloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
-        System.out.printf(
-            "Total %d Cloudlets and %d Brokers created!%n",
-            cloudlets.size(),brokers.size());
     }
 
 
@@ -291,6 +307,21 @@ public class myImplementationMigrationDatacenter {
 //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
             ;
     }
+    private Cloudlet createCloudlet() {
+        final long length = 20000000;
+        final long fileSize = 300;
+        final long outputSize = 300;
+        UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.25);
+        UtilizationModel utilizationModelCpu = new UtilizationModelDynamic(0.5);
+
+        Cloudlet cloudlet = new CloudletSimple(length, 1);
+        cloudlet.setFileSize(fileSize)
+            .setOutputSize(outputSize)
+            .setUtilizationModelCpu(new UtilizationModelStochastic())
+            .setUtilizationModelBw(UtilizationModel.NULL)
+            .setUtilizationModelRam(new UtilizationModelStochastic());
+        return cloudlet;
+    }
 
     private void createGoogleDatacenters() {
         datacenters = new ArrayList<>(Constant.DATACENTERS_NUMBER);
@@ -303,7 +334,7 @@ public class myImplementationMigrationDatacenter {
         //Creates Datacenters with no hosts.
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
             this.allocationPolicy =
-                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+                new VmAllocationPolicyMigrationStaticThreshold(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
                     Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
@@ -370,6 +401,7 @@ public class myImplementationMigrationDatacenter {
         dataCenterPrinter.printHostsInformation(hostList);
     }
 
+
     private Host createHost(final MachineEvent event) {
         final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
         final Host host = new HostSimple(event.getRam(), Constant.MAX_HOST_BW, Constant.MAX_HOST_STORAGE, createPesList(event.getCpuCores()));
@@ -414,7 +446,7 @@ public class myImplementationMigrationDatacenter {
 
         //启用host记录历史状态
 //        host.enableStateHistory();
-        host.enableUtilizationStats();
+//        host.enableUtilizationStats();
         return host;
     }
 
@@ -485,7 +517,7 @@ public class myImplementationMigrationDatacenter {
         int type = id % Constant.VM_TYPE.length;
 //        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
         Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
-        vm.enableUtilizationStats();
+//        vm.enableUtilizationStats();
         return vm;
     }
 
@@ -507,11 +539,24 @@ public class myImplementationMigrationDatacenter {
      * @param info information about the event happened.
      */
     private void clockTickListener(final EventInfo info) {
-        double systemTime = simulation.clock();
-        //收集每个时刻每个虚拟机的RAM利用率
-        collectVmResourceUtilization(allVmsRamUtilizationHistory, systemTime, Ram.class);
-        //收集每个时刻每个host的RAM利用率
-        collectHostRamResourceUtilization(systemTime);
+//        double systemTime = simulation.clock();
+//        //收集每个时刻每个虚拟机的RAM利用率
+//        collectVmResourceUtilization(allVmsRamUtilizationHistory, systemTime, Ram.class);
+//        //收集每个时刻每个host的RAM利用率
+//        collectHostRamResourceUtilization(systemTime);
+
+//        collectHostRamResourceUtilization();
+//        collectHostCpuResourceUtilization();
+        if(simulation.clock() % Constant.Log_INTERVAL == 0){
+            collectHostResourceUtilization();
+//            System.out.println();
+//            System.out.println("前");
+//            for(double num:allHostsRamUtilizationHistoryQueue.get(hostList.get(1))){
+//                System.out.println(num);
+//            }
+//            System.out.println("后");
+//            System.out.println();
+        }
     }
 
     /**
@@ -573,10 +618,18 @@ public class myImplementationMigrationDatacenter {
     }
 
     public void initializeUtilizationHistory() {
-        allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
-        vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
-        allHostsRamUtilizationHistory = new HashMap<>(800);
-        hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
+//        allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
+//        vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
+//        allHostsRamUtilizationHistory = new HashMap<>(800);
+//        hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
+        allHostsRamUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
+        allHostsCpuUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
+        hostList.forEach(host -> allHostsRamUtilizationHistoryQueue.put(host,new LinkedList<>()));
+        hostList.forEach(host -> allHostsCpuUtilizationHistoryQueue.put(host,new LinkedList<>()));
+//        allHostsRamUtilizationHistoryAL = new HashMap<>(Constant.HOSTS);
+//        allHostsCpuUtilizationHistoryAL = new HashMap<>(Constant.HOSTS);
+//        hostList.forEach(host -> allHostsRamUtilizationHistoryAL.put(host,new ArrayList<>()));
+//        hostList.forEach(host -> allHostsCpuUtilizationHistoryAL.put(host,new ArrayList<>()));
     }
 
     /**
@@ -593,6 +646,64 @@ public class myImplementationMigrationDatacenter {
 
     private void collectHostRamResourceUtilization(double systemTime){
         hostList.forEach(host -> allHostsRamUtilizationHistory.get(host).put(systemTime,host.getRamPercentUtilization()));
+    }
+
+    private void collectHostRamResourceUtilization(){
+        hostList.forEach(host -> {
+            LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
+            if(hostRamhistory.size()<Constant.LogLength){
+                hostRamhistory.addLast(host.getRamPercentUtilization());
+            }else{
+                hostRamhistory.removeFirst();
+                hostRamhistory.addLast(host.getRamPercentUtilization());
+            }
+        });
+    }
+
+    private void collectHostResourceUtilization(){
+        hostList.forEach(host -> {
+            LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
+            LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
+            if(hostRamhistory.size()<Constant.LogLength){
+                hostRamhistory.addLast(host.getRamPercentUtilization());
+                hostCpuhistory.addLast(host.getCpuPercentUtilization());
+            }else{
+                hostRamhistory.removeFirst();
+                hostRamhistory.addLast(host.getRamPercentUtilization());
+                hostCpuhistory.removeFirst();
+                hostCpuhistory.addLast(host.getCpuPercentUtilization());
+            }
+        });
+    }
+
+//    private void collectHostResourceUtilization(){
+//        hostList.forEach(host -> {
+//            ArrayList<Double> hostRamhistory = allHostsRamUtilizationHistoryAL.get(host);
+//            ArrayList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryAL.get(host);
+//            if(hostRamhistory.size()<Constant.LogLength){
+//                hostRamhistory.add(host.getRamPercentUtilization());
+//                hostCpuhistory.add(host.getCpuPercentUtilization());
+//            }else{
+//                hostRamhistory.remove(0);
+//                hostRamhistory.add(host.getRamPercentUtilization());
+//                hostCpuhistory.remove(0);
+//                hostCpuhistory.add(host.getCpuPercentUtilization());
+//            }
+//        });
+//    }
+
+    private void collectHostCpuResourceUtilization(){
+        hostList.forEach(host -> {
+            LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
+            double utilization = host.getCpuPercentUtilization();
+            if(hostCpuhistory.size()<Constant.LogLength){
+
+                hostCpuhistory.addLast(utilization);
+            }else{
+                hostCpuhistory.removeFirst();
+                hostCpuhistory.addLast(utilization);
+            }
+        });
     }
 
     //直接移除不对齐的cpu和ram利用率，不建议开启

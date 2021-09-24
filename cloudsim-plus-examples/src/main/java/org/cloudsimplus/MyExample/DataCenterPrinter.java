@@ -95,7 +95,6 @@ public class DataCenterPrinter {
                 final double vmRelativeCpuUtilization = vm.getCpuUtilizationStats().getMean() / vm.getHost().getVmCreatedList().size();
                 final double vmPower = powerModel.getPower(vmRelativeCpuUtilization) - hostStaticPower + hostStaticPowerByVm; // W
                 final VmResourceStats cpuStats = vm.getCpuUtilizationStats();
-                System.out.println(vm.getCpuPercentUtilization(15603.0));
                 System.out.printf(
                     "Vm   %2d CPU Usage Mean: %6.1f%% | Power Consumption Mean: %8.0f W%n",
                     vm.getId(), cpuStats.getMean() * 100, vmPower);
