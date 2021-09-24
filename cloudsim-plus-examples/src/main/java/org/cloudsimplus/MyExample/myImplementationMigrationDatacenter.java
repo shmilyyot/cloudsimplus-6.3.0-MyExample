@@ -547,7 +547,9 @@ public class myImplementationMigrationDatacenter {
 
 //        collectHostRamResourceUtilization();
 //        collectHostCpuResourceUtilization();
-        if(simulation.clock() % Constant.Log_INTERVAL == 0){
+        double time = simulation.clock();
+        if(time - (int)time != 0.0) return;
+        if((int)time % Constant.Log_INTERVAL == 0){
             collectHostResourceUtilization();
 //            System.out.println();
 //            System.out.println("前");
@@ -664,15 +666,18 @@ public class myImplementationMigrationDatacenter {
         hostList.forEach(host -> {
             LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
             LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-            if(hostRamhistory.size()<Constant.LogLength){
-                hostRamhistory.addLast(host.getRamPercentUtilization());
-                hostCpuhistory.addLast(host.getCpuPercentUtilization());
-            }else{
-                hostRamhistory.removeFirst();
-                hostRamhistory.addLast(host.getRamPercentUtilization());
-                hostCpuhistory.removeFirst();
-                hostCpuhistory.addLast(host.getCpuPercentUtilization());
+//            if(hostRamhistory.size()>Constant.LogLength){
+//                hostRamhistory.removeFirst();
+//                hostCpuhistory.removeFirst();
+//            }
+            if(hostRamhistory.size() >= Constant.LogLength * 2){
+                while(hostRamhistory.size() > Constant.LogLength-1){
+                    hostRamhistory.removeFirst();
+                    hostCpuhistory.removeFirst();
+                }
             }
+            hostRamhistory.addLast(host.getRamPercentUtilization());
+            hostCpuhistory.addLast(host.getCpuPercentUtilization());
         });
     }
 
