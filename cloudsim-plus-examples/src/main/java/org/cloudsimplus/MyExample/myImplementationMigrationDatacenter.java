@@ -135,9 +135,6 @@ public class myImplementationMigrationDatacenter {
         //创建模拟仿真
         simulation = new CloudSim();
 
-        //初始化cpu,ram记录
-        initializeUtilizationHistory();
-
         //使用谷歌数据中心主机模板或自定义数据中心主机模板
         if(Constant.USING_GOOGLE_HOST){
             createGoogleDatacenters();
@@ -155,6 +152,9 @@ public class myImplementationMigrationDatacenter {
 //        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
         //添加定时监听事件
         simulation.addOnClockTickListener(this::clockTickListener);
+
+        //初始化cpu,ram记录
+        initializeUtilizationHistory();
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
 //        readTaskUsageTraceFile();
@@ -679,21 +679,21 @@ public class myImplementationMigrationDatacenter {
             host.getVmList().forEach(vm -> {
                 LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
                 LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-                if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
+//                if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
                     while(vmCpuHistory.size() > Constant.VM_LogLength-1){
                         vmCpuHistory.removeFirst();
                         vmRamHistory.removeFirst();
                     }
-                }
+//                }
                 vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                 vmRamHistory.addLast(vm.getRam().getPercentUtilization());
             });
-            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
+//            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
                 while(hostRamhistory.size() > Constant.HOST_LogLength-1){
                     hostRamhistory.removeFirst();
                     hostCpuhistory.removeFirst();
                 }
-            }
+//            }
             hostRamhistory.addLast(host.getRamPercentUtilization());
             hostCpuhistory.addLast(host.getCpuPercentUtilization());
         });

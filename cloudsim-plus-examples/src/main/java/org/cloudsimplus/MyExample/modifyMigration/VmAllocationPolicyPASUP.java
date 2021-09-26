@@ -22,19 +22,9 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     private Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue;
     private Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue;
     private Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue;
-    public VmAllocationPolicyPASUP(final VmSelectionPolicy vmSelectionPolicy,
-                                   final MathHandler mathHandler,
-                                   final Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue,
-                                   final Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue,
-                                   final Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue,
-                                   final Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue)
+    public VmAllocationPolicyPASUP(final VmSelectionPolicy vmSelectionPolicy)
     {
         this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD);
-        this.mathHandler = mathHandler;
-        this.allHostsRamUtilizationHistoryQueue = allHostsRamUtilizationHistoryQueue;
-        this.allHostsCpuUtilizationHistoryQueue = allHostsCpuUtilizationHistoryQueue;
-        this.allVmsRamUtilizationHistoryQueue = allVmsRamUtilizationHistoryQueue;
-        this.allVmsCpuUtilizationHistoryQueue = allVmsCpuUtilizationHistoryQueue;
     }
 
     public VmAllocationPolicyPASUP(
@@ -42,6 +32,23 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double overUtilizationThreshold)
     {
         this(vmSelectionPolicy, overUtilizationThreshold, null);
+    }
+
+    public VmAllocationPolicyPASUP(
+        final VmSelectionPolicy vmSelectionPolicy,
+        final double overUtilizationThreshold,
+        final MathHandler mathHandler,
+        final Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue,
+        final Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue,
+        final Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue,
+        final Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue)
+    {
+        this(vmSelectionPolicy, overUtilizationThreshold, null);
+        this.mathHandler = mathHandler;
+        this.allHostsRamUtilizationHistoryQueue = allHostsRamUtilizationHistoryQueue;
+        this.allHostsCpuUtilizationHistoryQueue = allHostsCpuUtilizationHistoryQueue;
+        this.allVmsRamUtilizationHistoryQueue = allVmsRamUtilizationHistoryQueue;
+        this.allVmsCpuUtilizationHistoryQueue = allVmsCpuUtilizationHistoryQueue;
     }
 
     public VmAllocationPolicyPASUP(
@@ -77,29 +84,28 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
                 targetHost.set(host);
             }
         });
-        assert targetHost != null;
         return Optional.ofNullable(targetHost.get());
     }
 
     private void processCurrentUtilization(final Vm vm,double vmCpuUtilization,double vmRamUtilization,final Host host,double hostCpuUtilization,double hostRamUtilization){
         LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
         LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-        if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
+//        if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
             while(vmCpuHistory.size() > Constant.VM_LogLength-1){
                 vmCpuHistory.removeFirst();
                 vmRamHistory.removeFirst();
             }
-        }
+//        }
         vmCpuHistory.addLast(vmCpuUtilization);
         vmRamHistory.addLast(vmRamUtilization);
         LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
         LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-        if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
+//        if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
             while(hostRamhistory.size() > Constant.HOST_LogLength-1){
                 hostRamhistory.removeFirst();
                 hostCpuhistory.removeFirst();
             }
-        }
+//        }
         hostRamhistory.addLast(hostRamUtilization);
         hostCpuhistory.addLast(hostCpuUtilization);
     }
