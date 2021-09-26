@@ -15,8 +15,10 @@ public class Constant {
      * 数据中心日志设置
      */
     public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
-    public static int LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
-    public static int Log_INTERVAL = SCHEDULING_INTERVAL/30; //    记录日志的时间间隔，默认和系统调度时间一致
+    public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
+    public static int VM_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
+    public static int HOST_Log_INTERVAL = SCHEDULING_INTERVAL/30; //    记录日志的时间间隔，默认和系统调度时间一致
+    public static int VM_LOG_INTERVAL = HOST_Log_INTERVAL;  //记录虚拟机日志的时间间隔，和主机日志数目一直
 
     /**
      * 数据中心迁移相关设置

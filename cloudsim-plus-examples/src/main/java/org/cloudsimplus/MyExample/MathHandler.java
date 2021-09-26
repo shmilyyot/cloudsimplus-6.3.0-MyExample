@@ -75,8 +75,8 @@ public class MathHandler {
 
     }
 
-    public void DGMPredicting(List<Double> dataHistory){
-
+    public double DGMPredicting(List<Double> dataHistory){
+        return 0.0;
     }
 
 }

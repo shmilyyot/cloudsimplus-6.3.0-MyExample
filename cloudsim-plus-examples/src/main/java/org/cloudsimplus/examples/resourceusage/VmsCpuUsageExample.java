@@ -71,8 +71,8 @@ public class VmsCpuUsageExample {
     private List<Cloudlet> cloudletList;
     private List<Vm> vmlist;
     private DatacenterBroker broker;
-    private static final int VMS = 1000;
-    private static final int HOSTS = 1000;
+    private static final int VMS = 10;
+    private static final int HOSTS = 10;
 
     /**
      * Starts the example execution.
@@ -124,7 +124,7 @@ public class VmsCpuUsageExample {
     }
 
     private Cloudlet createCloudlet(final int pesNumber) {
-        final long length = 100000000;
+        final long length = 1000;
         final long fileSize = 300;
         final long outputSize = 300;
         UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.25);
