@@ -173,6 +173,10 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
      */
     boolean removeVmMigratingOut(Vm vm);
 
+    public double getIdlePower();
+
+    public void setIdlePower(double idlePower);
+
     /**
      * Reallocate VMs migrating into the host. Gets the VM in the migrating in queue
      * and allocate them on the host.

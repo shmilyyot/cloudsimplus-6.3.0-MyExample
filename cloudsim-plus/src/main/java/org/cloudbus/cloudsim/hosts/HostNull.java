@@ -45,11 +45,12 @@ final class HostNull implements Host, Serializable {
     @Override public boolean removeVmMigratingOut(Vm vm) {
         return false;
     }
+    @Override public double getIdlePower() {return 0;}
+    @Override public void setIdlePower(double idlePower) {/**/}
     @Override public double getTotalAvailableMips() {
         return 0;
     }
     @Override public double getTotalAllocatedMips() { return 0; }
-
     @Override public Resource getBw() {
         return Resource.NULL;
     }

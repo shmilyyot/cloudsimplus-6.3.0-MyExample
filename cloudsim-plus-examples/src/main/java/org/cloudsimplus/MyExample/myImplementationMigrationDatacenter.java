@@ -377,6 +377,8 @@ public class myImplementationMigrationDatacenter {
         for(int i=0;i<halfNumOfHost;++i){
             Host host1 = createHost(0);
             Host host2 = createHost(1);
+            host1.setIdlePower(Constant.IDLE_POWER[0]);
+            host2.setIdlePower(Constant.IDLE_POWER[1]);
             hostList.add(host1);
             hostList.add(host2);
         }

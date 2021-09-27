@@ -65,6 +65,16 @@ public class HostSimple implements Host, Serializable {
     private boolean active;
     private boolean stateHistoryEnabled;
 
+    public double getIdlePower() {
+        return idlePower;
+    }
+
+    public void setIdlePower(double idlePower) {
+        this.idlePower = idlePower;
+    }
+
+    private double idlePower = 0.0;
+
     /** @see #getStartTime() */
     private double startTime = -1;
 

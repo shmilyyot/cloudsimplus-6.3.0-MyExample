@@ -75,6 +75,7 @@ public class Constant {
     public static final double[] HOST_MIPS = {1860,2660};  //cpu处理速率
     public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
     public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
+    public static final double[] IDLE_POWER = {86,93};
 
 
     /**

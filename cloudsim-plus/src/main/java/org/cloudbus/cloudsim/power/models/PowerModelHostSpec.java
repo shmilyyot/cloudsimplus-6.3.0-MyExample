@@ -1,5 +1,6 @@
 package org.cloudbus.cloudsim.power.models;
 
+import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.power.PowerMeasurement;
 
 import java.util.List;
@@ -63,9 +64,17 @@ public class PowerModelHostSpec extends PowerModelHost {
     @Override
     public PowerMeasurement getPowerMeasurement() {
         final double utilizationFraction = getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity();
-        if(utilizationFraction == 0.0) return new PowerMeasurement(0, 0);
         final int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
         final double powerUsage = powerSpec.get(utilizationIndex);
+        if(utilizationFraction == 0.0) return new PowerMeasurement(86, powerUsage - 86);
+        return new PowerMeasurement(powerSpec.get(0), powerUsage - powerSpec.get(0));
+    }
+
+    public PowerMeasurement getPowerMeasurement(Host host) {
+        final double utilizationFraction = getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity();
+        final int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
+        final double powerUsage = powerSpec.get(utilizationIndex);
+        if(utilizationFraction == 0.0) return new PowerMeasurement(host.getIdlePower(), powerUsage - host.getIdlePower());
         return new PowerMeasurement(powerSpec.get(0), powerUsage - powerSpec.get(0));
     }
 
