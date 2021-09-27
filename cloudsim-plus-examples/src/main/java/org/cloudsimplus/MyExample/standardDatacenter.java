@@ -23,7 +23,6 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
-import org.cloudsimplus.MyExample.serialObject.serialObject;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
 import java.io.*;
