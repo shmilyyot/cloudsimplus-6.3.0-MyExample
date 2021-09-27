@@ -76,7 +76,16 @@ public class MathHandler {
     }
 
     public double DGMPredicting(List<Double> dataHistory){
+
         return 0.0;
+    }
+
+    public double findMaxValue(double[] prediction){
+        return Arrays.stream(prediction).max().getAsDouble();
+    }
+
+    public double findMinValue(double[] prediction){
+        return Arrays.stream(prediction).min().getAsDouble();
     }
 
 }

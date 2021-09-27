@@ -133,7 +133,7 @@ public final class MigrationExample1 {
      * The percentage of host CPU usage that trigger VM migration
      * due to over utilization (in scale from 0 to 1, where 1 is 100%).
      */
-    private static final double HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;
+    private static final double HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.5;
 
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     private static final int HOST_SEARCH_RETRY_DELAY = 60;
@@ -432,6 +432,9 @@ public final class MigrationExample1 {
             Host host = createHost(pes, HOST_MIPS, ram);
             hostList.add(host);
         }
+        Host sleephost = createHost(HOST_PES[0], HOST_MIPS, HOST_RAM[0]);
+        sleephost.setActive(false);
+        hostList.add(sleephost);
         System.out.println();
 
         /**

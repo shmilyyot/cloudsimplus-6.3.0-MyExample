@@ -103,12 +103,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     public Map<Vm, Host> getOptimizedAllocationMap(final List<? extends Vm> vmList) {
         //@TODO See https://github.com/manoelcampos/cloudsim-plus/issues/94
         final Set<Host> overloadedHosts = getOverloadedHosts();
+        final Set<Host> switchedOffHosts = getSwitchedOffHosts();
         this.hostsOverloaded = !overloadedHosts.isEmpty();
         printOverUtilizedHosts(overloadedHosts);
         saveAllocation();
-
-        final Map<Vm, Host> migrationMap = getMigrationMapFromOverloadedHosts(overloadedHosts);
-        updateMigrationMapFromUnderloadedHosts(overloadedHosts, migrationMap);
+        //先找到过载的迁移表，再处理低负载的迁移表
+        final Map<Vm, Host> migrationMap = getMigrationMapFromOverloadedHosts(overloadedHosts,switchedOffHosts);
+        updateMigrationMapFromUnderloadedHosts(overloadedHosts, migrationMap,switchedOffHosts);
         if(migrationMap.isEmpty()){
             return migrationMap;
         }
@@ -125,9 +126,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     private void updateMigrationMapFromUnderloadedHosts(
         final Set<Host> overloadedHosts,
-        final Map<Vm, Host> migrationMap)
+        final Map<Vm, Host> migrationMap,
+        final Set<Host> switchedOffHosts)
     {
-        final List<Host> switchedOffHosts = getSwitchedOffHosts();
 
         // overloaded hosts + hosts that are selected to migrate VMs from overloaded hosts
         final Set<Host> ignoredSourceHosts = getIgnoredHosts(overloadedHosts, switchedOffHosts);
@@ -142,6 +143,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         looking for underloaded Hosts.
         See https://github.com/manoelcampos/cloudsim-plus/issues/94
          */
+        //过载被迁移的主机有可能是新开启的，因此是低负载的
+        //这个是低负载前迁出的忽略列表，不是迁入的，若有因为过载被迁入的host不再参与迁出
         ignoredSourceHosts.addAll(migrationMap.values());
 
         // overloaded + underloaded hosts
@@ -155,6 +158,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 break;
             }
 
+            //每次循环选择一个低负载的host出来
             final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
             if (underloadedHost == Host.NULL) {
                 break;
@@ -186,7 +190,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         }
     }
 
-    private Set<Host> getIgnoredHosts(final Set<Host> overloadedHosts, final List<Host> switchedOffHosts) {
+    private Set<Host> getIgnoredHosts(final Set<Host> overloadedHosts, final Set<Host> switchedOffHosts) {
         final Set<Host> ignoredHosts = new HashSet<>();
         ignoredHosts.addAll(overloadedHosts);
         ignoredHosts.addAll(switchedOffHosts);
@@ -340,6 +344,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     private Optional<Host> findHostForVm(final Vm vm, final Set<? extends Host> excludedHosts, final Predicate<Host> predicate) {
         final Stream<Host> stream = this.getHostList().stream()
+            .filter(Host::isActive)
             .filter(host -> !excludedHosts.contains(host))
             .filter(host -> host.isSuitableForVm(vm))
             .filter(host -> isNotHostOverloadedAfterAllocation(host, vm))
@@ -385,7 +390,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * and each value is the Host to place it.
      * @TODO See issue in {@link #getVmsToMigrateFromOverloadedHost(Host)}
      */
-    private Map<Vm, Host> getMigrationMapFromOverloadedHosts(final Set<Host> overloadedHosts) {
+    private Map<Vm, Host> getMigrationMapFromOverloadedHosts(final Set<Host> overloadedHosts,Set<Host> switchedOffHosts) {
         if(overloadedHosts.isEmpty()) {
             return  new HashMap<>();
         }
@@ -396,10 +401,32 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
         final StringBuilder builder = new StringBuilder();
         for (final Vm vm : vmsToMigrate) {
-            findHostForVm(vm, overloadedHosts).ifPresent(targetHost -> {
-                addVmToMigrationMap(migrationMap, vm, targetHost);
-                appendVmMigrationMsgToStringBuilder(builder, vm, targetHost);
-            });
+            Optional<Host> targethost = findHostForVm(vm, overloadedHosts);
+            if(targethost.isPresent()){
+                Host host = targethost.get();
+                addVmToMigrationMap(migrationMap, vm, host);
+                appendVmMigrationMsgToStringBuilder(builder, vm, host);
+            }else{
+                System.out.println(getDatacenter().getSimulation().clockStr() + ": Vm "+ vm.getId()+" can't find a host to place.now trying to awake a sleep host!");
+                Host target = null;
+                //如果有vm没有找到host，没有操作，这里需要开启一台host来进行放置
+                for(Host host:switchedOffHosts){
+                    if(host.isSuitableForVm(vm)){
+                        host.setActive(true);
+                        addVmToMigrationMap(migrationMap, vm, host);
+                        appendVmMigrationMsgToStringBuilder(builder, vm, host);
+                        target = host;
+                        System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
+                        break;
+                    }
+                }
+                switchedOffHosts.remove(target);
+
+            }
+//            findHostForVm(vm, overloadedHosts).ifPresent(targetHost -> {
+//                addVmToMigrationMap(migrationMap, vm, targetHost);
+//                appendVmMigrationMsgToStringBuilder(builder, vm, targetHost);
+//            });
         }
         LOGGER.info(
             "{}: VmAllocationPolicy: Reallocation of VMs from overloaded hosts: {}{}",
@@ -429,10 +456,12 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         final Set<? extends Host> excludedHosts)
     {
         final Map<Vm, Host> migrationMap = new HashMap<>();
+        //低负载vm和高负载vm是分开迁移的，但是都是按bfd进行迁移
         sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));
+            //只要有一个vm找不到host，直接返回空map，之前找到host的也不算了
             if (!optional.isPresent()) {
                 LOGGER.warn(
                     "{}: VmAllocationPolicy: A new Host, which isn't also underloaded or won't be overloaded, couldn't be found to migrate {}. Migration of VMs from the underloaded {} cancelled.",
@@ -522,10 +551,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      *
      * @return the switched off hosts
      */
-    protected List<Host> getSwitchedOffHosts() {
+    protected Set<Host> getSwitchedOffHosts() {
         return this.getHostList().stream()
             .filter(this::isShutdownOrFailed)
-            .collect(toList());
+            .collect(toSet());
     }
 
     private boolean isShutdownOrFailed(final Host host) {

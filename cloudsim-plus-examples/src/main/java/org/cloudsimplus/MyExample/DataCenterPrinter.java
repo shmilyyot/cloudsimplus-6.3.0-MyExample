@@ -140,6 +140,7 @@ public class DataCenterPrinter {
         double totalDataCenterPowerConsumption = 0.0;
         for(PowerMeasurement powerMeasurement:powerMeter.getPowerMeasurements()){
             totalDataCenterPowerConsumption += powerMeasurement.getTotalPower();
+//            System.out.println(powerMeasurement.getTotalPower());
         }
 //        System.out.println("能耗统计的数量："+powerMeter.getPowerMeasurements().size());
         double totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600 * 1000);
@@ -200,6 +201,11 @@ public class DataCenterPrinter {
         }
 
         System.out.printf("----------------------------------------------------------------------------------%n%n");
+    }
+
+    public void activeHostCount(List<Host> hostList){
+        long count = hostList.stream().filter(Host::isActive).count();
+        System.out.println("当前系统中活跃主机数目是： "+count);
     }
 
 }

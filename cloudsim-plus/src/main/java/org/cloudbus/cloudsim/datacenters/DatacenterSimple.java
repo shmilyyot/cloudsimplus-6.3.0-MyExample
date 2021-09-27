@@ -806,6 +806,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             requestVmMigration(entry.getKey(), entry.getValue());
         }
 
+        //有主机过载但是migrationmap里面为空，所以报错
         if(areThereUnderOrOverloadedHostsAndMigrationIsSupported()){
             logHostSearchRetry();
             lastTimeUnderOrOverloadedHostsDetected = clock();

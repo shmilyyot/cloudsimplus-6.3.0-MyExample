@@ -13,7 +13,6 @@ import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.datacenters.DatacenterSimple;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.hosts.HostSimple;
-import org.cloudbus.cloudsim.hosts.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
@@ -21,17 +20,16 @@ import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.*;
-import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
-import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.MyExample.serialObject.serialObject;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.listeners.EventListener;
@@ -195,6 +193,7 @@ public class myImplementationMigrationDatacenter {
         final double endSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
 
+        dataCenterPrinter.activeHostCount(hostList);
 //        //打印host的cpu利用率
 //        System.setOut(new PrintStream(new FileOutputStream(Constant.HOST_LOG_FILE_PATH)));
 //        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
@@ -676,26 +675,40 @@ public class myImplementationMigrationDatacenter {
         hostList.forEach(host -> {
             LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
             LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-            host.getVmList().forEach(vm -> {
-                LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-                LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-//                if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
-                    while(vmCpuHistory.size() > Constant.VM_LogLength-1){
-                        vmCpuHistory.removeFirst();
-                        vmRamHistory.removeFirst();
-                    }
-//                }
-                vmCpuHistory.addLast(vm.getCpuPercentUtilization());
-                vmRamHistory.addLast(vm.getRam().getPercentUtilization());
-            });
+            if(host.isActive()){
 //            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
                 while(hostRamhistory.size() > Constant.HOST_LogLength-1){
                     hostRamhistory.removeFirst();
                     hostCpuhistory.removeFirst();
                 }
 //            }
-            hostRamhistory.addLast(host.getRamPercentUtilization());
-            hostCpuhistory.addLast(host.getCpuPercentUtilization());
+                double hostRamUtilization = host.getRamPercentUtilization();
+                double hostCpuUtilization = host.getCpuPercentUtilization();
+                if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0){
+                    host.setActive(false);
+                }
+                hostRamhistory.addLast(hostRamUtilization);
+                hostCpuhistory.addLast(hostCpuUtilization);
+                host.getVmList().forEach(vm -> {
+                    LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
+                    LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
+//                if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
+                    while(vmCpuHistory.size() > Constant.VM_LogLength-1){
+                        vmCpuHistory.removeFirst();
+                        vmRamHistory.removeFirst();
+                    }
+//                }
+                    vmCpuHistory.addLast(vm.getCpuPercentUtilization());
+                    vmRamHistory.addLast(vm.getRam().getPercentUtilization());
+                });
+            }else{
+                while(hostRamhistory.size() > Constant.HOST_LogLength-1){
+                    hostRamhistory.removeFirst();
+                    hostCpuhistory.removeFirst();
+                }
+                hostRamhistory.addLast(0.0);
+                hostCpuhistory.addLast(0.0);
+            }
         });
     }
 

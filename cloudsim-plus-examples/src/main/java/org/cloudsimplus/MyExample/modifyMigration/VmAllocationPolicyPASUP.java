@@ -16,6 +16,8 @@ import static java.util.Comparator.comparingDouble;
 
 //默认算法就是PABFD
 //VmAllocationPolicyMigrationAbstract里面的findHostForVmInternal就是根据最小的energy消耗选择的host，然后sortByCpuUtilization里面的就是按照利用率降序排序，就是pabfd
+//updateMigrationMapFromUnderloadedHosts方法每次选择一个低负载的host出来迁移
+//getMigrationMapFromOverloadedHosts方法可以设置过载vm找不到放置的后果
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
@@ -67,37 +69,36 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     //重写查找指定host的函数
     @Override
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
-        AtomicReference<Double> minFitValue = new AtomicReference<>(0.0);
-        AtomicReference<Host> targetHost = null;
-        hostStream.forEach(host -> {
+//        AtomicReference<Double> minFitValue = new AtomicReference<>(0.0);
+//        AtomicReference<Host> targetHost = null;
+        double vmCpuUtilization = vm.getCpuPercentUtilization();
+        double vmRamUtilization = vm.getRam().getPercentUtilization();
+        processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
+        double[] vmPredict = new double[]{mathHandler.DGMPredicting(allVmsCpuUtilizationHistoryQueue.get(vm)),mathHandler.DGMPredicting(allVmsRamUtilizationHistoryQueue.get(vm))};
+//        hostStream.forEach(host -> {
+//            double hostCpuUtilization = host.getCpuPercentUtilization();
+//            double hostRamUtilization = host.getRamPercentUtilization();
+//            processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
+//            double[] hostPredict = new double[]{mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
+//            double powerDifference = getPowerDifferenceAfterAllocation(host, vm);
+//            double fitValue = powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
+//            if(minFitValue.get() > fitValue){
+//                minFitValue.set(fitValue);
+//                targetHost.set(host);
+//            }
+//        });
+        return Optional.of(hostStream.min(Comparator.comparingDouble(host->{
             double hostCpuUtilization = host.getCpuPercentUtilization();
             double hostRamUtilization = host.getRamPercentUtilization();
-            double vmCpuUtilization = vm.getCpuPercentUtilization();
-            double vmRamUtilization = vm.getRam().getPercentUtilization();
-            processCurrentUtilization(vm,vmCpuUtilization,vmRamUtilization,host,hostCpuUtilization,hostRamUtilization);
-            double[] vmPredict = new double[]{mathHandler.DGMPredicting(allVmsCpuUtilizationHistoryQueue.get(vm)),mathHandler.DGMPredicting(allVmsRamUtilizationHistoryQueue.get(vm))};
+            processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
             double[] hostPredict = new double[]{mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
-            double powerDifference = getPowerDifferenceAfterAllocation(host, vm);
-            double fitValue = powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
-            if(minFitValue.get() > fitValue){
-                minFitValue.set(fitValue);
-                targetHost.set(host);
-            }
-        });
-        return Optional.ofNullable(targetHost.get());
+            double powerDifference = getPowerDifferenceAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
+            return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
+        })).get());
+//        return Optional.ofNullable(targetHost.get());
     }
 
-    private void processCurrentUtilization(final Vm vm,double vmCpuUtilization,double vmRamUtilization,final Host host,double hostCpuUtilization,double hostRamUtilization){
-        LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-        LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-//        if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
-            while(vmCpuHistory.size() > Constant.VM_LogLength-1){
-                vmCpuHistory.removeFirst();
-                vmRamHistory.removeFirst();
-            }
-//        }
-        vmCpuHistory.addLast(vmCpuUtilization);
-        vmRamHistory.addLast(vmRamUtilization);
+    private void processCurrentHostUtilization(final Host host,double hostCpuUtilization,double hostRamUtilization){
         LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
         LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
 //        if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
@@ -110,13 +111,46 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         hostCpuhistory.addLast(hostCpuUtilization);
     }
 
+    private void processCurrentVmUtilization(final Vm vm,double vmCpuUtilization,double vmRamUtilization){
+        LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
+        LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
+//        if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
+        while(vmCpuHistory.size() > Constant.VM_LogLength-1){
+            vmCpuHistory.removeFirst();
+            vmRamHistory.removeFirst();
+        }
+//        }
+        vmCpuHistory.addLast(vmCpuUtilization);
+        vmRamHistory.addLast(vmRamUtilization);
+    }
+
     //重写计算未来放置能耗的函数
-    @Override
-    protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm) {
-        final double requestedTotalMips = vm.getCurrentRequestedTotalMips();
-        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
+    protected double getPowerDifferenceAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization){
+        final double powerAfterAllocation = getPowerAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
+        if (powerAfterAllocation > 0) {
+            return powerAfterAllocation - host.getPowerModel().getPower();
+        }
+
+        return 0;
+    }
+
+    protected double getPowerAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
+        try {
+            return host.getPowerModel().getPower(getMaxUtilizationAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization));
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Power consumption for {} could not be determined: {}", host, e.getMessage());
+        }
+
+        return 0;
+    }
+
+    protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
+        final double requestedTotalMips = vmCpuUtilization * vm.getTotalMipsCapacity();
+        final double hostUtilizationMips = hostCpuUtilization * host.getTotalMipsCapacity();
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
         return hostPotentialMipsUse / host.getTotalMipsCapacity();
     }
+
+
 
 }

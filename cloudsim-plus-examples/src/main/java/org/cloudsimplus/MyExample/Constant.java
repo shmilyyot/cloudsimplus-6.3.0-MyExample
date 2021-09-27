@@ -17,7 +17,7 @@ public class Constant {
     public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
-    public static int HOST_Log_INTERVAL = SCHEDULING_INTERVAL/30; //    记录日志的时间间隔，默认和系统调度时间一致
+    public static int HOST_Log_INTERVAL = 30; //    记录日志的时间间隔，默认和系统调度时间一致
     public static int VM_LOG_INTERVAL = HOST_Log_INTERVAL;  //记录虚拟机日志的时间间隔，和主机日志数目一直
 
     /**
@@ -73,8 +73,8 @@ public class Constant {
     public static final long[] HOST_BW = {1024,1024};  //带宽速率，用不到
     public static final long[] HOST_STORAGE = {1_000_000,1_000_000};  //硬盘大小，用不到
     public static final double[] HOST_MIPS = {1860,2660};  //cpu处理速率
-    public static final Double[] HOST_G4_SPEC_POWER = {86.0,89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗
-    public static final Double[] HOST_G5_SPEC_POWER = {93.7,97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗
+    public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
+    public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
 
 
     /**
