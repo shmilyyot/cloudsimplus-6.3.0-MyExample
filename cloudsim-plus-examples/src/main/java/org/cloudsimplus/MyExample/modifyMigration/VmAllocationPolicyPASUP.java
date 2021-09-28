@@ -71,10 +71,10 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
 //        AtomicReference<Double> minFitValue = new AtomicReference<>(0.0);
 //        AtomicReference<Host> targetHost = null;
-        double vmCpuUtilization = vm.getCpuPercentUtilization();
-        double vmRamUtilization = vm.getRam().getPercentUtilization();
+        final double vmCpuUtilization = vm.getCpuPercentUtilization();
+        final double vmRamUtilization = vm.getRam().getPercentUtilization();
         processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
-        double[] vmPredict = new double[]{mathHandler.DGMPredicting(allVmsCpuUtilizationHistoryQueue.get(vm)),mathHandler.DGMPredicting(allVmsRamUtilizationHistoryQueue.get(vm))};
+        final double[] vmPredict = new double[]{mathHandler.DGMPredicting(allVmsCpuUtilizationHistoryQueue.get(vm)),mathHandler.DGMPredicting(allVmsRamUtilizationHistoryQueue.get(vm))};
 //        hostStream.forEach(host -> {
 //            double hostCpuUtilization = host.getCpuPercentUtilization();
 //            double hostRamUtilization = host.getRamPercentUtilization();
@@ -87,14 +87,14 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //                targetHost.set(host);
 //            }
 //        });
-        return Optional.of(hostStream.min(Comparator.comparingDouble(host->{
-            double hostCpuUtilization = host.getCpuPercentUtilization();
-            double hostRamUtilization = host.getRamPercentUtilization();
+        return hostStream.min(Comparator.comparingDouble(host->{
+            final double hostCpuUtilization = host.getCpuPercentUtilization();
+            final double hostRamUtilization = host.getRamPercentUtilization();
             processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
-            double[] hostPredict = new double[]{mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
+            final double[] hostPredict = new double[]{mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
             double powerDifference = getPowerDifferenceAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
             return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
-        })).get());
+        }));
 //        return Optional.ofNullable(targetHost.get());
     }
 
