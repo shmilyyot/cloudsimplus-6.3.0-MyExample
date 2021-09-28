@@ -91,7 +91,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
             processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
-            final double[] hostPredict = new double[]{mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
+            final double[] hostPredict = new double[]{1-mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),1-mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
             double powerDifference = getPowerDifferenceAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
             return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
         }));

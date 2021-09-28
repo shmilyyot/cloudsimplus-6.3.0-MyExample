@@ -336,19 +336,19 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     @Override
     public boolean isHostUnderloaded(final Host host) {
         if(hostRamThreshold){
-            return isHostUnderloaded(host,host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+            return isHostUnderloaded(host.getCpuPercentUtilization(),host.getRamPercentUtilization());
         }else{
-            return isHostUnderloaded(host,host.getCpuPercentUtilization());
+            return isHostUnderloaded(host.getCpuPercentUtilization());
         }
 //        return getHostCpuPercentRequested(host) < getUnderUtilizationThreshold();
     }
 
-    public boolean isHostUnderloaded(final Host host, final double cpuUsagePercent,final double ramUsagePercent) {
-        return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
+    public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
+        return cpuUsagePercent < getUnderUtilizationThreshold() && ramUsagePercent < getUnderRamUtilizationThreshold();
     }
 
-    public boolean isHostUnderloaded(final Host host, final double cpuUsagePercent) {
-        return getHostCpuPercentRequested(host) < getUnderUtilizationThreshold();
+    public boolean isHostUnderloaded(final double cpuUsagePercent) {
+        return cpuUsagePercent < getUnderUtilizationThreshold();
     }
 
 

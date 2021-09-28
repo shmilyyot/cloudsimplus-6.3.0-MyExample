@@ -690,6 +690,7 @@ public class myImplementationMigrationDatacenter {
 //            }
                 double hostRamUtilization = host.getRamPercentUtilization();
                 double hostCpuUtilization = host.getCpuPercentUtilization();
+//                System.out.println(simulation.clockStr() + ": hsot" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
                 if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0){
                     host.setActive(false);
                     System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
