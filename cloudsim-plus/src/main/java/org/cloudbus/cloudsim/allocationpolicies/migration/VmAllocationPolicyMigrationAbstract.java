@@ -175,7 +175,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 logVmsToBeReallocated(underloadedHost, vmsToMigrateFromHost);
                 final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
                         vmsToMigrateFromHost,
-                        ignoredTargetHosts);
+                        ignoredTargetHosts,
+                        underloadedHost);
 
                 ignoredSourceHosts.addAll(extractHostListFromMigrationMap(newVmPlacement));
                 migrationMap.putAll(newVmPlacement);
@@ -453,7 +454,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     private Map<Vm, Host> getNewVmPlacementFromUnderloadedHost(
         final List<? extends Vm> vmsToMigrate,
-        final Set<? extends Host> excludedHosts)
+        final Set<? extends Host> excludedHosts,
+        Host underloadedHost)
     {
         final Map<Vm, Host> migrationMap = new HashMap<>();
         //低负载vm和高负载vm是分开迁移的，但是都是按bfd进行迁移
@@ -470,7 +472,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             }
             addVmToMigrationMap(migrationMap, vm, optional.get());
         }
-
+        System.out.println(getDatacenter().getSimulation().clockStr()+"host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭以节省能耗" );
+        underloadedHost.setActive(false);
         return migrationMap;
     }
 

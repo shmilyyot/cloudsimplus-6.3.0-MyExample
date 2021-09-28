@@ -66,7 +66,7 @@ public class PowerModelHostSpec extends PowerModelHost {
         double idlePower = this.getHost().getIdlePower();
         final double utilizationFraction = getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity();
         final int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
-        if(utilizationFraction == 0.0 || utilizationIndex == 0){
+        if(utilizationIndex == 0){
             return new PowerMeasurement(idlePower, 0);
         }
         //放置下标一次，0代表利用率0.5~1.5

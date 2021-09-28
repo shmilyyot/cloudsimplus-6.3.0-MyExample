@@ -319,9 +319,9 @@ public class myImplementationMigrationDatacenter {
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(new UtilizationModelStochastic())
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
             .setUtilizationModelBw(UtilizationModel.NULL)
-            .setUtilizationModelRam(new UtilizationModelStochastic());
+            .setUtilizationModelRam(utilizationModelDynamic);
         return cloudlet;
     }
 
@@ -689,7 +689,7 @@ public class myImplementationMigrationDatacenter {
                 double hostCpuUtilization = host.getCpuPercentUtilization();
                 if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0){
                     host.setActive(false);
-                    System.out.println("host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
+                    System.out.println(simulation.clockStr()+"host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
                 }
                 hostRamhistory.addLast(hostRamUtilization);
                 hostCpuhistory.addLast(hostCpuUtilization);

@@ -127,13 +127,13 @@ public final class MigrationExample1 {
      * The percentage of host CPU usage that trigger VM migration
      * due to under utilization (in scale from 0 to 1, where 1 is 100%).
      */
-    private static final double HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;
+    private static final double HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.35;
 
     /**
      * The percentage of host CPU usage that trigger VM migration
      * due to over utilization (in scale from 0 to 1, where 1 is 100%).
      */
-    private static final double HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.5;
+    private static final double HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;
 
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     private static final int HOST_SEARCH_RETRY_DELAY = 60;
@@ -227,6 +227,7 @@ public final class MigrationExample1 {
 
         @SuppressWarnings("unused")
         Datacenter datacenter0 = createDatacenter();
+//        datacenter0.setHostSearchRetryDelay(-1);
         broker = new DatacenterBrokerSimple(simulation);
         Log.setLevel(DatacenterBroker.LOGGER, Level.WARN);
         createAndSubmitVms(broker);
@@ -345,8 +346,8 @@ public final class MigrationExample1 {
             new CloudletSimple(CLOUDLET_LENGTH, (int)vm.getNumberOfPes())
                 .setFileSize(CLOUDLET_FILESIZE)
                 .setOutputSize(CLOUDLET_OUTPUTSIZE)
-                .setUtilizationModelRam(utilizationModelFull)
-                .setUtilizationModelBw(utilizationModelFull)
+                .setUtilizationModelRam(UtilizationModel.NULL)
+                .setUtilizationModelBw(UtilizationModel.NULL)
                 .setUtilizationModelCpu(cpuUtilizationModel);
         broker.bindCloudletToVm(cloudlet, vm);
 
@@ -461,7 +462,8 @@ public final class MigrationExample1 {
                 host, host.getMips(), host.getNumberOfPes(), host.getTotalMipsCapacity());
         }
         dc.setSchedulingInterval(SCHEDULING_INTERVAL)
-          .setHostSearchRetryDelay(HOST_SEARCH_RETRY_DELAY);
+          .setHostSearchRetryDelay(HOST_SEARCH_RETRY_DELAY)
+        ;
         return dc;
     }
 

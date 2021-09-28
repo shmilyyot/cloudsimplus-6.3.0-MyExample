@@ -797,7 +797,10 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
      * <p><b>This is an expensive operation for large scale simulations.</b></p>
      */
     private void checkIfVmMigrationsAreNeeded() {
-        if (!isTimeToSearchForSuitableHosts()) {
+//        if (!isTimeToSearchForSuitableHosts()) {
+//            return;
+//        }
+        if(!isMigrationsEnabled()){
             return;
         }
 
@@ -815,12 +818,15 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
     private void logHostSearchRetry() {
         if(lastMigrationMap.isEmpty()) {
-            final String msg = hostSearchRetryDelay > 0 ?
-                                    "in " + TimeUtil.secondsToStr(hostSearchRetryDelay) :
-                                    "as soon as possible";
+//            final String msg = hostSearchRetryDelay > 0 ?
+//                                    "in " + TimeUtil.secondsToStr(hostSearchRetryDelay) :
+//                                    "as soon as possible";
+//            LOGGER.warn(
+//                "{}: Datacenter: An under or overload situation was detected but currently, however there aren't suitable Hosts to manage that. Trying again {}.",
+//                clock(), msg);
             LOGGER.warn(
-                "{}: Datacenter: An under or overload situation was detected but currently, however there aren't suitable Hosts to manage that. Trying again {}.",
-                clock(), msg);
+                "{}: Datacenter: An under or overload situation was detected but currently, however there aren't suitable Hosts to manage that. It won't be retry until next migration.",
+                clock());
         }
     }
 
