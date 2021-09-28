@@ -31,16 +31,20 @@ import java.util.function.Function;
  * </ul>
  * </p>
  *
+ *
  * @author Anton Beloglazov
  * @since CloudSim Toolkit 3.0
  */
 public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPolicyMigrationAbstract {
     public static final double DEF_OVER_UTILIZATION_THRESHOLD = 0.9;
+    public static final double DEF_RAM_OVER_UTILIZATION_THRESHOLD = 0.9;
 
     /**
      * @see #getOverUtilizationThreshold(Host)
      */
     private double overUtilizationThreshold;
+
+    private double overRamUtilizationThreshold;
 
     /**
      * Creates a VmAllocationPolicyMigrationStaticThreshold.
@@ -53,7 +57,7 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
      */
     public VmAllocationPolicyMigrationStaticThreshold(final VmSelectionPolicy vmSelectionPolicy)
     {
-        this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD, null);
+        this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD,DEF_RAM_OVER_UTILIZATION_THRESHOLD, null);
     }
 
     /**
@@ -66,7 +70,7 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
         final VmSelectionPolicy vmSelectionPolicy,
         final double overUtilizationThreshold)
     {
-        this(vmSelectionPolicy, overUtilizationThreshold, null);
+        this(vmSelectionPolicy, overUtilizationThreshold,DEF_RAM_OVER_UTILIZATION_THRESHOLD, null);
     }
 
     /**
@@ -80,10 +84,22 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
     public VmAllocationPolicyMigrationStaticThreshold(
         final VmSelectionPolicy vmSelectionPolicy,
         final double overUtilizationThreshold,
+        final double overRamUtilizationThreshold,
         final BiFunction<VmAllocationPolicy, Vm, Optional<Host>> findHostForVmFunction)
     {
         super(vmSelectionPolicy, findHostForVmFunction);
         setOverUtilizationThreshold(overUtilizationThreshold);
+        setRamOverUtilizationThreshold(overRamUtilizationThreshold);
+    }
+
+    public VmAllocationPolicyMigrationStaticThreshold(
+        final VmSelectionPolicy vmSelectionPolicy,
+        final double overUtilizationThreshold,
+        final BiFunction<VmAllocationPolicy, Vm, Optional<Host>> findHostForVmFunction)
+    {
+        super(vmSelectionPolicy, findHostForVmFunction);
+        setOverUtilizationThreshold(overUtilizationThreshold);
+        setRamOverUtilizationThreshold(DEF_RAM_OVER_UTILIZATION_THRESHOLD);
     }
 
     /**
@@ -98,6 +114,14 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
         }
 
         this.overUtilizationThreshold = overUtilizationThreshold;
+    }
+
+    public final void setRamOverUtilizationThreshold(final double overRamUtilizationThreshold) {
+        if(overRamUtilizationThreshold <= 0 || overRamUtilizationThreshold >= 1){
+            throw new IllegalArgumentException("Over utilization threshold must be greater than 0 and lower than 1.");
+        }
+
+        this.overRamUtilizationThreshold = overRamUtilizationThreshold;
     }
 
     /**
@@ -116,5 +140,8 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
     public double getOverUtilizationThreshold(final Host host) {
         return overUtilizationThreshold;
     }
+
+    @Override
+    public double getRamOverUtilizationThreshold(final Host host) {return overRamUtilizationThreshold;}
 
 }

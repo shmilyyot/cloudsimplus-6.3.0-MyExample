@@ -23,10 +23,12 @@ public class Constant {
     /**
      * 数据中心迁移相关设置
      */
-    public static final double HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;    //低阈值
-    public static final double HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;     //高阈值
+    public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;    //低阈值
+    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;     //高阈值
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
+    public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;
+    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;
 
     /**
      * 数据中心代理相关参数设置

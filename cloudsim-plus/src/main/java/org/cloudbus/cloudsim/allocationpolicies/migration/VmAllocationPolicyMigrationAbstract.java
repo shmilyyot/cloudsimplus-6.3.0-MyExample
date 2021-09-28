@@ -50,10 +50,22 @@ import static java.util.stream.Collectors.toSet;
  * @since CloudSim Toolkit 3.0
  */
 public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPolicyAbstract implements VmAllocationPolicyMigration {
+    public void setHostRamThreshold(boolean hostRamThreshold) {
+        this.hostRamThreshold = hostRamThreshold;
+    }
+
+    private boolean hostRamThreshold = false;
     public static final double DEF_UNDER_UTILIZATION_THRESHOLD = 0.35;
+    public static final double DEF_RAM_UNDER_UTILIZATION_THRESHOLD = 0.35;
 
     /** @see #getUnderUtilizationThreshold() */
     private double underUtilizationThreshold;
+
+    public double getUnderRamUtilizationThreshold() {
+        return underRamUtilizationThreshold;
+    }
+
+    private double underRamUtilizationThreshold;
 
     /** @see #getVmSelectionPolicy() */
     private VmSelectionPolicy vmSelectionPolicy;
@@ -95,6 +107,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     {
         super(findHostForVmFunction);
         this.underUtilizationThreshold = DEF_UNDER_UTILIZATION_THRESHOLD;
+        this.underRamUtilizationThreshold = DEF_RAM_UNDER_UTILIZATION_THRESHOLD;
         this.savedAllocation = new HashMap<>();
         setVmSelectionPolicy(vmSelectionPolicy);
     }
@@ -164,7 +177,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 break;
             }
             this.hostsUnderloaded = true;
-
+            printUnderUtilizedHosts(underloadedHost);
             LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
 
             ignoredSourceHosts.add(underloadedHost);
@@ -215,11 +228,26 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         }
     }
 
+    private void printUnderUtilizedHosts(final Host host) {
+        if (host != null && LOGGER.isWarnEnabled()) {
+            final String hostimfor = underloadedHostToString(host);
+            LOGGER.warn("{}: VmAllocationPolicy: Underloaded hosts in {}:{}{}",
+                getDatacenter().getSimulation().clockStr(), getDatacenter(), System.lineSeparator(), hostimfor);
+        }
+    }
+
     private String overloadedHostToString(final Host host) {
         return String.format(
-            "      Host %d (upper CPU threshold %.2f, current utilization: %.2f)",
-            host.getId(), getOverUtilizationThreshold(host), host.getCpuPercentUtilization());
+            "      Host %d (upper CPU threshold %.2f, current CPU utilization: %.2f,upper RAM threshold %.2f, current RAM utilization: %.2f)",
+            host.getId(), getOverUtilizationThreshold(host), host.getCpuPercentUtilization(),getRamOverUtilizationThreshold(host),host.getRamPercentUtilization());
     }
+
+    private String underloadedHostToString(final Host host) {
+        return String.format(
+            "      Host %d (lower CPU threshold %.2f, current CPU utilization: %.2f,lower RAM threshold %.2f, current RAM utilization: %.2f)",
+            host.getId(), getUnderUtilizationThreshold(), host.getCpuPercentUtilization(),getUnderRamUtilizationThreshold(),host.getRamPercentUtilization());
+    }
+
 
     /**
      * Gets the power consumption different after the supposed placement of a VM into a given Host
@@ -269,7 +297,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     @Override
     public boolean isHostOverloaded(final Host host) {
-        return isHostOverloaded(host, host.getCpuPercentUtilization());
+        if(hostRamThreshold){
+            return isHostOverloaded(host, host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+        }else{
+            return isHostOverloaded(host, host.getCpuPercentUtilization());
+        }
     }
 
     /**
@@ -291,6 +323,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         return cpuUsagePercent > getOverUtilizationThreshold(host);
     }
 
+    private boolean isHostOverloaded(final Host host, final double cpuUsagePercent,final double ramUsagePercent){
+        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
+    }
+
     /**
      * Checks if a host is under utilized, based on current CPU usage.
      *
@@ -299,8 +335,22 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     @Override
     public boolean isHostUnderloaded(final Host host) {
+        if(hostRamThreshold){
+            return isHostUnderloaded(host,host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+        }else{
+            return isHostUnderloaded(host,host.getCpuPercentUtilization());
+        }
+//        return getHostCpuPercentRequested(host) < getUnderUtilizationThreshold();
+    }
+
+    public boolean isHostUnderloaded(final Host host, final double cpuUsagePercent,final double ramUsagePercent) {
+        return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
+    }
+
+    public boolean isHostUnderloaded(final Host host, final double cpuUsagePercent) {
         return getHostCpuPercentRequested(host) < getUnderUtilizationThreshold();
     }
+
 
     @Override
     protected Optional<Host> defaultFindHostForVm(final Vm vm) {
@@ -768,6 +818,18 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         }
 
         this.underUtilizationThreshold = underUtilizationThreshold;
+    }
+
+    public void setUnderUtilizationThreshold(final double underUtilizationThreshold,final double underRamUtilizationThreshold) {
+        if(underUtilizationThreshold <= 0 || underUtilizationThreshold >= 1){
+            throw new IllegalArgumentException("Under Cpu utilization threshold must be greater than 0 and lower than 1.");
+        }
+        if(underRamUtilizationThreshold <= 0 || underRamUtilizationThreshold >= 1){
+            throw new IllegalArgumentException("Under Ram utilization threshold must be greater than 0 and lower than 1.");
+        }
+
+        this.underUtilizationThreshold = underUtilizationThreshold;
+        this.underRamUtilizationThreshold = underRamUtilizationThreshold;
     }
 
     @Override

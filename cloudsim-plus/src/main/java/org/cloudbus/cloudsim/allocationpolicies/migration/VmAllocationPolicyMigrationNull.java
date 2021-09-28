@@ -42,6 +42,10 @@ final class VmAllocationPolicyMigrationNull implements VmAllocationPolicyMigrati
     @Override public boolean isHostOverloaded(Host host) { return false; }
     @Override public boolean isHostUnderloaded(Host host) { return false; }
     @Override public double getOverUtilizationThreshold(Host host) { return 0; }
+
+    @Override
+    public double getRamOverUtilizationThreshold(Host host) {return 0;}
+
     @Override public void setVmSelectionPolicy(VmSelectionPolicy vmSelectionPolicy) { }
     @Override public VmSelectionPolicy getVmSelectionPolicy() {
         return VmSelectionPolicy.NULL;
@@ -52,4 +56,9 @@ final class VmAllocationPolicyMigrationNull implements VmAllocationPolicyMigrati
     @Override public void setUnderUtilizationThreshold(double underUtilizationThreshold) {/**/}
     @Override public boolean areHostsUnderloaded() { return false; }
     @Override public boolean areHostsOverloaded() { return false; }
+
+    @Override
+    public boolean areHostsUnderOrOverloaded() {
+        return VmAllocationPolicyMigration.super.areHostsUnderOrOverloaded();
+    }
 }

@@ -54,6 +54,8 @@ public interface VmAllocationPolicyMigration extends VmAllocationPolicy {
      */
     double getOverUtilizationThreshold(Host host);
 
+    double getRamOverUtilizationThreshold(Host host);
+
     /**
      * Sets the the policy that defines how VMs are selected for migration.
      *

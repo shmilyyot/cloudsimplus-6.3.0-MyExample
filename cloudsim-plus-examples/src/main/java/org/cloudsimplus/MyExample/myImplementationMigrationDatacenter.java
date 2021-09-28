@@ -319,9 +319,9 @@ public class myImplementationMigrationDatacenter {
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
+            .setUtilizationModelCpu(new UtilizationModelStochastic())
             .setUtilizationModelBw(UtilizationModel.NULL)
-            .setUtilizationModelRam(utilizationModelDynamic);
+            .setUtilizationModelRam(new UtilizationModelStochastic());
         return cloudlet;
     }
 
@@ -339,9 +339,9 @@ public class myImplementationMigrationDatacenter {
                 new VmAllocationPolicyMigrationStaticThreshold(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
-            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
@@ -390,9 +390,10 @@ public class myImplementationMigrationDatacenter {
                 new VmAllocationPolicyMigrationBestFitStaticThreshold(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
-            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            this.allocationPolicy.setHostRamThreshold(true);
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
@@ -627,7 +628,8 @@ public class myImplementationMigrationDatacenter {
      * even if new VMs are submitted and created latter on.
      */
     private void onVmsCreatedListener(final DatacenterBrokerEventInfo info) {
-        allocationPolicy.setOverUtilizationThreshold(Constant.HOST_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+        allocationPolicy.setOverUtilizationThreshold(Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+        allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
         broker.removeOnVmsCreatedListener(info.getListener());
         vmList.forEach(vm -> dataCenterPrinter.showVmAllocatedMips(vm, vm.getHost(), info.getTime()));
         System.out.println();
@@ -689,7 +691,7 @@ public class myImplementationMigrationDatacenter {
                 double hostCpuUtilization = host.getCpuPercentUtilization();
                 if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0){
                     host.setActive(false);
-                    System.out.println(simulation.clockStr()+"host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
+                    System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
                 }
                 hostRamhistory.addLast(hostRamUtilization);
                 hostCpuhistory.addLast(hostCpuUtilization);
