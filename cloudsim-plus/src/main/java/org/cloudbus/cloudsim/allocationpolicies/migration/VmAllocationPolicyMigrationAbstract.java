@@ -54,10 +54,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         this.hostRamThreshold = hostRamThreshold;
     }
 
+    public boolean isHostRamThreshold() {
+        return hostRamThreshold;
+    }
+
     private boolean hostRamThreshold = false;
     public static final double DEF_UNDER_UTILIZATION_THRESHOLD = 0.35;
     public static final double DEF_RAM_UNDER_UTILIZATION_THRESHOLD = 0.35;
-
     /** @see #getUnderUtilizationThreshold() */
     private double underUtilizationThreshold;
 
@@ -275,7 +278,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @return true, if the host will be over utilized after VM placement;
      *         false otherwise
      */
-    private boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
+    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final Vm tempVm = new VmSimple(vm);
 
         if (!host.createTemporaryVm(tempVm).fully()) {
@@ -319,11 +322,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      *                        </ul>
      * @return true if the Host is overloaded, false otherwise
      */
-    private boolean isHostOverloaded(final Host host, final double cpuUsagePercent){
+    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent){
         return cpuUsagePercent > getOverUtilizationThreshold(host);
     }
 
-    private boolean isHostOverloaded(final Host host, final double cpuUsagePercent,final double ramUsagePercent){
+    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
         return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
@@ -654,7 +657,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             .orElse(Host.NULL);
     }
 
-    private double getHostCpuPercentRequested(final Host host) {
+    protected double getHostCpuPercentRequested(final Host host) {
         return getHostTotalRequestedMips(host) / host.getTotalMipsCapacity();
     }
 

@@ -5,6 +5,7 @@ import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigr
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.vms.Vm;
+import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
 import java.util.*;
@@ -151,6 +152,29 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         return hostPotentialMipsUse / host.getTotalMipsCapacity();
     }
 
+    //重写判断host本身是否过载，用未来利用率预测
+    @Override
+    public boolean isHostOverloaded(final Host host) {
+        if(isHostRamThreshold()){
+            return isHostOverloaded(host, host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+        }else{
+            return isHostOverloaded(host, host.getCpuPercentUtilization());
+        }
+    }
 
+    //重写判断一个vm放进去host的话会不会过载
+    @Override
+    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
+        final Vm tempVm = new VmSimple(vm);
+
+        if (!host.createTemporaryVm(tempVm).fully()) {
+            return false;
+        }
+
+        final double usagePercent = getHostCpuPercentRequested(host);
+        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent);
+        host.destroyTemporaryVm(tempVm);
+        return notOverloadedAfterAllocation;
+    }
 
 }
