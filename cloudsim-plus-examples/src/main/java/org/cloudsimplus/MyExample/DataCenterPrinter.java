@@ -203,9 +203,9 @@ public class DataCenterPrinter {
         System.out.printf("----------------------------------------------------------------------------------%n%n");
     }
 
-    public void activeHostCount(List<Host> hostList){
+    public void activeHostCount(List<Host> hostList,String time){
         long count = hostList.stream().filter(Host::isActive).count();
-        System.out.println("当前系统中活跃主机数目是： "+count);
+        System.out.println(time + ": 当前系统中活跃主机数目是： "+count);
     }
 
 }

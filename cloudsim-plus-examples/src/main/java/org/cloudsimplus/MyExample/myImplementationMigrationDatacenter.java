@@ -568,6 +568,7 @@ public class myImplementationMigrationDatacenter {
         if(time - (int)time != 0.0) return;
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
             collectHostResourceUtilization();
+            dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
 //            System.out.println();
 //            System.out.println("前");
 //            for(double num:allHostsRamUtilizationHistoryQueue.get(hostList.get(1))){
