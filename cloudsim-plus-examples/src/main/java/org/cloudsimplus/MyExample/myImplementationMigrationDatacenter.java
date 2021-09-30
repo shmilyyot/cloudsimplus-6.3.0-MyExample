@@ -29,6 +29,7 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyPASUP;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.listeners.EventListener;
@@ -132,6 +133,9 @@ public class myImplementationMigrationDatacenter {
         //创建模拟仿真
         simulation = new CloudSim();
 
+        //创建利用率对象
+        createUtilizationHistory();
+
         //使用谷歌数据中心主机模板或自定义数据中心主机模板
         if(Constant.USING_GOOGLE_HOST){
             createGoogleDatacenters();
@@ -147,11 +151,12 @@ public class myImplementationMigrationDatacenter {
         //当虚拟机创建失败，放弃创建
         brokers.forEach(this::createAndSubmitVms);
 //        brokers.forEach(broker->broker.setFailedVmsRetryDelay(-1));
-        //添加定时监听事件
-        simulation.addOnClockTickListener(this::clockTickListener);
 
         //初始化cpu,ram记录
         initializeUtilizationHistory();
+
+        //添加定时监听事件
+        simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
 //        readTaskUsageTraceFile();
@@ -386,11 +391,21 @@ public class myImplementationMigrationDatacenter {
         System.out.println();
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
+//            this.allocationPolicy =
+//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
             this.allocationPolicy =
-                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+                new VmAllocationPolicyPASUP(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
             this.allocationPolicy.setHostRamThreshold(true);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
@@ -643,10 +658,7 @@ public class myImplementationMigrationDatacenter {
 //        vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
 //        allHostsRamUtilizationHistory = new HashMap<>(800);
 //        hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
-        allHostsRamUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
-        allHostsCpuUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
-        allVmsRamUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
-        allVmsCpuUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
+        System.out.println(simulation.clockStr()+": 当前正在初始化vm和host利用率记录");
         hostList.forEach(host -> allHostsRamUtilizationHistoryQueue.put(host,new LinkedList<>()));
         hostList.forEach(host -> allHostsCpuUtilizationHistoryQueue.put(host,new LinkedList<>()));
         vmList.forEach(vm->allVmsCpuUtilizationHistoryQueue.put(vm,new LinkedList<>()));
@@ -655,6 +667,12 @@ public class myImplementationMigrationDatacenter {
 //        allHostsCpuUtilizationHistoryAL = new HashMap<>(Constant.HOSTS);
 //        hostList.forEach(host -> allHostsRamUtilizationHistoryAL.put(host,new ArrayList<>()));
 //        hostList.forEach(host -> allHostsCpuUtilizationHistoryAL.put(host,new ArrayList<>()));
+    }
+    public void createUtilizationHistory(){
+        allHostsRamUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
+        allHostsCpuUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
+        allVmsRamUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
+        allVmsCpuUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
     }
 
 //    private void collectVmResourceUtilization(final Map<Vm, Map<Double, Double>> allVmsUtilizationHistory, double systemTime ,Class<? extends ResourceManageable> resourceClass) {

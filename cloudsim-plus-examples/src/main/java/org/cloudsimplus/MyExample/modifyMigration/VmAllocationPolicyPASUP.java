@@ -88,6 +88,14 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //                targetHost.set(host);
 //            }
 //        });
+//        hostStream.min(Comparator.comparingDouble(host->{
+//            final double hostCpuUtilization = host.getCpuPercentUtilization();
+//            final double hostRamUtilization = host.getRamPercentUtilization();
+//            processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
+//            final double[] hostPredict = new double[]{1-mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),1-mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
+//            double powerDifference = getPowerDifferenceAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
+//            return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
+//        }));
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
@@ -96,6 +104,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             double powerDifference = getPowerDifferenceAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
             return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
         }));
+//        return hostStream.max(Comparator.comparingDouble(Host::getCpuMipsUtilization));
 //        return Optional.ofNullable(targetHost.get());
     }
 
