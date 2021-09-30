@@ -2,6 +2,7 @@ package org.cloudsimplus.MyExample;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MathHandler {
 
@@ -75,8 +76,13 @@ public class MathHandler {
 
     }
 
-    public double DGMPredicting(List<Double> dataHistory){
-
+    public double DGMPredicting(List<Double> dataHistory,int n,double utilization){
+        double[] originalSequence = listToArray(dataHistory);
+        //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
+        if(dataHistory.size() < n){
+            return utilization;
+        }
+        double[] cumulativeSequence = cumulativeSequence(originalSequence,n);
         return 0.0;
     }
 
@@ -88,4 +94,22 @@ public class MathHandler {
         return Arrays.stream(prediction).min().getAsDouble();
     }
 
+    public double[] cumulativeSequence(double[] originalSequence,int n){
+        double[] cumulativeSequence = new double[n];
+        cumulativeSequence[0] = originalSequence[0];
+        for(int i=1;i<n;++i){
+            cumulativeSequence[i] = originalSequence[i]+cumulativeSequence[i-1];
+        }
+        return cumulativeSequence;
+    }
+
+    public double[] listToArray(List<Double> dataHistory){
+        double[] originalSequence = new double[dataHistory.size()];
+        int i=0;
+        for(double utilization:dataHistory){
+            originalSequence[i] = utilization;
+            i++;
+        }
+        return originalSequence;
+    }
 }
