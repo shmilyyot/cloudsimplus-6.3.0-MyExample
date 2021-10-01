@@ -135,12 +135,11 @@ public class MathHandler {
         initialB(B,meanSequence,tn);
         double[][] YN = new double[tn][1];
         initialYN(YN,originalSequence,tn);
-        RealMatrix BMatrix = new Array2DRowRealMatrix(B);
-        RealMatrix YNMatrix = new Array2DRowRealMatrix(YN);
-        RealMatrix BTMatrix = BMatrix.transpose();
-        RealMatrix B2T = BTMatrix.multiply(BMatrix);
-        RealMatrix B_2T = inverseMatrix(B2T);
-        return 0.0;
+        double[][] result = calculateAandB(B,YN);
+        double a = result[0][0],b = result[1][0];
+        int k = n+1;
+        double predict = (originalSequence[0]-b/a) * Math.exp(-a * (k+1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k));
+        return predict;
     }
 
     public void initialB(double[][] B,double[] meanSequence,int tn){
@@ -163,8 +162,26 @@ public class MathHandler {
         }
     }
 
-    public static RealMatrix inverseMatrix(RealMatrix A) {
+    public RealMatrix inverseMatrix(RealMatrix A) {
         return new LUDecomposition(A).getSolver().getInverse();
+    }
+
+    public double[][] calculateAandB(double[][] B,double[][] YN){
+        //B转为B矩阵
+        RealMatrix BMatrix = new Array2DRowRealMatrix(B);
+        //YN转为YN矩阵
+        RealMatrix YNMatrix = new Array2DRowRealMatrix(YN);
+        //B的转置矩阵
+        RealMatrix BTMatrix = BMatrix.transpose();
+        //B的转置矩阵*B矩阵
+        RealMatrix B2TMatrix = BTMatrix.multiply(BMatrix);
+        //B的转置矩阵*B矩阵的逆矩阵
+        RealMatrix B_2TMatrix = inverseMatrix(B2TMatrix);
+        //B的转置矩阵*B矩阵的逆矩阵 * B的转置矩阵
+        RealMatrix A = B_2TMatrix.multiply(BTMatrix);
+        //B的转置矩阵*B矩阵的逆矩阵 * B的转置矩阵 * YN矩阵
+        RealMatrix C = A.multiply(YNMatrix);
+        return C.getData();
     }
 
 }
