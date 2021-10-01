@@ -2,7 +2,9 @@ package org.cloudsimplus.MyExample;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 
 public class MathHandler {
 
@@ -76,13 +78,13 @@ public class MathHandler {
 
     }
 
-    public double DGMPredicting(List<Double> dataHistory,int n,double utilization){
-        double[] originalSequence = listToArray(dataHistory);
+    public double DGM11Predicting(List<Double> dataHistory,int n,double utilization){
+        double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
         if(dataHistory.size() < n){
             return utilization;
         }
-        double[] cumulativeSequence = cumulativeSequence(originalSequence,n);
+        double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
         return 0.0;
     }
 
@@ -94,7 +96,7 @@ public class MathHandler {
         return Arrays.stream(prediction).min().getAsDouble();
     }
 
-    public double[] cumulativeSequence(double[] originalSequence,int n){
+    public double[] calculateCumulativeSequence(double[] originalSequence,int n){
         double[] cumulativeSequence = new double[n];
         cumulativeSequence[0] = originalSequence[0];
         for(int i=1;i<n;++i){
@@ -103,13 +105,66 @@ public class MathHandler {
         return cumulativeSequence;
     }
 
-    public double[] listToArray(List<Double> dataHistory){
-        double[] originalSequence = new double[dataHistory.size()];
+    public double[] calculateMeanSequence(double[] cumulativeSequence,int n){
+        double[] meanSequence = new double[n];
+        for(int i=0;i<n;++i){
+            meanSequence[i] = (cumulativeSequence[i] + cumulativeSequence[i+1])/2;
+        }
+        return meanSequence;
+    }
+
+    public double[] listToArray(List<Double> dataHistory,int n){
+        double[] originalSequence = new double[n];
         int i=0;
         for(double utilization:dataHistory){
-            originalSequence[i] = utilization;
-            i++;
+            originalSequence[i++] = utilization;
         }
         return originalSequence;
     }
+
+    public double GM11Predicting(List<Double> dataHistory,int n,double utilization){
+        double[] originalSequence = listToArray(dataHistory,n);
+        //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
+        if(dataHistory.size() < n){
+            return utilization;
+        }
+        int tn = n-1;
+        double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
+        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
+        double[][] B = new double[tn][2];
+        initialB(B,meanSequence,tn);
+        double[][] YN = new double[tn][1];
+        initialYN(YN,originalSequence,tn);
+        RealMatrix BMatrix = new Array2DRowRealMatrix(B);
+        RealMatrix YNMatrix = new Array2DRowRealMatrix(YN);
+        RealMatrix BTMatrix = BMatrix.transpose();
+        RealMatrix B2T = BTMatrix.multiply(BMatrix);
+        RealMatrix B_2T = inverseMatrix(B2T);
+        return 0.0;
+    }
+
+    public void initialB(double[][] B,double[] meanSequence,int tn){
+        for(int i=0;i<tn;++i){
+            for(int j=0;j<2;++j){
+                if(j == 1){
+                    B[i][j] = 1;
+                }else{
+                    B[i][j] = -meanSequence[i];
+                }
+            }
+        }
+    }
+
+    public void initialYN(double[][] YN,double[] originalSequence,int tn){
+        for(int i=0;i<tn;++i){
+            for(int j=0;j<1;++j){
+                YN[i][j] = originalSequence[i+1];
+            }
+        }
+    }
+
+    public static RealMatrix inverseMatrix(RealMatrix A) {
+        return new LUDecomposition(A).getSolver().getInverse();
+    }
+
 }
