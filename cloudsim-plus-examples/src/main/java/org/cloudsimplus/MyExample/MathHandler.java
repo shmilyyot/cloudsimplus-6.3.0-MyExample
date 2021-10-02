@@ -125,7 +125,7 @@ public class MathHandler {
     public double GM11Predicting(List<Double> dataHistory,int n,double utilization){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
-        if(dataHistory.size() < n){
+        if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
             return utilization;
         }
         int tn = n-1;
@@ -135,11 +135,9 @@ public class MathHandler {
         initialB(B,meanSequence,tn);
         double[][] YN = new double[tn][1];
         initialYN(YN,originalSequence,tn);
-        double[][] result = calculateAandB(B,YN);
+        double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
-        int k = n+1;
-        double predict = (originalSequence[0]-b/a) * Math.exp(-a * (k+1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k));
-        return predict;
+        return getGM11PredictResult(a,b,n+1,originalSequence);
     }
 
     public void initialB(double[][] B,double[] meanSequence,int tn){
@@ -166,22 +164,41 @@ public class MathHandler {
         return new LUDecomposition(A).getSolver().getInverse();
     }
 
-    public double[][] calculateAandB(double[][] B,double[][] YN){
+    public double[][] calculateGM11AandB(double[][] B,double[][] YN){
         //B转为B矩阵
         RealMatrix BMatrix = new Array2DRowRealMatrix(B);
         //YN转为YN矩阵
         RealMatrix YNMatrix = new Array2DRowRealMatrix(YN);
         //B的转置矩阵
         RealMatrix BTMatrix = BMatrix.transpose();
+//        System.out.println("BTMatrix:" +BTMatrix);
         //B的转置矩阵*B矩阵
         RealMatrix B2TMatrix = BTMatrix.multiply(BMatrix);
+//        System.out.println("B2TMatrix:" +B2TMatrix);
         //B的转置矩阵*B矩阵的逆矩阵
         RealMatrix B_2TMatrix = inverseMatrix(B2TMatrix);
+//        System.out.println("B_2TMatrix:" +B_2TMatrix);
         //B的转置矩阵*B矩阵的逆矩阵 * B的转置矩阵
         RealMatrix A = B_2TMatrix.multiply(BTMatrix);
+//        System.out.println("A:" +A);
         //B的转置矩阵*B矩阵的逆矩阵 * B的转置矩阵 * YN矩阵
         RealMatrix C = A.multiply(YNMatrix);
+//        System.out.println("C:" +C);
         return C.getData();
+    }
+
+    public double getGM11PredictResult(double a,double b,int k,double[] originalSequence){
+        return (originalSequence[0]-b/a) * Math.exp(-a * (k-1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-2));
+    }
+
+    //参与预测的利用率中不能有0，否则为奇异矩阵（不满秩），无法计算逆矩阵
+    public boolean checkUtilizationZero(double[] originalSequence){
+        for(double num: originalSequence){
+            if(num == 0.0){
+                return true;
+            }
+        }
+        return false;
     }
 
 }
