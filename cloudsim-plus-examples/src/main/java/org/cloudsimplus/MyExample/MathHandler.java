@@ -193,8 +193,14 @@ public class MathHandler {
 
     //参与预测的利用率中不能有0，否则为奇异矩阵（不满秩），无法计算逆矩阵
     public boolean checkUtilizationZero(double[] originalSequence){
-        for(double num: originalSequence){
-            if(num == 0.0){
+//        for(double num: originalSequence){
+//            if(num == 0.0){
+//                return true;
+//            }
+//        }
+//        return false;
+        for(int i=1;i<originalSequence.length;++i){
+            if(originalSequence[i] == 0.0 && originalSequence[i-1] == 0.0){
                 return true;
             }
         }

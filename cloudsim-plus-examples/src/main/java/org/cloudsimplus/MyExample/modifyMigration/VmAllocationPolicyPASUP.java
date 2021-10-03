@@ -9,7 +9,6 @@ import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
