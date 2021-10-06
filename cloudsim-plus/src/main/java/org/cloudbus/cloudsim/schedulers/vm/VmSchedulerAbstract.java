@@ -79,9 +79,9 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
     public final boolean isSuitableForVm(final Vm vm, final MipsShare requestedMips) {
         if(requestedMips.isEmpty()){
             //如果当前利用率为空，直接返回就是了
-            LOGGER.warn(
-                "{}: {}: It was requested an empty list of PEs for {} in {}",
-                getHost().getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
+//            LOGGER.warn(
+//                "{}: {}: It was requested an empty list of PEs for {} in {}",
+//                getHost().getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
             return false;
         }
 

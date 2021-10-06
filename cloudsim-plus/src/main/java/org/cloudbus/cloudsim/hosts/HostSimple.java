@@ -1193,8 +1193,7 @@ public class HostSimple implements Host, Serializable {
     }
 
     private double computeRamUtilizationPercent(final long ramUsage){
-        final double totalRam = ramProvisioner.getCapacity();
-//        if(this.getId() == 4) System.out.println(ramUsage);
+        final double totalRam = ramProvisioner.getResource().getCapacity();
         if(totalRam == 0){
             return 0;
         }

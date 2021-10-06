@@ -456,7 +456,7 @@ public class myImplementationMigrationDatacenter {
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
             .setPowerModel(powerModel);
-//        //host创建之后的活跃状态
+        //host创建之后的活跃状态
 //        final boolean activateHost = true;
 //        host.setActive(activateHost);
 //
@@ -707,6 +707,7 @@ public class myImplementationMigrationDatacenter {
                 }
 //            }
                 double hostRamUtilization = host.getRamPercentUtilization();
+//                System.out.println(simulation.clockStr()+": host id : " + host.getId() + " : "+ hostRamUtilization);
                 double hostCpuUtilization = host.getCpuPercentUtilization();
 //                System.out.println(simulation.clockStr() + ": hsot" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
                 if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0){
@@ -788,13 +789,5 @@ public class myImplementationMigrationDatacenter {
 //            }
 //        }
 //    }
-
-    private void checkDatacenterOverLoad(){
-
-    }
-
-    private void checkDatacenterUnderLoad(){
-
-    }
 
 }

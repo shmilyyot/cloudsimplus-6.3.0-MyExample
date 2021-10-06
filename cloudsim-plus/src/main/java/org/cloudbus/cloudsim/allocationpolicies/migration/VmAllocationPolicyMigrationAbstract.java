@@ -398,7 +398,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     private Optional<Host> findHostForVm(final Vm vm, final Set<? extends Host> excludedHosts, final Predicate<Host> predicate) {
         final Stream<Host> stream = this.getHostList().stream()
-            .filter(Host::isActive)
             .filter(host -> !excludedHosts.contains(host))
             .filter(host -> host.isSuitableForVm(vm))
             .filter(host -> isNotHostOverloadedAfterAllocation(host, vm))
@@ -659,6 +658,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     protected double getHostCpuPercentRequested(final Host host) {
         return getHostTotalRequestedMips(host) / host.getTotalMipsCapacity();
+    }
+
+    protected double getFutureHostCpuPercentRequested(final Host host,final double cpuUsage) {
+        return cpuUsage / host.getTotalMipsCapacity();
     }
 
     /**

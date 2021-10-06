@@ -88,12 +88,20 @@ public class MathHandler {
         return 0.0;
     }
 
-    public double findMaxValue(double[] prediction){
-        return Arrays.stream(prediction).max().getAsDouble();
+    public double findMaxValue(double predict,double[] originalSequence){
+        double max = 0.0;
+        for(double num:originalSequence){
+            max = Math.max(num,max);
+        }
+        return Math.max(max,predict);
     }
 
-    public double findMinValue(double[] prediction){
-        return Arrays.stream(prediction).min().getAsDouble();
+    public double findMinValue(double predict,double[] originalSequence){
+        double min = 0.0;
+        for(double num:originalSequence){
+            min = Math.min(num,min);
+        }
+        return Math.min(min,predict);
     }
 
     public double[] calculateCumulativeSequence(double[] originalSequence,int n){
@@ -122,7 +130,7 @@ public class MathHandler {
         return originalSequence;
     }
 
-    public double GM11Predicting(List<Double> dataHistory,int n,double utilization){
+    public double GM11Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
         if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
@@ -137,7 +145,12 @@ public class MathHandler {
         initialYN(YN,originalSequence,tn);
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
-        return getGM11PredictResult(a,b,n+1,originalSequence);
+        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
+        if(max){
+            return findMaxValue(predict,originalSequence);
+        }else{
+            return findMinValue(predict,originalSequence);
+        }
     }
 
     public void initialB(double[][] B,double[] meanSequence,int tn){
