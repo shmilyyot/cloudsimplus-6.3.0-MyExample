@@ -173,6 +173,7 @@ public class myImplementationMigrationDatacenter {
         //创建数据中心能耗跟踪模型
         //记录每个数据中心的能耗
         PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
+        powerMeter.setMeasurementInterval(Constant.SCHEDULING_INTERVAL);
 
         //数据中心模拟器启动
         simulation.start();
@@ -395,7 +396,7 @@ public class myImplementationMigrationDatacenter {
 //                new VmAllocationPolicyMigrationBestFitStaticThreshold(
 //                    new VmSelectionPolicyMinimumUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2);
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
             this.allocationPolicy =
                 new VmAllocationPolicyPASUP(
                     new VmSelectionPolicyMinimumUtilization(),
@@ -543,7 +544,7 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-//        broker.setVmDestructionDelay(1);
+        broker.setVmDestructionDelay(1);
         vmList.addAll(createVms());
         broker.submitVmList(vmList);
         vmList.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));

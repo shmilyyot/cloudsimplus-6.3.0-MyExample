@@ -33,6 +33,7 @@ Test.java
 ~$*
 
 deploy.sh
-/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/
+/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt
+/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt
 /cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/
 /cloudsim-plus/src/main/java/org/cloudsimplus/traces/google.rar

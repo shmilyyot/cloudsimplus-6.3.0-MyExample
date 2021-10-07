@@ -143,7 +143,7 @@ public class DataCenterPrinter {
 //            System.out.println(powerMeasurement.getTotalPower());
         }
 //        System.out.println("能耗统计的数量："+powerMeter.getPowerMeasurements().size());
-        double totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600 * 1000);
+        double totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600.0/Constant.SCHEDULING_INTERVAL * 1000);
         System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
     }
 

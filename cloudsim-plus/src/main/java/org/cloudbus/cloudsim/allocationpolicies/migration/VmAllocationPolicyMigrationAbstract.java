@@ -332,7 +332,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
     /**
@@ -529,7 +529,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             }
             addVmToMigrationMap(migrationMap, vm, optional.get());
         }
-        System.out.println(getDatacenter().getSimulation().clockStr()+"host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭以节省能耗" );
+        System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭以节省能耗" );
         underloadedHost.setActive(false);
         return migrationMap;
     }

@@ -130,7 +130,7 @@ public class MathHandler {
         return originalSequence;
     }
 
-    public double GM11Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
+    public double GM11Predicting(List<Double> dataHistory,int n,double utilization){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
         if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
@@ -146,11 +146,12 @@ public class MathHandler {
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
         double predict = getGM11PredictResult(a,b,n+1,originalSequence);
-        if(max){
-            return findMaxValue(predict,originalSequence);
-        }else{
-            return findMinValue(predict,originalSequence);
-        }
+        return Math.min(1,Math.max(0,predict));
+//        if(max){
+//            return findMaxValue(predict,originalSequence);
+//        }else{
+//            return findMinValue(predict,originalSequence);
+//        }
     }
 
     public void initialB(double[][] B,double[] meanSequence,int tn){
