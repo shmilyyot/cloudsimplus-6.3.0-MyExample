@@ -161,6 +161,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     @Override
     public boolean isHostOverloaded(final Host host) {
         if(isHostRamThreshold()){
+//            System.out.println(host.getCpuPercentUtilization() + "  " + host.getRamPercentUtilization());
             final double[] hostPredict = getHostPredictValue(host);
 //            System.out.println("cpu:"+(1-hostPredict[0]));
 //            System.out.println("ram:"+(1-hostPredict[1]));
@@ -198,8 +199,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             return false;
         }
 
-        final double cpuUsagePercent = getHostCpuPercentRequested(host);
-        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,cpuUsagePercent);
+        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
+//        System.out.println(vm.getId() + ": "+ host.getId() + "  "+ notOverloadedAfterAllocation);
         host.destroyTemporaryVm(tempVm);
         return notOverloadedAfterAllocation;
     }

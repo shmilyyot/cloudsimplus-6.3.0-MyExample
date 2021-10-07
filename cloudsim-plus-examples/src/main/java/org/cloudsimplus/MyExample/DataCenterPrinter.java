@@ -208,4 +208,12 @@ public class DataCenterPrinter {
         System.out.println(time + ": 当前系统中活跃主机数目是： "+count);
     }
 
+    public void activeVmsCount(List<Host> hostList,String time){
+        long count = 0;
+        for(Host host:hostList){
+            count += host.getVmCreatedList().size();
+        }
+        System.out.println(time + ": 当前系统中活跃虚拟机数目是： "+count);
+    }
+
 }

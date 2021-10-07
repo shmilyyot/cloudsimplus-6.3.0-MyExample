@@ -323,6 +323,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @return true if the Host is overloaded, false otherwise
      */
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent){
+//        if(cpuUsagePercent > getOverUtilizationThreshold(host)){
+//            System.out.printf(
+//                "      Host %d (upper CPU threshold %.2f, current CPU utilization: %.2f,upper RAM threshold %.2f, current RAM utilization: %.2f)%n",
+//                host.getId(), getOverUtilizationThreshold(host), cpuUsagePercent,getRamOverUtilizationThreshold(host),host.getRamPercentUtilization());
+//        }
         return cpuUsagePercent > getOverUtilizationThreshold(host);
     }
 
@@ -627,6 +632,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     private Set<Host> getOverloadedHosts() {
         return this.getHostList().stream()
+            .filter(Host::isActive)
             .filter(this::isHostOverloaded)
             .filter(host -> host.getVmsMigratingOut().isEmpty())
             .collect(toSet());
@@ -660,6 +666,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         return getHostTotalRequestedMips(host) / host.getTotalMipsCapacity();
     }
 
+    protected double getHostRamPercentRequested(final Host host) {
+        return getHostTotalRequestedRam(host) / host.getRam().getCapacity();
+    }
+
     protected double getFutureHostCpuPercentRequested(final Host host,final double cpuUsage) {
         return cpuUsage / host.getTotalMipsCapacity();
     }
@@ -672,6 +682,12 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     private double getHostTotalRequestedMips(final Host host) {
         return host.getVmList().stream()
             .mapToDouble(Vm::getCurrentRequestedTotalMips)
+            .sum();
+    }
+
+    private double getHostTotalRequestedRam(final Host host) {
+        return host.getVmList().stream()
+            .mapToDouble(Vm::getCurrentRequestedRam)
             .sum();
     }
 

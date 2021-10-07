@@ -24,11 +24,11 @@ public class Constant {
      * 数据中心迁移相关设置
      */
     public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;    //低阈值
-    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;     //高阈值
+    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;     //高阈值
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
     public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;
-    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;
+    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;
 
     /**
      * 数据中心代理相关参数设置
@@ -106,7 +106,7 @@ public class Constant {
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3750,1700,613};
+    public static final long[] VM_RAM = {850,1700,1700,613};
     public static final long[] VM_BW = {100,100,100,100}; //用不到
     public static final long[] VM_SIZE_MB = {1000,1000,1000,1000}; //用不到
 

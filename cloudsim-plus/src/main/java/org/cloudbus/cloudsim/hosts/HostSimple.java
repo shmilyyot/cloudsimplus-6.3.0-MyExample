@@ -1184,6 +1184,7 @@ public class HostSimple implements Host, Serializable {
 
     @Override
     public long getRamUtilization() {
+//        System.out.println("vmlist size:"+vmList.size());
         return vmList.stream().mapToLong(Vm::getCurrentRequestedRam).sum();
     }
 
@@ -1193,11 +1194,13 @@ public class HostSimple implements Host, Serializable {
     }
 
     private double computeRamUtilizationPercent(final long ramUsage){
+//        if(this.vmList.size() == 0) return 0.0;
         final double totalRam = ramProvisioner.getResource().getCapacity();
         if(totalRam == 0){
             return 0;
         }
         final double utilization = ramUsage/ totalRam;
+//        System.out.println("inside:  "+ramUsage + "   "+ totalRam);
         return (utilization > 1 && utilization < 1.01 ? 1 : utilization);
     }
 

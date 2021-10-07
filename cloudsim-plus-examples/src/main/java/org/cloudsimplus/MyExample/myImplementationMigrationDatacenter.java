@@ -400,7 +400,7 @@ public class myImplementationMigrationDatacenter {
                 new VmAllocationPolicyPASUP(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
                     mathHandler,
                     allHostsRamUtilizationHistoryQueue,
                     allHostsCpuUtilizationHistoryQueue,
@@ -584,6 +584,7 @@ public class myImplementationMigrationDatacenter {
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
             collectHostResourceUtilization();
             dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
+//            dataCenterPrinter.activeVmsCount(hostList,simulation.clockStr());
 //            System.out.println();
 //            System.out.println("前");
 //            for(double num:allHostsRamUtilizationHistoryQueue.get(hostList.get(1))){
