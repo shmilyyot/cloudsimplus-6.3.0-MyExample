@@ -170,6 +170,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
         this.hostsUnderloaded = false;
         while (true) {
+            //当所有低于值host都被遍历，ignoredhost的数目等于系统中host的数目
             if (numberOfHosts == ignoredSourceHosts.size()) {
                 break;
             }
