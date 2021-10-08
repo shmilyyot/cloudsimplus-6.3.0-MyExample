@@ -216,4 +216,15 @@ public class DataCenterPrinter {
         System.out.println(time + ": 当前系统中活跃虚拟机数目是： "+count);
     }
 
+    public void calculateSLAV(List<Host> hostList,List<Vm> vmList){
+        double SLAV = 0.0;
+        double SLATAH = 0.0;
+        double PDM = 0.0;
+        for(Host host:hostList){
+            double totalUpTime = host.getTotalUpTime();
+        }
+        System.out.println("当前系统的SLAV是： + " + SLAV);
+    }
+
+
 }

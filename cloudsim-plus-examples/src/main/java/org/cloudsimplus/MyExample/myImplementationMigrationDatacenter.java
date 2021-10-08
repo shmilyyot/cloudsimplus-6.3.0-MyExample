@@ -72,6 +72,9 @@ public class myImplementationMigrationDatacenter {
     private double lastClockTime;   //上一个时钟时间
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
+    private double SLAV = 0.0;  //sla违反系数
+    private double SLATAH = 0.0;    //每个活跃主机因为利用率超过100%而导致的sla违反比例
+    private double PDM = 0.0;   //迁移性能降级
 
     /**
      * A map to store RAM utilization history for every VM.

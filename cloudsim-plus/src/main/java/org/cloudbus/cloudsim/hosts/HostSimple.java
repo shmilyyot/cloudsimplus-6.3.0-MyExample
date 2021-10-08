@@ -150,6 +150,16 @@ public class HostSimple implements Host, Serializable {
     private boolean lazySuitabilityEvaluation;
     protected HostResourceStats cpuUtilizationStats;
 
+    public double getTotalMigrationTime() {
+        return totalMigrationTime;
+    }
+
+    public void setTotalMigrationTime(double totalMigrationTime) {
+        this.totalMigrationTime = totalMigrationTime;
+    }
+
+    private double totalMigrationTime = 0.0;
+
     /**
      * Creates and powers on a Host without a pre-defined ID,
      * 10GB of RAM, 1000Mbps of Bandwidth and 500GB of Storage.
