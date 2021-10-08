@@ -2,6 +2,8 @@ package org.cloudsimplus.MyExample;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalDouble;
+
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;

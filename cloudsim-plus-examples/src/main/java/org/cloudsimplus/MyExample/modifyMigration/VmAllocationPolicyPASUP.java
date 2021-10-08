@@ -71,7 +71,9 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
 //        AtomicReference<Double> minFitValue = new AtomicReference<>(0.0);
 //        AtomicReference<Host> targetHost = null;
-        final double[] vmPredict = getVmPredictValue(vm);
+        final double vmCpuUtilization = vm.getCpuPercentUtilization();
+        final double vmRamUtilization = vm.getRam().getPercentUtilization();
+        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization);
 //        hostStream.forEach(host -> {
 //            double hostCpuUtilization = host.getCpuPercentUtilization();
 //            double hostRamUtilization = host.getRamPercentUtilization();
@@ -188,7 +190,9 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 
 //        final double hostCpuUtilization = host.getCpuPercentUtilization();
 //        final double hostRamUtilization = host.getRamPercentUtilization();
-//        final double[] vmPredict = getVmPredictValue(vm);
+//        final double vmCpuUtilization = vm.getCpuPercentUtilization();
+//        final double vmRamUtilization = vm.getRam().getPercentUtilization();
+//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization);
 //        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
 //        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
 //        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
@@ -201,21 +205,34 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
 
         Vm tempVm = new VmSimple(vm);
-
         if (!host.createTemporaryVm(tempVm).fully()) {
             return false;
         }
 
-        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
+        //用预测值和当前值之间的最大值来进行放置预测
+        //只用预测值是不是也可以呢？
+        //注释下面这一段就是只用预测值
+        final double hostCpuUtilization = host.getCpuPercentUtilization();
+        final double hostRamUtilization = host.getRamPercentUtilization();
+        final double vmCpuUtilization = vm.getCpuPercentUtilization();
+        final double vmRamUtilization = vm.getRam().getPercentUtilization();
+        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization);
+        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
+        final double hostTotalCpuUsage = Math.max(vmPredict[0],vmCpuUtilization) * vm.getTotalMipsCapacity() + Math.max(hostCpuUtilization,(1-hostPredict[0])) * host.getTotalMipsCapacity();
+        final double hostTotalRamUsage = Math.max(vmPredict[1],vmRamUtilization) * vm.getRam().getCapacity() + Math.max(hostRamUtilization,(1-hostPredict[1])) * host.getRam().getCapacity();
+        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
+        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
+        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+
+        //只用当前值来进行判断过载
+//        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
+
 //        System.out.println(vm.getId() + ": "+ host.getId() + "  "+ notOverloadedAfterAllocation);
         host.destroyTemporaryVm(tempVm);
-        tempVm = null;
         return notOverloadedAfterAllocation;
     }
 
-    public double[] getVmPredictValue(Vm vm){
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getRam().getPercentUtilization();
+    public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization){
         processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
         return new double[]{mathHandler.GM11Predicting(allVmsCpuUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmCpuUtilization),mathHandler.GM11Predicting(allVmsRamUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmRamUtilization)};
     }
