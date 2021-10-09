@@ -20,6 +20,7 @@ import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.*;
+import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.util.Conversion;
@@ -395,21 +396,21 @@ public class myImplementationMigrationDatacenter {
         System.out.println();
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
-//            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-//                    new VmSelectionPolicyMinimumUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
             this.allocationPolicy =
-                new VmAllocationPolicyPASUP(
+                new VmAllocationPolicyMigrationBestFitStaticThreshold(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyPASUP(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
             this.allocationPolicy.setHostRamThreshold(true);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
@@ -430,7 +431,7 @@ public class myImplementationMigrationDatacenter {
         final PowerModelHost powerModel = new PowerModelHostSimple(Constant.MAX_POWER,Constant.STATIC_POWER);
         final Host host = new HostSimple(event.getRam(), Constant.MAX_HOST_BW, Constant.MAX_HOST_STORAGE, createPesList(event.getCpuCores()));
         host
-            .setVmScheduler(new VmSchedulerTimeShared())
+            .setVmScheduler(new VmSchedulerSpaceShared())
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
             .setPowerModel(powerModel);
@@ -715,7 +716,7 @@ public class myImplementationMigrationDatacenter {
 //                System.out.println(simulation.clockStr()+": host id : " + host.getId() + " : "+ hostRamUtilization);
                 double hostCpuUtilization = host.getCpuPercentUtilization();
 //                System.out.println(simulation.clockStr() + ": hsot" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
-                if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0){
+                if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0 && host.getVmList().isEmpty()){
                     host.setActive(false);
                     System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
                 }

@@ -18,6 +18,7 @@ import static java.util.Comparator.comparingDouble;
 //VmAllocationPolicyMigrationAbstract里面的findHostForVmInternal就是根据最小的energy消耗选择的host，然后sortByCpuUtilization里面的就是按照利用率降序排序，就是pabfd
 //updateMigrationMapFromUnderloadedHosts方法每次选择一个低负载的host出来迁移
 //getMigrationMapFromOverloadedHosts方法可以设置过载vm找不到放置的后果
+//updateMigrationMapFromUnderloadedHosts里面关闭打印欠载信息，太多了
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
@@ -61,7 +62,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         super(vmSelectionPolicy, overUtilizationThreshold, findHostForVmFunction);
     }
 
-    private void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
+    protected void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
         final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalCpuMipsUtilization(simulationTime));
         vmList.sort(comparator.reversed());
     }
@@ -204,7 +205,11 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //        }
 //        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
 
+//        //每个host最多两个vm
+//        if(host.getVmList().size() >= 2) return false;
+
         Vm tempVm = new VmSimple(vm);
+
         if (!host.createTemporaryVm(tempVm).fully()) {
             return false;
         }

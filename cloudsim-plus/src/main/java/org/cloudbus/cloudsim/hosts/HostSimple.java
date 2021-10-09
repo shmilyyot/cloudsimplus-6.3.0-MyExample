@@ -150,15 +150,15 @@ public class HostSimple implements Host, Serializable {
     private boolean lazySuitabilityEvaluation;
     protected HostResourceStats cpuUtilizationStats;
 
-    public double getTotalMigrationTime() {
-        return totalMigrationTime;
+    public double getTotalOver100Time() {
+        return totalOver100Time;
     }
 
-    public void setTotalMigrationTime(double totalMigrationTime) {
-        this.totalMigrationTime = totalMigrationTime;
+    public void setTotalOver100Time(double totalOver100Time) {
+        this.totalOver100Time = totalOver100Time;
     }
 
-    private double totalMigrationTime = 0.0;
+    private double totalOver100Time = 0.0;
 
     /**
      * Creates and powers on a Host without a pre-defined ID,

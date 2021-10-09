@@ -181,7 +181,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 break;
             }
             this.hostsUnderloaded = true;
+
+            //或许可以不打印，太多了
             printUnderUtilizedHosts(underloadedHost);
+
             LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
 
             ignoredSourceHosts.add(underloadedHost);
@@ -248,8 +251,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     private String underloadedHostToString(final Host host) {
         return String.format(
-            "      Host %d (lower CPU threshold %.2f, current CPU utilization: %.2f,lower RAM threshold %.2f, current RAM utilization: %.2f)",
-            host.getId(), getUnderUtilizationThreshold(), host.getCpuPercentUtilization(),getUnderRamUtilizationThreshold(),host.getRamPercentUtilization());
+            "      Host %d (lower CPU threshold %.2f, current CPU utilization: %.2f,lower RAM threshold %.2f, current RAM utilization: %.2f) ,current holding vm size: %d",
+            host.getId(), getUnderUtilizationThreshold(), host.getCpuPercentUtilization(),getUnderRamUtilizationThreshold(),host.getRamPercentUtilization(),host.getVmList().size());
     }
 
 
@@ -454,6 +457,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             return  new HashMap<>();
         }
 
+        //所有过载主机中拿出来的host都放在这里
         final List<Vm> vmsToMigrate = getVmsToMigrateFromOverloadedHosts(overloadedHosts);
         sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
         final Map<Vm, Host> migrationMap = new HashMap<>();
@@ -523,9 +527,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));
             //只要有一个vm找不到host，直接返回空map，之前找到host的也不算了
             if (!optional.isPresent()) {
-                LOGGER.warn(
-                    "{}: VmAllocationPolicy: A new Host, which isn't also underloaded or won't be overloaded, couldn't be found to migrate {}. Migration of VMs from the underloaded {} cancelled.",
-                    getDatacenter().getSimulation().clockStr(), vm, vm.getHost());
+
+                //不打印
+//                LOGGER.warn(
+//                    "{}: VmAllocationPolicy: A new Host, which isn't also underloaded or won't be overloaded, couldn't be found to migrate {}. Migration of VMs from the underloaded {} cancelled.",
+//                    getDatacenter().getSimulation().clockStr(), vm, vm.getHost());
                 return new HashMap<>();
             }
             addVmToMigrationMap(migrationMap, vm, optional.get());
@@ -541,7 +547,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @param vmList the vm list to be sorted
      * @param simulationTime the simulation time to get the current CPU utilization for each Vm
      */
-    private void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
+    protected void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
         final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalCpuMipsUtilization(simulationTime));
         vmList.sort(comparator.reversed());
     }
