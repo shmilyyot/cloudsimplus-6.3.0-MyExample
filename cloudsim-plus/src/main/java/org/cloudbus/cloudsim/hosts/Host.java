@@ -59,6 +59,10 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
      */
     Host NULL = new HostNull();
 
+    int getTotalOver100Time();
+
+    void setTotalOver100Time(int i);
+
     /**
      * Gets the Datacenter where the host is placed.
      *

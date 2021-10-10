@@ -166,7 +166,7 @@ public final class MigrationExample1 {
      */
     private static final int    HOST_PES[] = {4, 5, 5};
 
-    private static final int    VM_PES[]   = {2, 2, 2, 1};
+    private static final int    VM_PES[]   = {2, 2, 2, 1,1};
     private static final int    VM_MIPS = 1000; //for each PE
     private static final long   VM_SIZE = 1000; //image size (MB)
     private static final int    VM_RAM = 10_000; //VM memory (MB)
@@ -245,9 +245,11 @@ public final class MigrationExample1 {
         new CloudletsTableBuilder(finishedList).build();
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
 
-        hostList.stream().filter(h -> h.getId() <= 2).forEach(this::printHostStateHistory);
+        hostList.stream().filter(h -> h.getId() <= 3).forEach(this::printHostStateHistory);
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
         System.out.println(getClass().getSimpleName() + " finished!");
+
+        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
     }
 
     /**
@@ -475,7 +477,7 @@ public final class MigrationExample1 {
         host
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
-            .setVmScheduler(new VmSchedulerSpaceShared());
+            .setVmScheduler(new VmSchedulerTimeShared());
         host.enableStateHistory();
         return host;
     }

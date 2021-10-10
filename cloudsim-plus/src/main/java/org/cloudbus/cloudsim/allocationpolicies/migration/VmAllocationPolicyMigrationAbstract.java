@@ -59,6 +59,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     private boolean hostRamThreshold = false;
+
+    public boolean isEnableMigrateOneUnderLoadHost() {
+        return enableMigrateOneUnderLoadHost;
+    }
+
+    public void setEnableMigrateOneUnderLoadHost(boolean enableMigrateOneUnderLoadHost) {
+        this.enableMigrateOneUnderLoadHost = enableMigrateOneUnderLoadHost;
+    }
+
+    private boolean enableMigrateOneUnderLoadHost = false;
     public static final double DEF_UNDER_UTILIZATION_THRESHOLD = 0.35;
     public static final double DEF_RAM_UNDER_UTILIZATION_THRESHOLD = 0.35;
     /** @see #getUnderUtilizationThreshold() */
@@ -83,6 +93,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     /** @see #areHostsOverloaded() */
     private boolean hostsOverloaded;
+
 
     /**
      * Creates a VmAllocationPolicy.
@@ -140,7 +151,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @param overloadedHosts the List of over utilized hosts
      * @param migrationMap current migration map that will be updated
      */
-    private void updateMigrationMapFromUnderloadedHosts(
+    protected void updateMigrationMapFromUnderloadedHosts(
         final Set<Host> overloadedHosts,
         final Map<Vm, Host> migrationMap,
         final Set<Host> switchedOffHosts)
@@ -169,21 +180,15 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         final int numberOfHosts = getHostList().size();
 
         this.hostsUnderloaded = false;
-        while (true) {
-            //当所有低于值host都被遍历，ignoredhost的数目等于系统中host的数目
-            if (numberOfHosts == ignoredSourceHosts.size()) {
-                break;
-            }
-
-            //每次循环选择一个低负载的host出来
+        if(isEnableMigrateOneUnderLoadHost()){
             final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
             if (underloadedHost == Host.NULL) {
-                break;
+                return;
             }
             this.hostsUnderloaded = true;
 
             //或许可以不打印，太多了
-            printUnderUtilizedHosts(underloadedHost);
+//            printUnderUtilizedHosts(underloadedHost);
 
             LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
 
@@ -194,12 +199,46 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             if (!vmsToMigrateFromHost.isEmpty()) {
                 logVmsToBeReallocated(underloadedHost, vmsToMigrateFromHost);
                 final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
+                    vmsToMigrateFromHost,
+                    ignoredTargetHosts,
+                    underloadedHost);
+
+                ignoredSourceHosts.addAll(extractHostListFromMigrationMap(newVmPlacement));
+                migrationMap.putAll(newVmPlacement);
+            }
+        }else{
+            while (true) {
+                //当所有低于值host都被遍历，ignoredhost的数目等于系统中host的数目
+                if (numberOfHosts == ignoredSourceHosts.size()) {
+                    break;
+                }
+
+                //每次循环选择一个低负载的host出来
+                final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
+                if (underloadedHost == Host.NULL) {
+                    break;
+                }
+                this.hostsUnderloaded = true;
+
+                //或许可以不打印，太多了
+//            printUnderUtilizedHosts(underloadedHost);
+
+                LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
+
+                ignoredSourceHosts.add(underloadedHost);
+                ignoredTargetHosts.add(underloadedHost);
+
+                final List<? extends Vm> vmsToMigrateFromHost = getVmsToMigrateFromUnderUtilizedHost(underloadedHost);
+                if (!vmsToMigrateFromHost.isEmpty()) {
+                    logVmsToBeReallocated(underloadedHost, vmsToMigrateFromHost);
+                    final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
                         vmsToMigrateFromHost,
                         ignoredTargetHosts,
                         underloadedHost);
 
-                ignoredSourceHosts.addAll(extractHostListFromMigrationMap(newVmPlacement));
-                migrationMap.putAll(newVmPlacement);
+                    ignoredSourceHosts.addAll(extractHostListFromMigrationMap(newVmPlacement));
+                    migrationMap.putAll(newVmPlacement);
+                }
             }
         }
     }
@@ -408,6 +447,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     private Optional<Host> findHostForVm(final Vm vm, final Set<? extends Host> excludedHosts, final Predicate<Host> predicate) {
         final Stream<Host> stream = this.getHostList().stream()
             .filter(host -> !excludedHosts.contains(host))
+            .filter(Host::isActive)
             .filter(host -> host.isSuitableForVm(vm))
             .filter(host -> isNotHostOverloadedAfterAllocation(host, vm))
             .filter(predicate);

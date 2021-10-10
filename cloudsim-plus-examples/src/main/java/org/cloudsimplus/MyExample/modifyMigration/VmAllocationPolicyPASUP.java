@@ -169,6 +169,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //            System.out.println(host.getCpuPercentUtilization() + "  " + host.getRamPercentUtilization());
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
             final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
 //            System.out.println("cpu:"+(1-hostPredict[0]));
 //            System.out.println("ram:"+(1-hostPredict[1]));
@@ -209,8 +210,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //        if(host.getVmList().size() >= 2) return false;
 
         Vm tempVm = new VmSimple(vm);
-
         if (!host.createTemporaryVm(tempVm).fully()) {
+//            System.out.println(" 放不进去"+tempVm.getId());
             return false;
         }
 

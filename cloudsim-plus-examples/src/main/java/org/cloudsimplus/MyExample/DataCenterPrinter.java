@@ -222,8 +222,14 @@ public class DataCenterPrinter {
         double PDM = 0.0;
         for(Host host:hostList){
             double totalUpTime = host.getTotalUpTime();
+            System.out.println(totalUpTime);
+            if(totalUpTime == 0.0) continue;
+            double totalOver100Time = host.getTotalOver100Time();
+            SLATAH += totalOver100Time/totalUpTime;
+
         }
-        System.out.println("当前系统的SLAV是： + " + SLAV);
+        SLATAH /= hostList.size();
+        System.out.println("当前系统的SLATAH是： " + SLATAH);
     }
 
 

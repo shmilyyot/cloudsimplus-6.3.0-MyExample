@@ -1,8 +1,6 @@
 package org.cloudsimplus.MyExample;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.OptionalDouble;
+import java.util.*;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
@@ -215,20 +213,19 @@ public class MathHandler {
 //            }
 //        }
 //        return false;
-//        boolean zero = false;
-//        for(double num:originalSequence){
-//            if(num == 0.0){
-//                if(zero) return true;
-//                else zero = true;
+        Set<Double> set = new HashSet<>();
+        for(double num:originalSequence){
+            if(!set.contains(num)){
+                set.add(num);
+            }else return true;
+        }
+        return false;
+//        for(int i=1;i<originalSequence.length;++i){
+//            if(originalSequence[i] == 0.0 && originalSequence[i-1] == 0.0){
+//                return true;
 //            }
 //        }
 //        return false;
-        for(int i=1;i<originalSequence.length;++i){
-            if(originalSequence[i] == 0.0 && originalSequence[i-1] == 0.0){
-                return true;
-            }
-        }
-        return false;
     }
 
 }

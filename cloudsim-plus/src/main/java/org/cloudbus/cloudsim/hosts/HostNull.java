@@ -60,6 +60,8 @@ final class HostNull implements Host, Serializable {
     @Override public Host setBwProvisioner(ResourceProvisioner bwProvisioner) {
         return Host.NULL;
     }
+    @Override public int getTotalOver100Time() {return 0;}
+    @Override public void setTotalOver100Time(int i) {}
     @Override public Datacenter getDatacenter() {
         return Datacenter.NULL;
     }

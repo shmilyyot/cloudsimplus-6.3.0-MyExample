@@ -75,6 +75,16 @@ public class HostSimple implements Host, Serializable {
 
     private double idlePower = 0.0;
 
+    public int getTotalOver100Time() {
+        return totalOver100Time;
+    }
+
+    public void setTotalOver100Time(int totalOver100Time) {
+        this.totalOver100Time = totalOver100Time;
+    }
+
+    int totalOver100Time = 0;
+
     /** @see #getStartTime() */
     private double startTime = -1;
 
@@ -149,16 +159,6 @@ public class HostSimple implements Host, Serializable {
 
     private boolean lazySuitabilityEvaluation;
     protected HostResourceStats cpuUtilizationStats;
-
-    public double getTotalOver100Time() {
-        return totalOver100Time;
-    }
-
-    public void setTotalOver100Time(double totalOver100Time) {
-        this.totalOver100Time = totalOver100Time;
-    }
-
-    private double totalOver100Time = 0.0;
 
     /**
      * Creates and powers on a Host without a pre-defined ID,

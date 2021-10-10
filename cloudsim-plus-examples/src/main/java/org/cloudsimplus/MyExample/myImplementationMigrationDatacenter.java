@@ -202,6 +202,11 @@ public class myImplementationMigrationDatacenter {
         final double endSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation finished at %s. Execution time: %.2f seconds%n", LocalTime.now(), TimeUtil.elapsedSeconds(startSecs));
 
+//        for(Host host:hostList){
+//            System.out.println("host:" +host.getId()+" over 100 的总时间：" + host.getTotalOver100Time());
+//        }
+        dataCenterPrinter.calculateSLAV(hostList,vmList);
+
         //打印当前系统活跃的主机数目
 //        dataCenterPrinter.activeHostCount(hostList);
 
@@ -396,23 +401,24 @@ public class myImplementationMigrationDatacenter {
         System.out.println();
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
-            this.allocationPolicy =
-                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 //            this.allocationPolicy =
-//                new VmAllocationPolicyPASUP(
+//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
 //                    new VmSelectionPolicyMinimumUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+            this.allocationPolicy =
+                new VmAllocationPolicyPASUP(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
             this.allocationPolicy.setHostRamThreshold(true);
+            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
             datacenter
@@ -586,6 +592,11 @@ public class myImplementationMigrationDatacenter {
 //            System.out.println("cpu");
 //        }
         if(time - (int)time != 0.0) return;
+//        hostList.forEach(host -> {
+//            double hostRamUtilization = host.getRamPercentUtilization();
+//            double hostCpuUtilization = host.getCpuPercentUtilization();
+//            if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+//        });
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
             collectHostResourceUtilization();
             dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
@@ -720,6 +731,7 @@ public class myImplementationMigrationDatacenter {
                     host.setActive(false);
                     System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
                 }
+//                if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
                 hostRamhistory.addLast(hostRamUtilization);
                 hostCpuhistory.addLast(hostCpuUtilization);
                 host.getVmList().forEach(vm -> {
