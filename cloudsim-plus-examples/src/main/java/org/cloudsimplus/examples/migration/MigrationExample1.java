@@ -50,9 +50,11 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
+import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.VmHostEventInfo;
 import org.cloudsimplus.util.Log;
@@ -235,6 +237,7 @@ public final class MigrationExample1 {
         createAndSubmitCloudlets(broker);
 
         broker.addOnVmsCreatedListener(this::onVmsCreatedListener);
+//        simulation.addOnClockTickListener(this::clockTickListener);
 
         simulation.start();
 
@@ -507,5 +510,9 @@ public final class MigrationExample1 {
         System.out.println();
         hostList.forEach(host -> showHostAllocatedMips(info.getTime(), host));
         System.out.println();
+    }
+
+    private void clockTickListener(final EventInfo info) {
+        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
     }
 }

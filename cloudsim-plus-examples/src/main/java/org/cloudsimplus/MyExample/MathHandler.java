@@ -130,7 +130,7 @@ public class MathHandler {
         return originalSequence;
     }
 
-    public double GM11Predicting(List<Double> dataHistory,int n,double utilization){
+    public double GM11Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
         if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
@@ -145,8 +145,13 @@ public class MathHandler {
         initialYN(YN,originalSequence,tn);
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
-        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
-        return Math.min(1,Math.max(0,predict));
+//        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
+        double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
+        if(max){
+            return cutTo0To1(findPredictMax(predicts));
+        }else{
+            return cutTo0To1(findPredictMin(predicts));
+        }
 //        if(max){
 //            return findMaxValue(predict,originalSequence);
 //        }else{
@@ -227,5 +232,45 @@ public class MathHandler {
 //        }
 //        return false;
     }
+
+    double cutTo0To1(double predict){
+        return Math.min(1,Math.max(0,predict));
+    }
+
+    boolean checkUtilizationsBelowThreadHold(double[] utilizations,double threadhold){
+        for(double utilization:utilizations){
+            if(utilization > threadhold){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    boolean checkUtilizationsUpperThreadHold(double[] utilizations,double threadhold){
+        for(double utilization:utilizations){
+            if(utilization < threadhold){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    double[] getKGM11PredictResult(double a,double b,int n,double[] originalSequence){
+        int K = Constant.KSTEP;
+        double[] utilizations = new double[K];
+        for(int i=0;i<K;++i){
+            utilizations[i] = getGM11PredictResult(a,b,n+i+1,originalSequence);
+        }
+        return  utilizations;
+    }
+
+    double findPredictMax(double[] predicts){
+        return Arrays.stream(predicts).max().getAsDouble();
+    }
+
+    double findPredictMin(double[] predicts){
+        return Arrays.stream(predicts).min().getAsDouble();
+    }
+
 
 }

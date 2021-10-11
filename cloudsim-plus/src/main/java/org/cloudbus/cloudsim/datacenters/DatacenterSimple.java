@@ -811,7 +811,9 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         //有主机过载但是migrationmap里面为空，所以报错
         if(areThereUnderOrOverloadedHostsAndMigrationIsSupported()){
-            logHostSearchRetry();
+
+//            logHostSearchRetry();
+
             lastTimeUnderOrOverloadedHostsDetected = clock();
         }
     }
@@ -879,6 +881,10 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final String msg2 = String.format(
             "It's expected to finish in %.2f seconds, considering the %.0f%% of bandwidth allowed for migration and the VM RAM size.",
             delay, getBandwidthPercentForMigration()*100);
+
+        //统计迁移产生的额外开销
+        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + delay * sourceVm.getCpuPercentUtilization() * sourceVm.getTotalMipsCapacity());
+
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
 
         if(targetHost.addMigratingInVm(sourceVm)) {

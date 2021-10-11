@@ -217,19 +217,24 @@ public class DataCenterPrinter {
     }
 
     public void calculateSLAV(List<Host> hostList,List<Vm> vmList){
-        double SLAV = 0.0;
+        double SLAV;
         double SLATAH = 0.0;
         double PDM = 0.0;
         for(Host host:hostList){
             double totalUpTime = host.getTotalUpTime();
-            System.out.println(totalUpTime);
             if(totalUpTime == 0.0) continue;
-            double totalOver100Time = host.getTotalOver100Time();
-            SLATAH += totalOver100Time/totalUpTime;
+            SLATAH += host.getTotalOver100Time()/totalUpTime;
 
         }
+        for(Vm vm:vmList){
+            PDM += vm.getRequestUtilization()/vm.getTotalrequestUtilization();
+        }
         SLATAH /= hostList.size();
+        PDM /= vmList.size();
+        SLAV = SLATAH * PDM;
         System.out.println("当前系统的SLATAH是： " + SLATAH);
+        System.out.println("当前系统的PDM是： " + PDM);
+        System.out.println("当前系统的SLAV是： " + SLAV);
     }
 
 

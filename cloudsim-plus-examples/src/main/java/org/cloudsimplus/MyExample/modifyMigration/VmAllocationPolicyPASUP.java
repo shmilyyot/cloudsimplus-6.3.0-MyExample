@@ -19,6 +19,7 @@ import static java.util.Comparator.comparingDouble;
 //updateMigrationMapFromUnderloadedHosts方法每次选择一个低负载的host出来迁移
 //getMigrationMapFromOverloadedHosts方法可以设置过载vm找不到放置的后果
 //updateMigrationMapFromUnderloadedHosts里面关闭打印欠载信息，太多了
+//checkIfVmMigrationsAreNeeded()关闭打印欠载过载信息
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
@@ -74,7 +75,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //        AtomicReference<Host> targetHost = null;
         final double vmCpuUtilization = vm.getCpuPercentUtilization();
         final double vmRamUtilization = vm.getRam().getPercentUtilization();
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization);
+        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
 //        hostStream.forEach(host -> {
 //            double hostCpuUtilization = host.getCpuPercentUtilization();
 //            double hostRamUtilization = host.getRamPercentUtilization();
@@ -99,11 +100,13 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
+            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
 //            System.out.println("host:"+(1-hostPredict[0]));
 //            System.out.println("vm:"+vmPredict[0]);
             double powerDifference = getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
-            return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
+            double[] vmPredictRecourse = new double[]{vmPredict[0] * vm.getTotalMipsCapacity(),vmPredict[1] * vm.getRam().getCapacity()};
+            double[] hostPredictRecourse = new double[]{hostPredict[0] * host.getTotalMipsCapacity(),hostPredict[1] * host.getRam().getCapacity()};
+            return powerDifference * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
         }));
 //        return hostStream.max(Comparator.comparingDouble(Host::getCpuMipsUtilization));
 //        return Optional.ofNullable(targetHost.get());
@@ -169,12 +172,13 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //            System.out.println(host.getCpuPercentUtilization() + "  " + host.getRamPercentUtilization());
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
 //            System.out.println("cpu:"+(1-hostPredict[0]));
 //            System.out.println("ram:"+(1-hostPredict[1]));
 //            System.out.println(host.getId());
-            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1],hostCpuUtilization,hostRamUtilization);
+//            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1],hostCpuUtilization,hostRamUtilization);
+            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
 //            return isHostOverloaded(host, host.getCpuPercentUtilization(),host.getRamPercentUtilization());
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
@@ -184,6 +188,11 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     //对于高阈值预测，当前值和预测值在每一个维度都大于阈值才触发迁移
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent,final double hostCpuUtilization,final double hostRamUtilization){
         return (hostCpuUtilization > getOverUtilizationThreshold(host) && cpuUsagePercent > getOverUtilizationThreshold(host)) && (hostRamUtilization > getRamOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host));
+    }
+
+    //对于高阈值预测，当前值和预测值在每一个维度都大于阈值才触发迁移
+    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
+        return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
     //重写判断一个vm放进去host的话会不会过载
@@ -222,8 +231,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double hostRamUtilization = host.getRamPercentUtilization();
         final double vmCpuUtilization = vm.getCpuPercentUtilization();
         final double vmRamUtilization = vm.getRam().getPercentUtilization();
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization);
-        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
+        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
         final double hostTotalCpuUsage = Math.max(vmPredict[0],vmCpuUtilization) * vm.getTotalMipsCapacity() + Math.max(hostCpuUtilization,(1-hostPredict[0])) * host.getTotalMipsCapacity();
         final double hostTotalRamUsage = Math.max(vmPredict[1],vmRamUtilization) * vm.getRam().getCapacity() + Math.max(hostRamUtilization,(1-hostPredict[1])) * host.getRam().getCapacity();
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
@@ -238,15 +247,15 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         return notOverloadedAfterAllocation;
     }
 
-    public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization){
+    public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
         processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
-        return new double[]{mathHandler.GM11Predicting(allVmsCpuUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmCpuUtilization),mathHandler.GM11Predicting(allVmsRamUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmRamUtilization)};
+        return new double[]{mathHandler.GM11Predicting(allVmsCpuUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(allVmsRamUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmRamUtilization,max)};
     }
 
     //获取host最小剩余资源利用率，用1减过了
-    public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization){
+    public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
         processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
-        return new double[]{1-mathHandler.GM11Predicting(allHostsCpuUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostCpuUtilization),1-mathHandler.GM11Predicting(allHostsRamUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostRamUtilization)};
+        return new double[]{1-mathHandler.GM11Predicting(allHostsCpuUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(allHostsRamUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostRamUtilization,max)};
     }
 
     public boolean checkNewVmSuitable(Host host,Vm vm,final double hostTotalRamUsage){
@@ -258,7 +267,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         if(isHostRamThreshold()){
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
+            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
             return isHostUnderloaded(1-hostPredict[0],1-hostPredict[1],hostCpuUtilization,hostRamUtilization);
         }else{
             return isHostUnderloaded(host.getCpuPercentUtilization());

@@ -824,6 +824,7 @@ public class HostSimple implements Host, Serializable {
 
         this.shutdownTime = Math.floor(shutdownTime);
         this.totalUpTime += getUpTime();
+//        System.out.println("目前为止的时间："+totalUpTime);
     }
 
     @Override

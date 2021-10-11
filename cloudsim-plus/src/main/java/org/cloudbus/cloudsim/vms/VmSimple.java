@@ -111,6 +111,28 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     private VmGroup group;
     private double timeZone;
 
+    public double getRequestUtilization() {
+        return requestUtilization;
+    }
+
+    public void setRequestUtilization(double requestUtilization) {
+        this.requestUtilization = requestUtilization;
+    }
+
+    //迁移产生的开销
+    private double requestUtilization = 0.0;
+
+    public double getTotalrequestUtilization() {
+        return totalrequestUtilization;
+    }
+
+    public void setTotalrequestUtilization(double totalrequestUtilization) {
+        this.totalrequestUtilization = totalrequestUtilization;
+    }
+
+    //总请求的mips
+    private double totalrequestUtilization = 0.0;
+
     /**
      * Creates a Vm with 1024 MEGA of RAM, 100 Megabits/s of Bandwidth and 1024 MEGA of Storage Size.
      * To change these values, use the respective setters. While the Vm {@link #isCreated()

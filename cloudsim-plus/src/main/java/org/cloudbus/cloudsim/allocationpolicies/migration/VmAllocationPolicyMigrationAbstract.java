@@ -344,7 +344,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     @Override
     public boolean isHostOverloaded(final Host host) {
         if(hostRamThreshold){
-            return isHostOverloaded(host, host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+            final double hostCpuUtilization = host.getCpuPercentUtilization();
+            final double hostRamUtilization = host.getRamPercentUtilization();
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+//            System.out.println("执行了判断");
+            return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
         }

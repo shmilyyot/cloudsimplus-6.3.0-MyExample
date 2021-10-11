@@ -30,6 +30,7 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyMigrationFirstFitStaticThreshold;
 import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyPASUP;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
 import org.cloudsimplus.listeners.EventInfo;
@@ -73,9 +74,7 @@ public class myImplementationMigrationDatacenter {
     private double lastClockTime;   //上一个时钟时间
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
-    private double SLAV = 0.0;  //sla违反系数
-    private double SLATAH = 0.0;    //每个活跃主机因为利用率超过100%而导致的sla违反比例
-    private double PDM = 0.0;   //迁移性能降级
+    private static Set<Double> existTimes = new HashSet<>();
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -205,6 +204,9 @@ public class myImplementationMigrationDatacenter {
 //        for(Host host:hostList){
 //            System.out.println("host:" +host.getId()+" over 100 的总时间：" + host.getTotalOver100Time());
 //        }
+
+//        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
+
         dataCenterPrinter.calculateSLAV(hostList,vmList);
 
         //打印当前系统活跃的主机数目
@@ -325,7 +327,7 @@ public class myImplementationMigrationDatacenter {
             ;
     }
     private Cloudlet createCloudlet() {
-        final long length = 20000000;
+        final long length = 2000000;
         final long fileSize = 300;
         final long outputSize = 300;
         UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.25);
@@ -406,6 +408,13 @@ public class myImplementationMigrationDatacenter {
 //                    new VmSelectionPolicyMinimumUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
+//            this.allocationPolicy =
+//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
             this.allocationPolicy =
                 new VmAllocationPolicyPASUP(
                     new VmSelectionPolicyMinimumUtilization(),
@@ -416,19 +425,23 @@ public class myImplementationMigrationDatacenter {
                     allHostsCpuUtilizationHistoryQueue,
                     allVmsRamUtilizationHistoryQueue,
                     allVmsCpuUtilizationHistoryQueue);
+
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
+            //把ram判断阈值
             this.allocationPolicy.setHostRamThreshold(true);
+            //低阈值迁移只迁移一个
             this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
-            Datacenter datacenter = new DatacenterSimple(simulation,allocationPolicy);
+            Datacenter datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)
 //                .setHostSearchRetryDelay(Constant.HOST_SEARCH_RETRY_DELAY)
             ;
             datacenters.add(datacenter);
         }
-        //默认只有一个datacenter，所以只提交一个hostlist
-        datacenters.get(0).addHostList(hostList);
+//        //默认只有一个datacenter，所以只提交一个hostlist
+        //这样子传没有给datacenter里面的host传入正式的simulation
+//        datacenters.get(0).addHostList(hostList);
         dataCenterPrinter.printHostsInformation(hostList);
     }
 
@@ -578,25 +591,14 @@ public class myImplementationMigrationDatacenter {
 //        collectHostRamResourceUtilization();
 //        collectHostCpuResourceUtilization();
         double time = simulation.clock();
-//        if(time == 1600.0){
-//            System.out.println("ram");
-//            for(double nmu:allVmsRamUtilizationHistoryQueue.get(vmList.get(0))){
-//                System.out.println(nmu);
-//            }
-//            System.out.println("ram");
-//            System.out.println();
-//            System.out.println("cpu");
-//            for(double nmu:allVmsCpuUtilizationHistoryQueue.get(vmList.get(0))){
-//                System.out.println(nmu);
-//            }
-//            System.out.println("cpu");
-//        }
-        if(time - (int)time != 0.0) return;
 //        hostList.forEach(host -> {
 //            double hostRamUtilization = host.getRamPercentUtilization();
 //            double hostCpuUtilization = host.getCpuPercentUtilization();
-//            if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
 //        });
+        if(time - (int)time != 0.0) return;
+//        if(existTimes.contains(time)) return;
+//        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
             collectHostResourceUtilization();
             dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
@@ -716,7 +718,10 @@ public class myImplementationMigrationDatacenter {
         hostList.forEach(host -> {
             LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
             LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
+
+
             if(host.isActive()){
+//                System.out.println("打印开机时间："+host.getTotalUpTime());
 //            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
                 while(hostRamhistory.size() > Constant.HOST_LogLength-1){
                     hostRamhistory.removeFirst();
@@ -727,13 +732,15 @@ public class myImplementationMigrationDatacenter {
 //                System.out.println(simulation.clockStr()+": host id : " + host.getId() + " : "+ hostRamUtilization);
                 double hostCpuUtilization = host.getCpuPercentUtilization();
 //                System.out.println(simulation.clockStr() + ": hsot" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
-                if(hostCpuUtilization == 0.0 && hostRamUtilization == 0.0 && host.getVmList().isEmpty()){
+                if(host.getVmList().isEmpty()){
+//                    System.out.println("开机时间"+host.getTotalUpTime());
                     host.setActive(false);
                     System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
                 }
 //                if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
                 hostRamhistory.addLast(hostRamUtilization);
                 hostCpuhistory.addLast(hostCpuUtilization);
+//                System.out.println("当前时间是："+simulation.clockStr()+"  host id: " +host.getId());
                 host.getVmList().forEach(vm -> {
                     LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
                     LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
@@ -743,6 +750,8 @@ public class myImplementationMigrationDatacenter {
                         vmRamHistory.removeFirst();
                     }
 //                }
+                    //更新vm总共请求的mips数目
+                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getCpuPercentUtilization() * vm.getTotalMipsCapacity() * Constant.SCHEDULING_INTERVAL);
                     vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                     vmRamHistory.addLast(vm.getRam().getPercentUtilization());
                 });
