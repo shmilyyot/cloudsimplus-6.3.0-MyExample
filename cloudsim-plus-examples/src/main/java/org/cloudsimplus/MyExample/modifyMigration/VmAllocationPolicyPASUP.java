@@ -20,6 +20,7 @@ import static java.util.Comparator.comparingDouble;
 //getMigrationMapFromOverloadedHosts方法可以设置过载vm找不到放置的后果
 //updateMigrationMapFromUnderloadedHosts里面关闭打印欠载信息，太多了
 //checkIfVmMigrationsAreNeeded()关闭打印欠载过载信息
+//在hostsimple和vmsimple里面把cpuUtilizationStats关掉了，不知道有什么影响
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;

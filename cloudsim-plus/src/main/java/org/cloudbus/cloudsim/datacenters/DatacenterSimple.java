@@ -883,7 +883,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             delay, getBandwidthPercentForMigration()*100);
 
         //统计迁移产生的额外开销
-        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + delay * sourceVm.getCpuPercentUtilization() * sourceVm.getTotalMipsCapacity());
+        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getCurrentRequestedTotalMips());
 
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
 

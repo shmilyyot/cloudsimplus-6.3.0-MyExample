@@ -219,9 +219,9 @@ public class myImplementationMigrationDatacenter {
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
-        cloudlets = new HashSet<>(1000);
-        cloudletIds = new HashSet<>(1000);
-        brokers = new ArrayList<>(1);
+        cloudlets = new HashSet<>();
+        cloudletIds = new HashSet<>();
+        brokers = new ArrayList<>();
 
         //使用单一代理
         if(Constant.SINGLE_BROKER){
@@ -327,18 +327,24 @@ public class myImplementationMigrationDatacenter {
             ;
     }
     private Cloudlet createCloudlet() {
-        final long length = 2000000;
+        final long length = 20000000;
         final long fileSize = 300;
         final long outputSize = 300;
-        UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.25);
-        UtilizationModel utilizationModelCpu = new UtilizationModelDynamic(0.5);
+//        UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.5);
+//        UtilizationModel utilizationModelCpu = new UtilizationModelDynamic(0.5);
+        UtilizationModelStochastic utilizationCpu = new UtilizationModelStochastic();
+//        utilizationCpu.setOverCapacityRequestAllowed(true);
+        UtilizationModelStochastic utilizationRam = new UtilizationModelStochastic();
+        utilizationRam.setHistoryEnabled(false);
+        utilizationCpu.setHistoryEnabled(false);
+//        utilizationRam.setOverCapacityRequestAllowed(true);
 
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(new UtilizationModelStochastic())
+            .setUtilizationModelCpu(utilizationCpu)
             .setUtilizationModelBw(UtilizationModel.NULL)
-            .setUtilizationModelRam(new UtilizationModelStochastic());
+            .setUtilizationModelRam(utilizationRam);
         return cloudlet;
     }
 
@@ -389,8 +395,8 @@ public class myImplementationMigrationDatacenter {
 
     private void createModifyDatacenters() {
         datacenters = new ArrayList<>(Constant.DATACENTERS_NUMBER);
-        hostIds = new HashSet<>(Constant.HOSTS);
-        hostList = new ArrayList<>(Constant.HOSTS);
+        hostIds = new HashSet<>();
+        hostList = new ArrayList<>();
         int halfNumOfHost = Constant.HOSTS/2;
         for(int i=0;i<halfNumOfHost;++i){
             Host host1 = createHost(0);
@@ -403,11 +409,12 @@ public class myImplementationMigrationDatacenter {
         System.out.println();
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
-//            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-//                    new VmSelectionPolicyMinimumUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
@@ -415,16 +422,16 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-            this.allocationPolicy =
-                new VmAllocationPolicyPASUP(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyPASUP(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
             //把ram判断阈值
@@ -591,12 +598,12 @@ public class myImplementationMigrationDatacenter {
 //        collectHostRamResourceUtilization();
 //        collectHostCpuResourceUtilization();
         double time = simulation.clock();
+        if(time - (int)time != 0.0) return;
 //        hostList.forEach(host -> {
 //            double hostRamUtilization = host.getRamPercentUtilization();
 //            double hostCpuUtilization = host.getCpuPercentUtilization();
 //            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
 //        });
-        if(time - (int)time != 0.0) return;
 //        if(existTimes.contains(time)) return;
 //        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
@@ -731,7 +738,7 @@ public class myImplementationMigrationDatacenter {
                 double hostRamUtilization = host.getRamPercentUtilization();
 //                System.out.println(simulation.clockStr()+": host id : " + host.getId() + " : "+ hostRamUtilization);
                 double hostCpuUtilization = host.getCpuPercentUtilization();
-//                System.out.println(simulation.clockStr() + ": hsot" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
+//                System.out.println(simulation.clockStr() + ": host" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
                 if(host.getVmList().isEmpty()){
 //                    System.out.println("开机时间"+host.getTotalUpTime());
                     host.setActive(false);
@@ -751,7 +758,8 @@ public class myImplementationMigrationDatacenter {
                     }
 //                }
                     //更新vm总共请求的mips数目
-                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getCpuPercentUtilization() * vm.getTotalMipsCapacity() * Constant.SCHEDULING_INTERVAL);
+                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getCurrentRequestedTotalMips()* Constant.SCHEDULING_INTERVAL);
+
                     vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                     vmRamHistory.addLast(vm.getRam().getPercentUtilization());
                 });

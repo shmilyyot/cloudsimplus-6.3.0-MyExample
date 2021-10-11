@@ -376,7 +376,9 @@ public class HostSimple implements Host, Serializable {
         }
 
         notifyOnUpdateProcessingListeners(currentTime);
-        cpuUtilizationStats.add(currentTime);
+
+//        cpuUtilizationStats.add(currentTime);
+
         addStateHistory(currentTime);
         if (!vmList.isEmpty()) {
             lastBusyTime = currentTime;

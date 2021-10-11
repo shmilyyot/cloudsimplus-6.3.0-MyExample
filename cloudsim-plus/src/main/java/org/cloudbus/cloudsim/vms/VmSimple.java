@@ -306,7 +306,9 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
          * before the utilization drop.
          */
         final double decimals = currentTime - (int) currentTime;
-        cpuUtilizationStats.add(currentTime);
+
+//        cpuUtilizationStats.add(currentTime);
+
         getBroker().requestIdleVmDestruction(this);
         if (nextSimulationDelay == Double.MAX_VALUE) {
             return nextSimulationDelay;
