@@ -42,4 +42,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
         return hostStream.min(hostPowerConsumptionComparator);
     }
 
+    protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm) {
+        final double requestedTotalMips = vm.getCurrentRequestedTotalMips();
+        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
+        final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
+        final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();
+        return Math.min(utilization,1.0);
+    }
+
 }

@@ -76,6 +76,7 @@ public class myImplementationMigrationDatacenter {
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
     private static Set<Double> existTimes = new HashSet<>();
+    List<Cloudlet> totalCloudlets;
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -298,14 +299,14 @@ public class myImplementationMigrationDatacenter {
                 "Total %d Cloudlets and %d Brokers created!%n",
                 cloudlets.size(),brokers.size());
         }else{
-            List<Cloudlet> list = new ArrayList<>();
+            totalCloudlets = new ArrayList<>();
             for(int i=0;i<1000;++i){
                 Cloudlet cloudlet = createCloudlet();
-                list.add(cloudlet);
+                totalCloudlets.add(cloudlet);
                 cloudlets.add(cloudlet);
             }
-            list.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
-            broker.submitCloudletList(list);
+            totalCloudlets.forEach(cloudlet -> cloudletIds.add(cloudlet.getId()));
+            broker.submitCloudletList(totalCloudlets);
         }
     }
 
@@ -328,7 +329,7 @@ public class myImplementationMigrationDatacenter {
             ;
     }
     private Cloudlet createCloudlet() {
-        final long length = 20000000;
+        final long length = 200000;
         final long fileSize = 300;
         final long outputSize = 300;
 //        UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.5);
@@ -423,22 +424,22 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-            this.allocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
-
 //            this.allocationPolicy =
-//                new VmAllocationPolicyPASUP(
+//                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
 //                    new VmSelectionPolicyMinimumUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
+            this.allocationPolicy =
+                new VmAllocationPolicyPASUP(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
             //把ram判断阈值
@@ -574,7 +575,10 @@ public class myImplementationMigrationDatacenter {
 //        int type = r.nextInt(4);
         int type = id % Constant.VM_TYPE.length;
 //        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
-        Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES).setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type]).setSize(Constant.VM_SIZE_MB[type]);
+        Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES);
+        vm
+            .setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type])
+            .setSize(Constant.VM_SIZE_MB[type]);
 //        vm.enableUtilizationStats();
         return vm;
     }
@@ -582,8 +586,10 @@ public class myImplementationMigrationDatacenter {
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
         broker.setVmDestructionDelay(1);
+
         vmList.addAll(createVms());
         broker.submitVmList(vmList);
+
         vmList.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));
         vmList.forEach(vm -> vm.addOnMigrationFinishListener(this::finishMigration));
     }
@@ -611,6 +617,12 @@ public class myImplementationMigrationDatacenter {
             if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
         });
         if(time - (int)time != 0.0) return;
+        vmList.forEach(vm->{
+            System.out.println(simulation.clockStr()+" "+vm+" mips容量："+vm.getTotalMipsCapacity());
+            System.out.println(simulation.clockStr()+" "+vm+" mips请求的："+ vm.getCurrentRequestedTotalMips());
+            System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());
+            System.out.println(simulation.clockStr()+" "+vm+" 请求的："+ vm.getCurrentRequestedRam());
+        });
 //        if(existTimes.contains(time)) return;
 //        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
@@ -764,6 +776,8 @@ public class myImplementationMigrationDatacenter {
                         vmRamHistory.removeFirst();
                     }
 //                }
+
+
                     //更新vm总共请求的mips数目
                     vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getCurrentRequestedTotalMips()* Constant.SCHEDULING_INTERVAL);
 

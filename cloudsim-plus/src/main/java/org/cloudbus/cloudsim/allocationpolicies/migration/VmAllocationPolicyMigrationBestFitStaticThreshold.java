@@ -87,4 +87,6 @@ public class VmAllocationPolicyMigrationBestFitStaticThreshold extends VmAllocat
         * and to apply a different method to select the Host to place the VM.*/
         return hostStream.max(Comparator.comparingDouble(Host::getCpuMipsUtilization));
     }
+
+
 }
