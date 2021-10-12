@@ -410,17 +410,17 @@ public class myImplementationMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
 
-            this.allocationPolicy =
-                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
-
 //            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
 //                    new VmSelectionPolicyMinimumUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPASUP(

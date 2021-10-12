@@ -78,14 +78,28 @@ public class MathHandler {
 
     }
 
-    public double DGM11Predicting(List<Double> dataHistory,int n,double utilization){
+    public double DGM11Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
-        if(dataHistory.size() < n){
+        if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
             return utilization;
         }
+        int tn = n-1;
         double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
-        return 0.0;
+        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
+        double[][] B = new double[tn][2];
+        initialB(B,meanSequence,tn);
+        double[][] YN = new double[tn][1];
+        initialYN(YN,originalSequence,tn);
+        double[][] result = calculateGM11AandB(B,YN);
+        double a = result[0][0],b = result[1][0];
+//        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
+        double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
+        if(max){
+            return cutTo0To1(findPredictMax(predicts));
+        }else{
+            return cutTo0To1(findPredictMin(predicts));
+        }
     }
 
     public double findMaxValue(double predict,double[] originalSequence){
