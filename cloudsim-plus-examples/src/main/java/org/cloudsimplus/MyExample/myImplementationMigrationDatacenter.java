@@ -32,6 +32,7 @@ import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyMigrationFirstFitStaticThreshold;
 import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyPASUP;
+import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
 import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.listeners.EventListener;
@@ -416,8 +417,14 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
+//            this.allocationPolicy =
+//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
             this.allocationPolicy =
-                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
                     new VmSelectionPolicyMinimumUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
                     Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
@@ -437,7 +444,7 @@ public class myImplementationMigrationDatacenter {
             //把ram判断阈值
             this.allocationPolicy.setHostRamThreshold(true);
             //低阈值迁移只迁移一个
-            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
+//            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
             datacenter
@@ -598,12 +605,12 @@ public class myImplementationMigrationDatacenter {
 //        collectHostRamResourceUtilization();
 //        collectHostCpuResourceUtilization();
         double time = simulation.clock();
+        hostList.forEach(host -> {
+            double hostRamUtilization = host.getRamPercentUtilization();
+            double hostCpuUtilization = host.getCpuPercentUtilization();
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+        });
         if(time - (int)time != 0.0) return;
-//        hostList.forEach(host -> {
-//            double hostRamUtilization = host.getRamPercentUtilization();
-//            double hostCpuUtilization = host.getCpuPercentUtilization();
-//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
-//        });
 //        if(existTimes.contains(time)) return;
 //        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
