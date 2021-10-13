@@ -346,7 +346,7 @@ public class myImplementationMigrationDatacenter {
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
             .setUtilizationModelCpu(utilizationCpu)
-            .setUtilizationModelBw(new UtilizationModelFull())
+            .setUtilizationModelBw(UtilizationModel.NULL)
             .setUtilizationModelRam(utilizationRam);
         return cloudlet;
     }
@@ -447,6 +447,7 @@ public class myImplementationMigrationDatacenter {
             this.allocationPolicy.setHostRamThreshold(true);
             //低阈值迁移只迁移一个
 //            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
+
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
             datacenter
@@ -612,11 +613,11 @@ public class myImplementationMigrationDatacenter {
 //        collectHostRamResourceUtilization();
 //        collectHostCpuResourceUtilization();
         double time = simulation.clock();
-        hostList.forEach(host -> {
-            double hostRamUtilization = host.getRamPercentUtilization();
-            double hostCpuUtilization = host.getCpuPercentUtilization();
-            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
-        });
+//        hostList.forEach(host -> {
+//            double hostRamUtilization = host.getRamPercentUtilization();
+//            double hostCpuUtilization = host.getCpuPercentUtilization();
+//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+//        });
         if(time - (int)time != 0.0) return;
 //        vmList.forEach(vm->{
 //            System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());

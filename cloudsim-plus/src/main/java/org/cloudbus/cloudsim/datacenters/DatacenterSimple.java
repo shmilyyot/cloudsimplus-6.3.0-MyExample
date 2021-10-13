@@ -645,9 +645,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final Vm vm = entry.getKey();
 
-        //查看迁移完内存对不对
-        System.out.println("原来aaaaaaaaaaaaaaaaaaaaaa:    "+vm+" "+vm.getRam().getCapacity());
-
         final Host targetHost = entry.getValue();
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
@@ -904,9 +901,10 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
      * @return the time (in seconds) that is expected to migrate the VM
      */
     private double timeToMigrateVm(final Vm vm, final Host targetHost) {
-        System.out.println(vm+" 迁移虚拟机内存是："+vm.getRam().getCapacity());
-        System.out.println("迁移带宽是："+ Conversion.bitesToBytes(targetHost.getBw().getCapacity()));
-        return vm.getRam().getCapacity() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
+//        System.out.println(vm+" 迁移虚拟机内存是："+vm.getCurrentRequestedRam());
+//        System.out.println("迁移带宽是："+ Conversion.bitesToBytes(targetHost.getBw().getCapacity()));
+        return vm.getCurrentRequestedRam() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
+//        return vm.getRam().getCapacity() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
     }
 
     @Override

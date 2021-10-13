@@ -432,14 +432,20 @@ public class HostSimple implements Host, Serializable {
      * (if the Host doesn't have enough resources to allocate the Vm)
      */
     private HostSuitability allocateResourcesForVm(final Vm vm, final boolean inMigration){
-        long capacity = vm.getRam().getCapacity();
+        //保存虚拟机的ram容量
+//        long capacity = vm.getRam().getCapacity();
+
         final HostSuitability suitability = isSuitableForVm(vm, inMigration, true);
         if(!suitability.fully()) {
             return suitability;
         }
         vm.setInMigration(inMigration);
         allocateResourcesForVm(vm);
-        vm.setRam(capacity,true);
+
+//        //恢复虚拟机的ram容量
+//        if(capacity != vm.getRam().getCapacity()){
+//            vm.setRam(capacity,true);
+//        }
         return suitability;
     }
 
@@ -464,7 +470,7 @@ public class HostSimple implements Host, Serializable {
         LOGGER.error(
             "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
             simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
-            pmResource.getClass().getSimpleName(), vmRequestedResource.getCapacity(), msg);
+            pmResource.getClass().getSimpleName(), vmRequestedResource.getAllocatedResource(), msg);
     }
 
     @Override
@@ -985,13 +991,14 @@ public class HostSimple implements Host, Serializable {
 
         vmsMigratingIn.add(vm);
 
-        System.out.println("对照组1:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
+//        System.out.println("对照组1:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
 
         if(!allocateResourcesForVm(vm, true).fully()){
             vmsMigratingIn.remove(vm);
             return false;
         }
-        System.out.println("对照组2:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
+
+//        System.out.println("对照组2:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
 
 
         ((VmSimple)vm).updateMigrationStartListeners(this);

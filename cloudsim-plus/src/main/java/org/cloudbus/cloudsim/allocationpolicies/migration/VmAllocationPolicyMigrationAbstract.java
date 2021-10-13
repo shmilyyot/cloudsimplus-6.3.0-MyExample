@@ -188,7 +188,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             this.hostsUnderloaded = true;
 
             //或许可以不打印，太多了
-            printUnderUtilizedHosts(underloadedHost);
+//            printUnderUtilizedHosts(underloadedHost);
+
             LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
 
             ignoredSourceHosts.add(underloadedHost);
@@ -345,7 +346,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         if(hostRamThreshold){
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
 //            System.out.println("执行了判断");
             return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
         }else{

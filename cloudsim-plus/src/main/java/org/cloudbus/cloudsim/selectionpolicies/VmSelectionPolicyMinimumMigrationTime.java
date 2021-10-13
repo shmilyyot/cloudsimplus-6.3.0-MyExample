@@ -46,7 +46,8 @@ public class VmSelectionPolicyMinimumMigrationTime implements VmSelectionPolicy 
 
             /*@TODO It must compute the migration time based on the current RAM usage, not the capacity.
             * It should also consider the VM size.*/
-			final double metric = vm.getRam().getCapacity();
+//			final double metric = vm.getRam().getCapacity();
+            final double metric = vm.getCurrentRequestedRam();
 			if (metric < minMetric) {
 				minMetric = metric;
 				vmToMigrate = vm;
