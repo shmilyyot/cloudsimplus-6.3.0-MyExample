@@ -432,13 +432,14 @@ public class HostSimple implements Host, Serializable {
      * (if the Host doesn't have enough resources to allocate the Vm)
      */
     private HostSuitability allocateResourcesForVm(final Vm vm, final boolean inMigration){
+        long capacity = vm.getRam().getCapacity();
         final HostSuitability suitability = isSuitableForVm(vm, inMigration, true);
         if(!suitability.fully()) {
             return suitability;
         }
         vm.setInMigration(inMigration);
         allocateResourcesForVm(vm);
-
+        vm.setRam(capacity,true);
         return suitability;
     }
 
