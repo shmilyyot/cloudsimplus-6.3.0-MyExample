@@ -470,7 +470,7 @@ public class HostSimple implements Host, Serializable {
         LOGGER.error(
             "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
             simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
-            pmResource.getClass().getSimpleName(), vmRequestedResource.getAllocatedResource(), msg);
+            pmResource.getClass().getSimpleName(), vmRequestedResource.getCapacity(), msg);
     }
 
     @Override
