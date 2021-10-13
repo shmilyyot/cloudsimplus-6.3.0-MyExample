@@ -644,14 +644,16 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final Map.Entry<Vm, Host> entry = (Map.Entry<Vm, Host>) evt.getData();
 
         final Vm vm = entry.getKey();
+
+        //查看迁移完内存对不对
+        System.out.println("原来aaaaaaaaaaaaaaaaaaaaaa:    "+vm+" "+vm.getRam().getCapacity());
+
         final Host targetHost = entry.getValue();
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
-
         //De-allocates the VM on the source Host (where it is migrating out)
         vmAllocationPolicy.deallocateHostForVm(vm);
-
         targetHost.removeMigratingInVm(vm);
         final HostSuitability suitability = vmAllocationPolicy.allocateHostForVm(vm, targetHost);
         if(suitability.fully()) {

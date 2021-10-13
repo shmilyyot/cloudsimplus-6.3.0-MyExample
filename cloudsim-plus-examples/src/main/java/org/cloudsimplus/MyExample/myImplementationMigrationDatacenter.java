@@ -27,6 +27,7 @@ import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
+import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelStochastic;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
@@ -329,7 +330,7 @@ public class myImplementationMigrationDatacenter {
             ;
     }
     private Cloudlet createCloudlet() {
-        final long length = 200000;
+        final long length = 20000000;
         final long fileSize = 300;
         final long outputSize = 300;
 //        UtilizationModel utilizationModelDynamic = new UtilizationModelDynamic(0.5);
@@ -345,7 +346,7 @@ public class myImplementationMigrationDatacenter {
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
             .setUtilizationModelCpu(utilizationCpu)
-            .setUtilizationModelBw(UtilizationModel.NULL)
+            .setUtilizationModelBw(new UtilizationModelFull())
             .setUtilizationModelRam(utilizationRam);
         return cloudlet;
     }
@@ -617,10 +618,10 @@ public class myImplementationMigrationDatacenter {
             if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
         });
         if(time - (int)time != 0.0) return;
-        vmList.forEach(vm->{
-            System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());
-            System.out.println(simulation.clockStr()+" "+vm+" 请求的："+ vm.getCurrentRequestedRam());
-        });
+//        vmList.forEach(vm->{
+//            System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());
+//            System.out.println(simulation.clockStr()+" "+vm+" 请求的："+ vm.getCurrentRequestedRam());
+//        });
 //        if(existTimes.contains(time)) return;
 //        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
@@ -756,7 +757,7 @@ public class myImplementationMigrationDatacenter {
 //                System.out.println(simulation.clockStr()+": host id : " + host.getId() + " : "+ hostRamUtilization);
                 double hostCpuUtilization = host.getCpuPercentUtilization();
 //                System.out.println(simulation.clockStr() + ": host" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
-                if(host.getVmList().isEmpty()){
+                if(host.getVmList().isEmpty() && host.getVmsMigratingIn().isEmpty()){
 //                    System.out.println("开机时间"+host.getTotalUpTime());
                     host.setActive(false);
                     System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");

@@ -188,8 +188,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             this.hostsUnderloaded = true;
 
             //或许可以不打印，太多了
-//            printUnderUtilizedHosts(underloadedHost);
-
+            printUnderUtilizedHosts(underloadedHost);
             LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
 
             ignoredSourceHosts.add(underloadedHost);

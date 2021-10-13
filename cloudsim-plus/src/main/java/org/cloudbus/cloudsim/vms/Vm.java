@@ -52,6 +52,8 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
      */
     Vm NULL = new VmNull();
 
+    public Vm setRam(final long ramCapacity,boolean forceChange);
+
     public double getRequestUtilization();
 
     public void setRequestUtilization(double requestUtilization);

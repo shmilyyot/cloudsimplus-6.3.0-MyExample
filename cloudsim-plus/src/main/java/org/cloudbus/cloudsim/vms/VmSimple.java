@@ -561,6 +561,12 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         return this;
     }
 
+    public final Vm setRam(final long ramCapacity,boolean forceChange) {
+        if(!forceChange) return this;
+        setRam(new Ram(ramCapacity));
+        return this;
+    }
+
     @Override
     public Resource getBw() {
         return bw;

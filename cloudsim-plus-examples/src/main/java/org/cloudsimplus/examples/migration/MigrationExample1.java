@@ -237,7 +237,7 @@ public final class MigrationExample1 {
         createAndSubmitCloudlets(broker);
 
         broker.addOnVmsCreatedListener(this::onVmsCreatedListener);
-//        simulation.addOnClockTickListener(this::clockTickListener);
+        simulation.addOnClockTickListener(this::clockTickListener);
 
         simulation.start();
 
@@ -352,7 +352,7 @@ public final class MigrationExample1 {
             new CloudletSimple(CLOUDLET_LENGTH, (int)vm.getNumberOfPes())
                 .setFileSize(CLOUDLET_FILESIZE)
                 .setOutputSize(CLOUDLET_OUTPUTSIZE)
-                .setUtilizationModelRam(UtilizationModel.NULL)
+                .setUtilizationModelRam(new UtilizationModelFull())
                 .setUtilizationModelBw(UtilizationModel.NULL)
                 .setUtilizationModelCpu(cpuUtilizationModel);
         broker.bindCloudletToVm(cloudlet, vm);
@@ -513,6 +513,7 @@ public final class MigrationExample1 {
     }
 
     private void clockTickListener(final EventInfo info) {
-        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
+//        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
+        vmList.forEach(vm -> System.out.println(vm+" "+vm.getRam().getCapacity()));
     }
 }

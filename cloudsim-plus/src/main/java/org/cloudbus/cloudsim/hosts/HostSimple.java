@@ -436,7 +436,6 @@ public class HostSimple implements Host, Serializable {
         if(!suitability.fully()) {
             return suitability;
         }
-
         vm.setInMigration(inMigration);
         allocateResourcesForVm(vm);
 
@@ -984,10 +983,15 @@ public class HostSimple implements Host, Serializable {
         }
 
         vmsMigratingIn.add(vm);
+
+        System.out.println("对照组1:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
+
         if(!allocateResourcesForVm(vm, true).fully()){
             vmsMigratingIn.remove(vm);
             return false;
         }
+        System.out.println("对照组2:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
+
 
         ((VmSimple)vm).updateMigrationStartListeners(this);
 
