@@ -618,8 +618,6 @@ public class myImplementationMigrationDatacenter {
         });
         if(time - (int)time != 0.0) return;
         vmList.forEach(vm->{
-            System.out.println(simulation.clockStr()+" "+vm+" mips容量："+vm.getTotalMipsCapacity());
-            System.out.println(simulation.clockStr()+" "+vm+" mips请求的："+ vm.getCurrentRequestedTotalMips());
             System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());
             System.out.println(simulation.clockStr()+" "+vm+" 请求的："+ vm.getCurrentRequestedRam());
         });
@@ -779,7 +777,7 @@ public class myImplementationMigrationDatacenter {
 
 
                     //更新vm总共请求的mips数目
-                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getCurrentRequestedTotalMips()* Constant.SCHEDULING_INTERVAL);
+                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization()* Constant.SCHEDULING_INTERVAL);
 
                     vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                     vmRamHistory.addLast(vm.getRam().getPercentUtilization());

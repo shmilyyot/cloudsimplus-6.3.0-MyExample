@@ -43,7 +43,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
     }
 
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm) {
-        final double requestedTotalMips = vm.getCurrentRequestedTotalMips();
+        final double requestedTotalMips = vm.getTotalCpuMipsUtilization();
         final double hostUtilizationMips = getUtilizationOfCpuMips(host);
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
         final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();

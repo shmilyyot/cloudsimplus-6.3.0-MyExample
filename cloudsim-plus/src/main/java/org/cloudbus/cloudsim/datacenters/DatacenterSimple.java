@@ -883,7 +883,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             delay, getBandwidthPercentForMigration()*100);
 
         //统计迁移产生的额外开销
-        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getCurrentRequestedTotalMips());
+        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getTotalCpuMipsUtilization());
 
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
 
@@ -904,8 +904,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
     private double timeToMigrateVm(final Vm vm, final Host targetHost) {
         System.out.println("当前vm的数目是："+targetHost.getVmList().size());
         System.out.println(vm+" 迁移虚拟机内存是："+vm.getRam().getCapacity());
-        System.out.println("迁移带宽是："+targetHost.getBw().getCapacity());
-        return vm.getRam().getCapacity() / (targetHost.getBw().getCapacity() * getBandwidthPercentForMigration());
+        System.out.println("迁移带宽是："+ Conversion.bitesToBytes(targetHost.getBw().getCapacity()));
+        return vm.getRam().getCapacity() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
     }
 
     @Override
