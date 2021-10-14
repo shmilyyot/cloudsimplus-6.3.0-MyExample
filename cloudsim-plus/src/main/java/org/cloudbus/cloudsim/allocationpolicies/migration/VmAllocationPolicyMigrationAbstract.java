@@ -603,7 +603,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             addVmToMigrationMap(migrationMap, vm, optional.get());
         }
         System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭以节省能耗" );
-        underloadedHost.setActive(false);
+//        underloadedHost.setActive(false);
         return migrationMap;
     }
 

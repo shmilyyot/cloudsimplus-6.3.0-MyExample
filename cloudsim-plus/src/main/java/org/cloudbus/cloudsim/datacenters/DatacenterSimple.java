@@ -647,6 +647,11 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final Host targetHost = entry.getValue();
 
+        if(!targetHost.isActive()){
+            System.out.println("被迁移"+targetHost+"不知道为什么关闭了，立即打开");
+            targetHost.setActive(true);
+        }
+
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
         //De-allocates the VM on the source Host (where it is migrating out)

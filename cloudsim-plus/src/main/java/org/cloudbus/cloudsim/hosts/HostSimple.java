@@ -361,7 +361,7 @@ public class HostSimple implements Host, Serializable {
     @SuppressWarnings("ForLoopReplaceableByForEach")
     @Override
     public double updateProcessing(final double currentTime) {
-        if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline)){
+        if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !this.hasMigratingVms()){
             setActive(false);
         }
 

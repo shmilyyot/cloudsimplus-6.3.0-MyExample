@@ -497,6 +497,7 @@ public class myImplementationMigrationDatacenter {
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
             .setPowerModel(powerModel);
+        host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
 //        host.setLazySuitabilityEvaluation(true);
         //host创建之后的活跃状态
 //        final boolean activateHost = true;
@@ -756,14 +757,8 @@ public class myImplementationMigrationDatacenter {
                 }
 //            }
                 double hostRamUtilization = host.getRamPercentUtilization();
-//                System.out.println(simulation.clockStr()+": host id : " + host.getId() + " : "+ hostRamUtilization);
                 double hostCpuUtilization = host.getCpuPercentUtilization();
 //                System.out.println(simulation.clockStr() + ": host" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
-                if(host.getVmList().isEmpty() && host.getVmsMigratingIn().isEmpty() && host.getVmsMigratingOut().isEmpty()){
-//                    System.out.println("开机时间"+host.getTotalUpTime());
-                    host.setActive(false);
-                    System.out.println(simulation.clockStr()+": host "+host.getId()+" 因为闲置所以被关闭以节省能耗");
-                }
 //                if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
                 hostRamhistory.addLast(hostRamUtilization);
                 hostCpuhistory.addLast(hostCpuUtilization);
