@@ -450,7 +450,7 @@ public class HostSimple implements Host, Serializable {
     }
 
     private void allocateResourcesForVm(Vm vm) {
-        ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
+        ramProvisioner.allocateResourceForVm(vm, vm.getRam().getCapacity());
         bwProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedBw());
         disk.getStorage().allocateResource(vm.getStorage());
         vmScheduler.allocatePesForVm(vm, vm.getCurrentRequestedMips());
