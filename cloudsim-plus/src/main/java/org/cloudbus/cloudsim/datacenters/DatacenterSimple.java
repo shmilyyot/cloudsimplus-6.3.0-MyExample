@@ -676,7 +676,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
             //这里需要改！！！
             //万一到点之后发现迁移不进去，需要额外处理这个vm
-
+//            targetHost.setTotalOver100Time(targetHost.getTotalOver100Time()+1);
             LOGGER.error(
             "{}: {}: Allocation of {} to the destination {} failed due to {}!",
             getSimulation().clockStr(), this, vm, targetHost, suitability);

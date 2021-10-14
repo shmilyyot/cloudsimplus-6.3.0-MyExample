@@ -14,7 +14,7 @@ public class Constant {
     /**
      * 数据中心日志设置
      */
-    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
+    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
     public static int HOST_LogLength = 24;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
@@ -113,7 +113,7 @@ public class Constant {
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3700,1700,613};    //1750效果比3750好
+    public static final long[] VM_RAM = {850,1700,1700,613};    //1750效果比3750好
     public static final long[] VM_BW = {100,100,100,100}; //用不到
     public static final long[] VM_SIZE_MB = {10000,10000,10000,10000}; //用不到
 
