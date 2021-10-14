@@ -25,8 +25,8 @@ public class MathHandler {
         list.add(0.1191);
         list.add(0.1187);
         list.add(0.1219);
-        double predict = mathHandler.GM11PredictingTest(list,12,18);
-        System.out.println(predict);
+        mathHandler.GM11PredictingTest(list,12,18);
+        mathHandler.DGM21PredictingTest(list,12);
     }
 
     //余弦相似度（暂时只考虑cpu和mem，所以只有二维）
@@ -97,7 +97,7 @@ public class MathHandler {
 
     }
 
-    public double DGM11Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
+    public double DGM21Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
         if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
@@ -105,15 +105,17 @@ public class MathHandler {
         }
         int tn = n-1;
         double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
-        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
+        double[] IAGO = reverseCalculateCumulativeSequence(originalSequence,tn);
+//        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
         double[][] B = new double[tn][2];
-        initialB(B,meanSequence,tn);
+        initialB(B,Arrays.copyOfRange(originalSequence, 1, n),tn);
         double[][] YN = new double[tn][1];
-        initialYN(YN,originalSequence,tn);
+        initialDGMYN(YN,IAGO,tn);
+        //DGM和GM在这里都是一样的矩阵乘法
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
 //        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
-        double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
+        double[] predicts = getKDGM21PredictResult(a,b,n,originalSequence);
         if(max){
             return cutTo0To1(findPredictMax(predicts));
         }else{
@@ -152,6 +154,14 @@ public class MathHandler {
             meanSequence[i] = (cumulativeSequence[i] + cumulativeSequence[i+1])/2;
         }
         return meanSequence;
+    }
+
+    public double[] reverseCalculateCumulativeSequence(double[] originalSequence,int n){
+        double[] reverseCalculateCumulativeSequence = new double[n];
+        for(int i=0;i<n;++i){
+            reverseCalculateCumulativeSequence[i]  = originalSequence[i+1]-originalSequence[i];
+        }
+        return reverseCalculateCumulativeSequence;
     }
 
     public double[] listToArray(List<Double> dataHistory,int n){
@@ -212,6 +222,14 @@ public class MathHandler {
         }
     }
 
+    public void initialDGMYN(double[][] YN,double[] IAGO,int tn){
+        for(int i=0;i<tn;++i){
+            for(int j=0;j<1;++j){
+                YN[i][j] = IAGO[i];
+            }
+        }
+    }
+
     public RealMatrix inverseMatrix(RealMatrix A) {
         return new LUDecomposition(A).getSolver().getInverse();
     }
@@ -241,6 +259,13 @@ public class MathHandler {
 
     public double getGM11PredictResult(double a,double b,int k,double[] originalSequence){
         return (originalSequence[0]-b/a) * Math.exp(-a * (k-1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-2));
+    }
+
+    public double getDGM21PredictResult(double a,double b,int k,double[] originalSequence){
+        return getDGMcumulativePredictValue(a,b,k,originalSequence) - getDGMcumulativePredictValue(a,b,k-1,originalSequence);
+    }
+    public double getDGMcumulativePredictValue(double a,double b,int k,double[] originalSequence){
+        return ( b/Math.pow(a,2) - originalSequence[0]/a ) * Math.exp(-a * (k-1)) + (b/a) * k + ( originalSequence[0] - b/a ) * ( (1+a)/a );
     }
 
     //参与预测的利用率中不能有0，否则为奇异矩阵（不满秩），无法计算逆矩阵
@@ -297,6 +322,15 @@ public class MathHandler {
         return  utilizations;
     }
 
+    double[] getKDGM21PredictResult(double a,double b,int n,double[] originalSequence){
+        int K = Constant.KSTEP;
+        double[] utilizations = new double[K];
+        for(int i=0;i<K;++i){
+            utilizations[i] = getDGM21PredictResult(a,b,n+i+1,originalSequence);
+        }
+        return  utilizations;
+    }
+
     double findPredictMax(double[] predicts){
         return Arrays.stream(predicts).max().getAsDouble();
     }
@@ -316,7 +350,32 @@ public class MathHandler {
         initialYN(YN,originalSequence,tn);
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
+        double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
+        for(int i=0;i<predicts.length;++i){
+            System.out.println("GM(1，1)的第"+i+"个预测结果："+predicts[i]);
+        }
         return getGM11PredictResult(a,b,k,originalSequence);
+    }
+
+    public double DGM21PredictingTest(List<Double> dataHistory,int n){
+        double[] originalSequence = listToArray(dataHistory,n);
+        int tn = n-1;
+        double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
+        double[] IAGO = reverseCalculateCumulativeSequence(originalSequence,tn);
+//        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
+        double[][] B = new double[tn][2];
+        initialB(B,Arrays.copyOfRange(originalSequence, 1, n),tn);
+        double[][] YN = new double[tn][1];
+        initialDGMYN(YN,IAGO,tn);
+        //DGM和GM在这里都是一样的矩阵乘法
+        double[][] result = calculateGM11AandB(B,YN);
+        double a = result[0][0],b = result[1][0];
+//        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
+        double[] predicts = getKDGM21PredictResult(a,b,n,originalSequence);
+        for(int i=0;i<predicts.length;++i){
+            System.out.println("DGM(2，1)的第"+i+"个预测结果："+predicts[i]);
+        }
+        return predicts[0];
     }
 
 
