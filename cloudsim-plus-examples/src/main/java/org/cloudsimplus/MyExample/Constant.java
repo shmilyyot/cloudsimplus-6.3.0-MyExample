@@ -90,6 +90,7 @@ public class Constant {
      * cloudlet相关设置
      * 任务长度设置为负数，代表任务可以无限制运行下去，直到读到真实记录的任务结束标志
      * */
+    public static final int TEST_CLOUDLET_LENGTH = 200000;
     public static final boolean USING_TEST_CLOUDLET = true;
     public static final int  CLOUDLET_LENGTH = -10_000;
     public static final boolean USING_FILTER = false;
