@@ -515,19 +515,30 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 appendVmMigrationMsgToStringBuilder(builder, vm, host);
             }else{
                 System.out.println(getDatacenter().getSimulation().clockStr() + ": Vm "+ vm.getId()+" can't find a host to place.now trying to awake a sleep host!");
-                Host target = null;
                 //如果有vm没有找到host，没有操作，这里需要开启一台host来进行放置
-                for(Host host:switchedOffHosts){
-                    if(host.isSuitableForVm(vm)){
-                        host.setActive(true);
-                        addVmToMigrationMap(migrationMap, vm, host);
-                        appendVmMigrationMsgToStringBuilder(builder, vm, host);
-                        target = host;
-                        System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
-                        break;
-                    }
+                final Stream<Host> stream = switchedOffHosts.stream()
+                    .filter(host -> host.isSuitableForVm(vm))
+                    .filter(host -> isNotHostOverloadedAfterAllocation(host, vm));
+                Optional<Host> target = findHostForVmInternal(vm,stream);
+                Host host = null;
+                if(target.isPresent()){
+                    host = target.get();
+                    host.setActive(true);
+                    addVmToMigrationMap(migrationMap, vm, host);
+                    appendVmMigrationMsgToStringBuilder(builder, vm, host);
+                    System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
                 }
-                switchedOffHosts.remove(target);
+//                for(Host host:switchedOffHosts){
+//                    if(host.isSuitableForVm(vm)){
+//                        host.setActive(true);
+//                        addVmToMigrationMap(migrationMap, vm, host);
+//                        appendVmMigrationMsgToStringBuilder(builder, vm, host);
+//                        target = host;
+//                        System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
+//                        break;
+//                    }
+//                }
+                switchedOffHosts.remove(host);
 
             }
 //            findHostForVm(vm, overloadedHosts).ifPresent(targetHost -> {
@@ -795,7 +806,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             final Host host = savedAllocation.get(vm);
             if (host.createTemporaryVm(vm).fully())
                 vm.setCreated(true);
-            else LOGGER.error("VmAllocationPolicy: Couldn't restore {} on {}", vm, host);
+            //有可能放不回去，因为原本利用率太高
+            else{
+
+                LOGGER.error("VmAllocationPolicy: Couldn't restore {} on {}", vm, host);
+            };
         }
     }
 

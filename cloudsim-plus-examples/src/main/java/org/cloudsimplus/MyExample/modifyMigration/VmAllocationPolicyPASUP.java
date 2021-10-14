@@ -196,6 +196,11 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
+    //对于高阈值预测，当前值和预测值在每一个维度都大于阈值才触发迁移
+    protected boolean isHostOverloadedAfter(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
+        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
+    }
+
     //重写判断一个vm放进去host的话会不会过载
     @Override
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
@@ -220,6 +225,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //        if(host.getVmList().size() >= 2) return false;
 
         Vm tempVm = new VmSimple(vm);
+        //初始放置的时候，假装放置，vm请求的mips是0，所以利用率是0，但是ram是真的扣了整个vm的ram
         if (!host.createTemporaryVm(tempVm).fully()) {
 //            System.out.println(" 放不进去"+tempVm.getId());
             return false;
@@ -238,7 +244,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+        final boolean notOverloadedAfterAllocation = !isHostOverloadedAfter(host,hostCpuPredictUtilization,hostRamPredictUtilization);
 
         //只用当前值来进行判断过载
 //        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
@@ -286,5 +292,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
         return cpuUsagePercent < getUnderUtilizationThreshold() && ramUsagePercent < getUnderRamUtilizationThreshold();
     }
+
+
 
 }

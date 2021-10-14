@@ -76,7 +76,7 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
 //            return false;
 //        }
 
-        if(!getResource().isSubClassOf(Pe.class) && !vm.getResource(getResourceClass()).setCapacity(newTotalVmResourceCapacity)){
+        if(!getResource().isSubClassOf(Pe.class) && !vm.getResource(getResourceClass()).isSuitable(newTotalVmResourceCapacity)){
             return false;
         }
 
