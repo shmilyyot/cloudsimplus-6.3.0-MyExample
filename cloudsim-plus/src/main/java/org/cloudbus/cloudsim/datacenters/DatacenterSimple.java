@@ -906,7 +906,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
      * @return the time (in seconds) that is expected to migrate the VM
      */
     private double timeToMigrateVm(final Vm vm, final Host targetHost) {
-//        System.out.println(vm+" 迁移虚拟机内存是："+vm.getCurrentRequestedRam());
+        System.out.println(vm+" 迁移虚拟机内存是："+vm.getCurrentRequestedRam());
+        System.out.println(vm+" 虚拟机容量是："+vm.getRam().getCapacity());
 //        System.out.println("迁移带宽是："+ Conversion.bitesToBytes(targetHost.getBw().getCapacity()));
         return vm.getCurrentRequestedRam() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
 //        return vm.getRam().getCapacity() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());

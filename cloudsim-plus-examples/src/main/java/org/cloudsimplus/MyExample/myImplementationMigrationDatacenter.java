@@ -588,7 +588,7 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-        broker.setVmDestructionDelay(1);
+        broker.setVmDestructionDelay(0.2);
 
         vmList.addAll(createVms());
         broker.submitVmList(vmList);
@@ -614,11 +614,11 @@ public class myImplementationMigrationDatacenter {
 //        collectHostRamResourceUtilization();
 //        collectHostCpuResourceUtilization();
         double time = simulation.clock();
-//        hostList.forEach(host -> {
-//            double hostRamUtilization = host.getRamPercentUtilization();
-//            double hostCpuUtilization = host.getCpuPercentUtilization();
-//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
-//        });
+        hostList.forEach(host -> {
+            double hostRamUtilization = host.getRamPercentUtilization();
+            double hostCpuUtilization = host.getCpuPercentUtilization();
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+        });
         if(time - (int)time != 0.0) return;
 //        vmList.forEach(vm->{
 //            System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());
