@@ -672,7 +672,12 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         if (suitability.fully())
             LOGGER.info("{}: Migration of {} to {} is completed", getSimulation().clockStr(), vm, targetHost);
-        else LOGGER.error(
+        else
+
+            //这里需要改！！！
+            //万一到点之后发现迁移不进去，需要额外处理这个vm
+
+            LOGGER.error(
             "{}: {}: Allocation of {} to the destination {} failed due to {}!",
             getSimulation().clockStr(), this, vm, targetHost, suitability);
 

@@ -87,7 +87,7 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
         //Allocates the requested resource from the physical resource
         getResource().allocateResource(newTotalVmResourceCapacity);
         getResourceAllocationMap().put(vm, newTotalVmResourceCapacity);
-        vm.getResource(getResourceClass()).setAllocatedResource(prevVmResourceAllocation);
+        vm.getResource(getResourceClass()).setAllocatedResource(vm.getCurrentRequestedRam());
         return true;
     }
 

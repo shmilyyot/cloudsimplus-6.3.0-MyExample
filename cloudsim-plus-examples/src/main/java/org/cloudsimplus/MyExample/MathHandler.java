@@ -10,6 +10,25 @@ public class MathHandler {
 
     public MathHandler() {}
 
+    public static void main(String[] args) {
+        MathHandler mathHandler = new MathHandler();
+        List<Double> list = new ArrayList<>();
+        list.add(0.07947);
+        list.add(0.1262);
+        list.add(0.1411);
+        list.add(0.1409);
+        list.add(0.1218);
+        list.add(0.1311);
+        list.add(0.1338);
+        list.add(0.135);
+        list.add(0.1289);
+        list.add(0.1191);
+        list.add(0.1187);
+        list.add(0.1219);
+        double predict = mathHandler.GM11PredictingTest(list,12,18);
+        System.out.println(predict);
+    }
+
     //余弦相似度（暂时只考虑cpu和mem，所以只有二维）
     public double cosSimilarity(double[] x,double[] y){
         double up = getCosineNumerator(x,y);
@@ -284,6 +303,20 @@ public class MathHandler {
 
     double findPredictMin(double[] predicts){
         return Arrays.stream(predicts).min().getAsDouble();
+    }
+
+    public double GM11PredictingTest(List<Double> dataHistory,int n,int k){
+        double[] originalSequence = listToArray(dataHistory,n);
+        int tn = n-1;
+        double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
+        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
+        double[][] B = new double[tn][2];
+        initialB(B,meanSequence,tn);
+        double[][] YN = new double[tn][1];
+        initialYN(YN,originalSequence,tn);
+        double[][] result = calculateGM11AandB(B,YN);
+        double a = result[0][0],b = result[1][0];
+        return getGM11PredictResult(a,b,k,originalSequence);
     }
 
 

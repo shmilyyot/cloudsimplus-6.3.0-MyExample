@@ -227,7 +227,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         Vm tempVm = new VmSimple(vm);
         //初始放置的时候，假装放置，vm请求的mips是0，所以利用率是0，但是ram是真的扣了整个vm的ram
         if (!host.createTemporaryVm(tempVm).fully()) {
-//            System.out.println(" 放不进去"+tempVm.getId());
+            System.out.println(tempVm+"放不进去，因为放进去会过载");
             return false;
         }
 
@@ -244,7 +244,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        final boolean notOverloadedAfterAllocation = !isHostOverloadedAfter(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
 
         //只用当前值来进行判断过载
 //        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);

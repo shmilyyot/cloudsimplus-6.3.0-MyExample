@@ -437,6 +437,7 @@ public class HostSimple implements Host, Serializable {
 
         final HostSuitability suitability = isSuitableForVm(vm, inMigration, true);
         if(!suitability.fully()) {
+            System.out.println("放弃迁移"+vm);
             return suitability;
         }
         vm.setInMigration(inMigration);
@@ -517,6 +518,7 @@ public class HostSimple implements Host, Serializable {
 
         suitability.setForRam(ramProvisioner.isSuitableForVm(vm, vm.getRam()));
         if (!suitability.forRam()) {
+//            System.out.println("当前不可以选的"+this+"还有多少剩余内存"+this.getRam().getAvailableResource());
             logAllocationError(showFailureLog, vm, inMigration, "MB", this.getRam(), vm.getRam());
             if(lazySuitabilityEvaluation)
                 return suitability;
@@ -528,6 +530,10 @@ public class HostSimple implements Host, Serializable {
             if(lazySuitabilityEvaluation)
                 return suitability;
         }
+
+//        if(this.getRam().getAvailableResource() < vm.getRam().getCapacity()) suitability.setForRam(false);
+//        System.out.println(vm+" "+vm.getRam().getCapacity() + " "+this+" "+this.getRam().getAvailableResource() +" "+suitability.forRam());
+
 
         return suitability.setForPes(vmScheduler.isSuitableForVm(vm));
     }

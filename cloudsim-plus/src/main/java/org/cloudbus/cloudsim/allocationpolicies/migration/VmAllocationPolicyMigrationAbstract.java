@@ -325,11 +325,18 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         final Vm tempVm = new VmSimple(vm);
 
         if (!host.createTemporaryVm(tempVm).fully()) {
+            System.out.println(vm+"选了"+host+"之后因为容量不足放不进去");
             return false;
         }
 
         final double usagePercent = getHostCpuPercentRequested(host);
-        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent);
+        final boolean notOverloadedAfterAllocation;
+        if(isHostRamThreshold()){
+            final double usageRamPercent = getHostRamPercentRequested(host);
+            notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent,usageRamPercent);
+        }else{
+            notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent);
+        }
         host.destroyTemporaryVm(tempVm);
         return notOverloadedAfterAllocation;
     }
@@ -380,6 +387,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
         return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
+    }
+
+    protected boolean isHostOverloadedAfter(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
+        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
     /**
@@ -592,7 +603,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             addVmToMigrationMap(migrationMap, vm, optional.get());
         }
         System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭以节省能耗" );
-//        underloadedHost.setActive(false);
+        underloadedHost.setActive(false);
         return migrationMap;
     }
 
