@@ -589,6 +589,12 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         //低负载vm和高负载vm是分开迁移的，但是都是按bfd进行迁移
         sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
+
+            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，徒增迁移次数
+            if (vm.getCloudletScheduler().isEmpty()) {
+                return new HashMap<>();
+            }
+
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));
             //只要有一个vm找不到host，直接返回空map，之前找到host的也不算了
@@ -602,7 +608,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             }
             addVmToMigrationMap(migrationMap, vm, optional.get());
         }
-        System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭以节省能耗" );
+        System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭，过段时间系统自动关闭" );
 //        underloadedHost.setActive(false);
         return migrationMap;
     }

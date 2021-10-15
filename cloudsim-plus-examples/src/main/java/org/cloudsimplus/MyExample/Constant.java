@@ -14,7 +14,7 @@ public class Constant {
     /**
      * 数据中心日志设置
      */
-    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
+    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
     public static int HOST_LogLength = 24;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
@@ -84,7 +84,7 @@ public class Constant {
     public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
     public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
     public static final double[] IDLE_POWER = {86,93};
-    public static final double IDLE_SHUTDOWN_TIME = 5.0;    //主机闲置关机的时间
+    public static final double IDLE_SHUTDOWN_TIME = SCHEDULING_INTERVAL;    //主机闲置关机的时间
 
 
     /**
