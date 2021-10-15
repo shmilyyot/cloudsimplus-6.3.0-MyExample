@@ -40,7 +40,7 @@ public class VmSelectionPolicyMinimumMigrationTime implements VmSelectionPolicy 
 		Vm vmToMigrate = Vm.NULL;
 		double minMetric = Double.MAX_VALUE;
 		for (final Vm vm : migratableVms) {
-			if (vm.isInMigration()) {
+			if (vm.isInMigration() || vm.getCloudletScheduler().isEmpty()) {
 				continue;
 			}
 

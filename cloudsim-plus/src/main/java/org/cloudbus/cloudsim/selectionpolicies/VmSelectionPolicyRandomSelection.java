@@ -62,7 +62,8 @@ public class VmSelectionPolicyRandomSelection implements VmSelectionPolicy {
 			return Vm.NULL;
 		}
 
-		final int index = (int)rand.sample()*migratableVms.size();
-		return migratableVms.get(index);
+
+		int index = (int)rand.sample()*migratableVms.size();
+        return migratableVms.get(index);
 	}
 }
