@@ -34,10 +34,9 @@ import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyMigrationFirstFitStaticThreshold;
 import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyPASUP;
 import org.cloudsimplus.MyExample.modifyMigration.VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold;
-import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
-import org.cloudsimplus.listeners.EventInfo;
+import org.cloudsimplus.MyExample.modifyMigration.VmSelectionPolicyUnbalanceUtilization;
+import org.cloudsimplus.listeners.*;
 import org.cloudsimplus.listeners.EventListener;
-import org.cloudsimplus.listeners.VmHostEventInfo;
 import org.cloudsimplus.traces.google.*;
 import org.cloudsimplus.util.Log;
 import java.io.*;
@@ -413,11 +412,11 @@ public class myImplementationMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
 
-//            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-//                    new VmSelectionPolicyMinimumUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
@@ -431,16 +430,16 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-            this.allocationPolicy =
-                new VmAllocationPolicyPASUP(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyPASUP(
+//                    new VmSelectionPolicyUnbalanceUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
 
@@ -500,6 +499,7 @@ public class myImplementationMigrationDatacenter {
             .setBwProvisioner(new ResourceProvisionerSimple())
             .setPowerModel(powerModel);
         host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
+        host.addOnUpdateProcessingListener(this::updateHostResource);
 //        host.setLazySuitabilityEvaluation(true);
         //host创建之后的活跃状态
 //        final boolean activateHost = true;
@@ -621,7 +621,7 @@ public class myImplementationMigrationDatacenter {
         hostList.forEach(host -> {
             double hostRamUtilization = host.getRamPercentUtilization();
             double hostCpuUtilization = host.getCpuPercentUtilization();
-            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
         });
         if(time - (int)time != 0.0) return;
 //        vmList.forEach(vm->{
@@ -665,6 +665,13 @@ public class myImplementationMigrationDatacenter {
         System.out.println();
 
         migrationsNumber++;
+    }
+
+    private void updateHostResource(final HostUpdatesVmsProcessingEventInfo info) {
+        final Host host = info.getHost();
+        if(host.getRamPercentUtilization() >= 1.0 || host.getCpuPercentUtilization() >= 1.0){
+            host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
+        }
     }
 
     /**

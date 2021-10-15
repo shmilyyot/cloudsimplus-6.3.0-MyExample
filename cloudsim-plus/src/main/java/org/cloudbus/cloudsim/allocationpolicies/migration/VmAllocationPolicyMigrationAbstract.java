@@ -7,6 +7,7 @@
  */
 package org.cloudbus.cloudsim.allocationpolicies.migration;
 
+import org.apache.commons.math3.analysis.function.Constant;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicyAbstract;
 import org.cloudbus.cloudsim.hosts.Host;
@@ -353,7 +354,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         if(hostRamThreshold){
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+1);
+
+//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time() + 1);
 //            System.out.println("执行了判断");
             return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
         }else{
