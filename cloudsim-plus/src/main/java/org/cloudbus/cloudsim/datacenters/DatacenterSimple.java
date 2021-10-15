@@ -668,6 +668,15 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
                 sendNow(evt.getSource(), CloudSimTags.VM_CREATE_ACK, vm);
             }
         }
+//        else{
+//
+//            //迁移到目的主机失败，再试一次
+//            LOGGER.error(
+//                "{}: {}: Allocation of {} to the destination {} failed due to {}!",
+//                getSimulation().clockStr(), this, vm, targetHost, suitability);
+//            vmAllocationPolicy.findHostForVm(vm);
+//
+//        }
 
         final SimEvent event = getSimulation().findFirstDeferred(this, new PredicateType(CloudSimTags.VM_MIGRATE));
         if (event == null || event.getTime() > clock()) {
@@ -677,14 +686,15 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         if (suitability.fully())
             LOGGER.info("{}: Migration of {} to {} is completed", getSimulation().clockStr(), vm, targetHost);
-        else
-
+        else{
             //这里需要改！！！
             //万一到点之后发现迁移不进去，需要额外处理这个vm
 //            targetHost.setTotalOver100Time(targetHost.getTotalOver100Time()+1);
             LOGGER.error(
-            "{}: {}: Allocation of {} to the destination {} failed due to {}!",
-            getSimulation().clockStr(), this, vm, targetHost, suitability);
+                "{}: {}: Allocation of {} to the destination {} failed due to {}!",
+                getSimulation().clockStr(), this, vm, targetHost, suitability);
+//            System.out.println(vm.get+" "+targetHost.getTotalAvailableMips()+" "+targetHost.getTotalMipsCapacity());
+        }
 
         onVmMigrationFinishListeners.forEach(listener -> listener.update(DatacenterVmMigrationEventInfo.of(listener, vm, suitability)));
     }

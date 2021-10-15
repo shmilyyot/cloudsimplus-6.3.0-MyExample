@@ -25,8 +25,24 @@ public class MathHandler {
         list.add(0.1191);
         list.add(0.1187);
         list.add(0.1219);
-        mathHandler.GM11PredictingTest(list,12,18);
+//        list.add(1.0);
+//        list.add(2.1);
+//        list.add(3.3);
+//        list.add(4.5);
+//        list.add(5.2);
+//        list.add(6.34);
+//        list.add(7.66);
+//        list.add(8.0);
+//        list.add(9.3);
+//        list.add(10.2);
+//        list.add(11.0);
+//        list.add(12.3);
+
+        //暂时还是GM(1,1)靠谱，等待更好的
+        mathHandler.GM11PredictingTest(list,12);
+        //结论：DGM是个乐色算法
         mathHandler.DGM21PredictingTest(list,12);
+        mathHandler.DGM11PredictingTest(list,12);
     }
 
     //余弦相似度（暂时只考虑cpu和mem，所以只有二维）
@@ -108,7 +124,11 @@ public class MathHandler {
         double[] IAGO = reverseCalculateCumulativeSequence(originalSequence,tn);
 //        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
         double[][] B = new double[tn][2];
-        initialB(B,Arrays.copyOfRange(originalSequence, 1, n),tn);
+        double[] temp = new double[tn];
+        for(int i=0;i<tn;++i){
+            temp[i] = originalSequence[i+1];
+        }
+        initialB(B,Arrays.copyOfRange(originalSequence, 1, n+1),tn);
         double[][] YN = new double[tn][1];
         initialDGMYN(YN,IAGO,tn);
         //DGM和GM在这里都是一样的矩阵乘法
@@ -157,9 +177,9 @@ public class MathHandler {
     }
 
     public double[] reverseCalculateCumulativeSequence(double[] originalSequence,int n){
-        double[] reverseCalculateCumulativeSequence = new double[n];
-        for(int i=0;i<n;++i){
-            reverseCalculateCumulativeSequence[i]  = originalSequence[i+1]-originalSequence[i];
+        double[] reverseCalculateCumulativeSequence = new double[n-1];
+        for(int i=1;i<n;++i){
+            reverseCalculateCumulativeSequence[i-1]  = originalSequence[i] - originalSequence[i-1];
         }
         return reverseCalculateCumulativeSequence;
     }
@@ -230,6 +250,14 @@ public class MathHandler {
         }
     }
 
+    public void initialDGM11YN(double[][] YN,double[] array,int tn){
+        for(int i=0;i<tn;++i){
+            for(int j=0;j<1;++j){
+                YN[i][j] = array[i+1];
+            }
+        }
+    }
+
     public RealMatrix inverseMatrix(RealMatrix A) {
         return new LUDecomposition(A).getSolver().getInverse();
     }
@@ -258,24 +286,29 @@ public class MathHandler {
     }
 
     public double getGM11PredictResult(double a,double b,int k,double[] originalSequence){
+//        return (originalSequence[0]-b/a) * Math.exp(-a * (k-1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-2));
         return (originalSequence[0]-b/a) * Math.exp(-a * (k-1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-2));
     }
 
     public double getDGM21PredictResult(double a,double b,int k,double[] originalSequence){
         return getDGMcumulativePredictValue(a,b,k,originalSequence) - getDGMcumulativePredictValue(a,b,k-1,originalSequence);
     }
+
+    public double getDGM11PredictResult(double a,double b,int k,double[] originalSequence){
+        return getDGM11cumulativePredictValue(a,b,k,originalSequence) - getDGMcumulativePredictValue(a,b,k-1,originalSequence);
+    }
+
     public double getDGMcumulativePredictValue(double a,double b,int k,double[] originalSequence){
-        return ( b/Math.pow(a,2) - originalSequence[0]/a ) * Math.exp(-a * (k-1)) + (b/a) * k + ( originalSequence[0] - b/a ) * ( (1+a)/a );
+        return ( b/(a*a) - originalSequence[0]/a ) * Math.exp(-a * (k)) + (b/a) * (k) + originalSequence[0] * ((1+a)/a) - b/(a*a);
+//        return (b/(a*a) - originalSequence[0]/a) * Math.exp(-a * (k-1)) + b/a*(k-1) + (1+a)/a*originalSequence[0] - b/(a*a);
+    }
+
+    public double getDGM11cumulativePredictValue(double a,double b,int k,double[] originalSequence){
+        return Math.pow(a,k-1) * originalSequence[0] + (1-Math.pow(a,k-1))/(1-a) * b;
     }
 
     //参与预测的利用率中不能有0，否则为奇异矩阵（不满秩），无法计算逆矩阵
     public boolean checkUtilizationZero(double[] originalSequence){
-//        for(double num: originalSequence){
-//            if(num == 0.0){
-//                return true;
-//            }
-//        }
-//        return false;
         Set<Double> set = new HashSet<>();
         for(double num:originalSequence){
             if(!set.contains(num)){
@@ -283,12 +316,6 @@ public class MathHandler {
             }else return true;
         }
         return false;
-//        for(int i=1;i<originalSequence.length;++i){
-//            if(originalSequence[i] == 0.0 && originalSequence[i-1] == 0.0){
-//                return true;
-//            }
-//        }
-//        return false;
     }
 
     double cutTo0To1(double predict){
@@ -331,6 +358,15 @@ public class MathHandler {
         return  utilizations;
     }
 
+    double[] getKDGM11PredictResult(double a,double b,int n,double[] originalSequence){
+        int K = Constant.KSTEP;
+        double[] utilizations = new double[K];
+        for(int i=0;i<K;++i){
+            utilizations[i] = getDGM11PredictResult(a,b,n+i+1,originalSequence);
+        }
+        return  utilizations;
+    }
+
     double findPredictMax(double[] predicts){
         return Arrays.stream(predicts).max().getAsDouble();
     }
@@ -339,7 +375,7 @@ public class MathHandler {
         return Arrays.stream(predicts).min().getAsDouble();
     }
 
-    public double GM11PredictingTest(List<Double> dataHistory,int n,int k){
+    public double GM11PredictingTest(List<Double> dataHistory,int n){
         double[] originalSequence = listToArray(dataHistory,n);
         int tn = n-1;
         double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
@@ -354,16 +390,23 @@ public class MathHandler {
         for(int i=0;i<predicts.length;++i){
             System.out.println("GM(1，1)的第"+i+"个预测结果："+predicts[i]);
         }
-        return getGM11PredictResult(a,b,k,originalSequence);
+        return getGM11PredictResult(a,b,13,originalSequence);
     }
 
     public double DGM21PredictingTest(List<Double> dataHistory,int n){
         double[] originalSequence = listToArray(dataHistory,n);
+//        for(int i=0;i<n;++i){
+//            originalSequence[i] *= 10;
+//        }
         int tn = n-1;
         double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
-        double[] IAGO = reverseCalculateCumulativeSequence(originalSequence,tn);
+        double[] IAGO = reverseCalculateCumulativeSequence(originalSequence,n);
 //        double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
         double[][] B = new double[tn][2];
+        double[] temp = new double[tn];
+        for(int i=0;i<tn;++i){
+            temp[i] = originalSequence[i+1];
+        }
         initialB(B,Arrays.copyOfRange(originalSequence, 1, n),tn);
         double[][] YN = new double[tn][1];
         initialDGMYN(YN,IAGO,tn);
@@ -372,8 +415,27 @@ public class MathHandler {
         double a = result[0][0],b = result[1][0];
 //        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
         double[] predicts = getKDGM21PredictResult(a,b,n,originalSequence);
+//        for(int i=0;i<Constant.KSTEP;++i) predicts[i] /= 10;
         for(int i=0;i<predicts.length;++i){
             System.out.println("DGM(2，1)的第"+i+"个预测结果："+predicts[i]);
+        }
+        return predicts[0];
+    }
+
+    public double DGM11PredictingTest(List<Double> dataHistory,int n){
+        double[] originalSequence = listToArray(dataHistory,n);
+        int tn = n-1;
+        double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
+        double[][] B = new double[tn][2];
+        initialB(B,Arrays.copyOfRange(cumulativeSequence, 0, n),tn);
+        double[][] YN = new double[tn][1];
+        initialDGM11YN(YN,cumulativeSequence,tn);
+        //DGM和GM在这里都是一样的矩阵乘法
+        double[][] result = calculateGM11AandB(B,YN);
+        double a = result[0][0],b = result[1][0];
+        double[] predicts = getKDGM11PredictResult(a,b,n,originalSequence);
+        for(int i=0;i<predicts.length;++i){
+            System.out.println("DGM(1，1)的第"+i+"个预测结果："+predicts[i]);
         }
         return predicts[0];
     }

@@ -443,10 +443,12 @@ public class myImplementationMigrationDatacenter {
                     allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
+
             //把ram判断阈值
             this.allocationPolicy.setHostRamThreshold(true);
+
             //低阈值迁移只迁移一个
-            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
+//            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
 
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
@@ -592,6 +594,7 @@ public class myImplementationMigrationDatacenter {
         broker.setVmDestructionDelay(0.2);
 
         vmList.addAll(createVms());
+        vmList.sort((k,v)-> (int)(v.getRam().getCapacity()-k.getRam().getCapacity()));
         broker.submitVmList(vmList);
 
         vmList.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));

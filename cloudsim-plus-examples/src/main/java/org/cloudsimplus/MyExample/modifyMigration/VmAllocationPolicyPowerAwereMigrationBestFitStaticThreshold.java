@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import static java.util.Comparator.comparingDouble;
 
 public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends VmAllocationPolicyMigrationStaticThreshold {
+
     public VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(final VmSelectionPolicy vmSelectionPolicy) {
         this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD);
     }
@@ -38,27 +39,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
         final Comparator<Host> hostPowerConsumptionComparator =
             comparingDouble(host -> getPowerDifferenceAfterAllocation(host, vm));
-        Optional<Host> host = hostStream.min(hostPowerConsumptionComparator);
-        return host;
-    }
-
-    protected double getPowerDifferenceAfterAllocation(final Host host, final Vm vm){
-        final double powerAfterAllocation = getPowerAfterAllocation(host, vm);
-        if (powerAfterAllocation > 0) {
-            return powerAfterAllocation - host.getPowerModel().getPower();
-        }
-
-        return 0;
-    }
-
-    protected double getPowerAfterAllocation(final Host host, final Vm vm) {
-        try {
-            return host.getPowerModel().getPower(getMaxUtilizationAfterAllocation(host, vm));
-        } catch (IllegalArgumentException e) {
-            LOGGER.error("Power consumption for {} could not be determined: {}", host, e.getMessage());
-        }
-
-        return 0;
+        return hostStream.min(hostPowerConsumptionComparator);
     }
 
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm) {

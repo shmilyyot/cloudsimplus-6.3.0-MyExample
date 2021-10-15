@@ -59,7 +59,8 @@ public interface VmScheduler {
      *       if the total requested mips is available, while only the difference has
      *       to be checked. It has to be added some tests to check this issue.
      */
-    boolean allocatePesForVm(Vm vm, MipsShare requestedMips);
+    boolean
+    allocatePesForVm(Vm vm, MipsShare requestedMips);
 
     /**
      * Requests the allocation of PEs for a VM, according

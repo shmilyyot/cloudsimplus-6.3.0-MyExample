@@ -89,7 +89,6 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         if(getHost().isFailed()){
             return false;
         }
-
         return isSuitableForVmInternal(vm, requestedMips);
     }
 

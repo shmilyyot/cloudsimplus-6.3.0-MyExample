@@ -190,6 +190,8 @@ class VmNull implements Vm {
     @Override public void setRequestUtilization(double requestUtilization) {}
     @Override public double getTotalrequestUtilization() {return 0;}
     @Override public void setTotalrequestUtilization(double totalrequestUtilization) {}
+    @Override public boolean isSearchForHost() {return false;}
+    @Override public void setSearchForHost(boolean searchForHost) {}
     @Override public String getDescription() { return ""; }
     @Override public Vm setDescription(String description) { return this; }
     @Override public VmGroup getGroup() { return null; }

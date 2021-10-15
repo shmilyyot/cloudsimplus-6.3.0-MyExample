@@ -133,6 +133,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     //总请求的mips
     private double totalrequestUtilization = 0.0;
 
+    public boolean isSearchForHost() {
+        return searchForHost;
+    }
+
+    public void setSearchForHost(boolean searchForHost) {
+        this.searchForHost = searchForHost;
+    }
+
+    private boolean searchForHost = true;
+
     /**
      * Creates a Vm with 1024 MEGA of RAM, 100 Megabits/s of Bandwidth and 1024 MEGA of Storage Size.
      * To change these values, use the respective setters. While the Vm {@link #isCreated()
@@ -443,12 +453,12 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public long getCurrentRequestedRam() {
-//        if (!isCreated()) {
-////            if(getSimulation().clock() < 1.0){
-////                return 0;
-////            }
-//            return ram.getCapacity();
-//        }
+        if (!isCreated()) {
+            if(getSimulation().clock() < 1.0){
+                return 0;
+            }
+            return ram.getCapacity();
+        }
 
         return (long) (cloudletScheduler.getCurrentRequestedRamPercentUtilization() * ram.getCapacity());
     }

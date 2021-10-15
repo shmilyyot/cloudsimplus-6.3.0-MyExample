@@ -62,6 +62,10 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     public void setTotalrequestUtilization(double totalrequestUtilization);
 
+    public boolean isSearchForHost();
+
+    public void setSearchForHost(boolean searchForHost);
+
     /**
      * Gets the Vm description, which is an optional text
      * which one can use to provide details about this of this VM.

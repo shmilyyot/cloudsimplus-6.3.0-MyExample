@@ -325,7 +325,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         final Vm tempVm = new VmSimple(vm);
 
         if (!host.createTemporaryVm(tempVm).fully()) {
-            System.out.println(vm+"过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
+//            System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
             return false;
         }
 
@@ -439,6 +439,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @see #findHostForVmInternal(Vm, Stream)
      */
     private Optional<Host> findHostForVm(final Vm vm, final Set<? extends Host> excludedHosts) {
+        vm.setSearchForHost(true);
         /*The predicate always returns true to indicate that, in fact, it is not
         applying any additional filter.*/
         return findHostForVm(vm, excludedHosts, host -> true);

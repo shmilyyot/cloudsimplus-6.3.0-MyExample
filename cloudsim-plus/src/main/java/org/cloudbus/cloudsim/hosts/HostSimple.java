@@ -437,7 +437,6 @@ public class HostSimple implements Host, Serializable {
 
         final HostSuitability suitability = isSuitableForVm(vm, inMigration, true);
         if(!suitability.fully()) {
-            System.out.println("放弃迁移"+vm);
             return suitability;
         }
         vm.setInMigration(inMigration);
@@ -534,8 +533,9 @@ public class HostSimple implements Host, Serializable {
 //        if(this.getRam().getAvailableResource() < vm.getRam().getCapacity()) suitability.setForRam(false);
 //        System.out.println(vm+" "+vm.getRam().getCapacity() + " "+this+" "+this.getRam().getAvailableResource() +" "+suitability.forRam());
 
+        suitability.setForPes(vmScheduler.isSuitableForVm(vm));
 
-        return suitability.setForPes(vmScheduler.isSuitableForVm(vm));
+        return suitability;
     }
 
     @Override
