@@ -63,6 +63,8 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
 
     void setTotalOver100Time(int i);
 
+    double getResourceWastage();
+
     /**
      * Gets the Datacenter where the host is placed.
      *

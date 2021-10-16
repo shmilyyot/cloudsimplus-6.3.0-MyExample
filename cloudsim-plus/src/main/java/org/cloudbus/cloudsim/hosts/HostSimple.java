@@ -83,6 +83,16 @@ public class HostSimple implements Host, Serializable {
         this.totalOver100Time = totalOver100Time;
     }
 
+    @Override
+    public double getResourceWastage() {
+        double xita = 0.0001;
+        double hostCpuUtilization = this.getCpuPercentUtilization();
+        double hostRamUtilization = this.getRamPercentUtilization();
+        double hostRemindingCpuUtilization = 1 - hostCpuUtilization;
+        double hostRemindingRamUtilization = 1 - hostRamUtilization;
+        return (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization)+xita) / (hostCpuUtilization + hostRamUtilization);
+    }
+
     int totalOver100Time = 0;
 
     /** @see #getStartTime() */

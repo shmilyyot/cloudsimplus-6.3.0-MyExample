@@ -293,6 +293,17 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         return cpuUsagePercent < getUnderUtilizationThreshold() && ramUsagePercent < getUnderRamUtilizationThreshold();
     }
 
+    protected Host getUnderloadedHost(final Set<? extends Host> excludedHosts) {
+        return this.getHostList().stream()
+            .filter(host -> !excludedHosts.contains(host))
+            .filter(Host::isActive)
+            .filter(this::isHostUnderloaded)
+            .filter(host -> host.getVmsMigratingIn().isEmpty())
+            .filter(this::notAllVmsAreMigratingOut)
+            .max(comparingDouble(Host::getResourceWastage))
+            .orElse(Host.NULL);
+    }
+
 
 
 }

@@ -733,7 +733,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @param excludedHosts the Hosts that have to be ignored when looking for the under utilized Host
      * @return the most under utilized host or {@link Host#NULL} if no Host is found
      */
-    private Host getUnderloadedHost(final Set<? extends Host> excludedHosts) {
+    protected Host getUnderloadedHost(final Set<? extends Host> excludedHosts) {
         return this.getHostList().stream()
             .filter(host -> !excludedHosts.contains(host))
             .filter(Host::isActive)
@@ -781,7 +781,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @param host the host to check
      * @return true if at least one VM isn't migrating, false if all VMs are migrating
      */
-    private boolean notAllVmsAreMigratingOut(final Host host) {
+    protected boolean notAllVmsAreMigratingOut(final Host host) {
         return host.getVmList().stream().anyMatch(vm -> !vm.isInMigration());
     }
 
