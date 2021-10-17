@@ -72,32 +72,10 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     //重写查找指定host的函数
     @Override
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
-//        AtomicReference<Double> minFitValue = new AtomicReference<>(0.0);
-//        AtomicReference<Host> targetHost = null;
+
         final double vmCpuUtilization = vm.getCpuPercentUtilization();
         final double vmRamUtilization = vm.getRam().getPercentUtilization();
         final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-//        hostStream.forEach(host -> {
-//            double hostCpuUtilization = host.getCpuPercentUtilization();
-//            double hostRamUtilization = host.getRamPercentUtilization();
-//            processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
-//            double[] hostPredict = new double[]{mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
-//            double powerDifference = getPowerDifferenceAfterAllocation(host, vm);
-//            double fitValue = powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
-//            if(minFitValue.get() > fitValue){
-//                minFitValue.set(fitValue);
-//                targetHost.set(host);
-//            }
-//        });
-//        hostStream.min(Comparator.comparingDouble(host->{
-//            final double hostCpuUtilization = host.getCpuPercentUtilization();
-//            final double hostRamUtilization = host.getRamPercentUtilization();
-//            processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
-//            final double[] hostPredict = new double[]{1-mathHandler.DGMPredicting(allHostsCpuUtilizationHistoryQueue.get(host)),1-mathHandler.DGMPredicting(allHostsRamUtilizationHistoryQueue.get(host))};
-//            double powerDifference = getPowerDifferenceAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
-//            return powerDifference * mathHandler.reverseCosSimilarity(vmPredict,hostPredict);
-//        }));
-//        System.out.println("finish predict vm usage");
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
@@ -205,25 +183,6 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     @Override
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
 
-//        final double hostCpuUtilization = host.getCpuPercentUtilization();
-//        final double hostRamUtilization = host.getRamPercentUtilization();
-//        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-//        final double vmRamUtilization = vm.getRam().getPercentUtilization();
-//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization);
-//        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization);
-//        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
-//        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
-//        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
-//        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-//        //删除原版复杂判断，只考虑cpu和ram，忽略迁移之类的
-//        if(!checkNewVmSuitable(host,vm,hostTotalRamUsage)){
-//            return false;
-//        }
-//        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
-
-//        //每个host最多两个vm
-//        if(host.getVmList().size() >= 2) return false;
-
         Vm tempVm = new VmSimple(vm);
         //初始放置的时候，假装放置，vm请求的mips是0，所以利用率是0，但是ram是真的扣了整个vm的ram
         if (!host.createTemporaryVm(tempVm).fully()) {
@@ -255,13 +214,13 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     }
 
     public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
-        processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
+//        processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
         return new double[]{mathHandler.GM11Predicting(allVmsCpuUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(allVmsRamUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmRamUtilization,max)};
     }
 
     //获取host最小剩余资源利用率，用1减过了
     public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
-        processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
+//        processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
         return new double[]{1-mathHandler.GM11Predicting(allHostsCpuUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(allHostsRamUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostRamUtilization,max)};
     }
 
