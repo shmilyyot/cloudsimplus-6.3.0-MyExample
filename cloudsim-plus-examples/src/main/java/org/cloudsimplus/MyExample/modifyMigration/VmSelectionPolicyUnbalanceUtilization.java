@@ -39,7 +39,7 @@ public class VmSelectionPolicyUnbalanceUtilization implements VmSelectionPolicy 
         double hostRemindingCpuUtilization = (hostCpuUtilization * hostCpuCapacity - vmCpuUsage) / hostCpuCapacity;
         double hostRemindingRamUtilization = (hostRamUtilization * hostRamCapacity - vmRamUsage) / hostRamCapacity;
         double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
-        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
+//        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
         return wastage;
     }
 }

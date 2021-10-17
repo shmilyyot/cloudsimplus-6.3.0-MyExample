@@ -199,6 +199,9 @@ public class MathHandler {
         if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
             return utilization;
         }
+
+//        for(double num : originalSequence) System.out.println(num);
+
         int tn = n-1;
         double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
         double[] meanSequence = calculateMeanSequence(cumulativeSequence,tn);
@@ -211,8 +214,10 @@ public class MathHandler {
 //        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
         double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
         if(max){
+//            System.out.println("预测值是："+cutTo0To1(findPredictMax(predicts)));
             return cutTo0To1(findPredictMax(predicts));
         }else{
+//            System.out.println("预测值是："+cutTo0To1(findPredictMin(predicts)));
             return cutTo0To1(findPredictMin(predicts));
         }
 //        if(max){
