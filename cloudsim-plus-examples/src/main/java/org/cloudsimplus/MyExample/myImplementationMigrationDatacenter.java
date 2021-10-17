@@ -22,6 +22,7 @@ import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.*;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
@@ -494,9 +495,9 @@ public class myImplementationMigrationDatacenter {
         }
         final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType));
         host
-            .setVmScheduler(new VmSchedulerTimeShared())
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
+            .setVmScheduler(new VmSchedulerTimeShared())
             .setPowerModel(powerModel);
         host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
         host.addOnUpdateProcessingListener(this::updateHostResource);
@@ -899,5 +900,6 @@ public class myImplementationMigrationDatacenter {
 //            }
 //        }
 //    }
+
 
 }

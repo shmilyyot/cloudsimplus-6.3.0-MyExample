@@ -64,11 +64,6 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         super(vmSelectionPolicy, overUtilizationThreshold, findHostForVmFunction);
     }
 
-    protected void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
-        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalCpuMipsUtilization(simulationTime));
-        vmList.sort(comparator.reversed());
-    }
-
     //重写查找指定host的函数
     @Override
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
@@ -257,7 +252,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             .filter(host -> !excludedHosts.contains(host))
             .filter(Host::isActive)
             .filter(this::isHostUnderloaded)
-            .filter(host -> host.getVmsMigratingIn().isEmpty())
+            .filter(host -> host.getVmsMigratingIn().isEmpty() && !host.getVmList().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
             .max(comparingDouble(Host::getResourceWastage))
             .orElse(Host.NULL);
