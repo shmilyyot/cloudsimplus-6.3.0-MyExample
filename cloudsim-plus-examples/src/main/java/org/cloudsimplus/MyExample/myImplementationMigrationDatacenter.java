@@ -592,7 +592,7 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-        broker.setVmDestructionDelay(0.2);
+//        broker.setVmDestructionDelay(0.2);
 
 
         vmList.addAll(createVms());

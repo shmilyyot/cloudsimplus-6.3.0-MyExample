@@ -110,7 +110,7 @@ public class Constant {
     /**
      * 亚马逊数据中心的虚拟机归一化得到vm的相关参数设置,一共有四种，都是单核的
      * */
-    public static final int VMS = 1600;   //虚拟机数目
+    public static final int VMS = 1000;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
