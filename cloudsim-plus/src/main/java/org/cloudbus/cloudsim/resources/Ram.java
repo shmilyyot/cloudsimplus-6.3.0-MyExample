@@ -37,5 +37,16 @@ public final class Ram extends ResourceManageableAbstract {
      */
     public Ram(final long capacity) {
         super(capacity, "MB");
+        this.actualCapacity = capacity;
     }
+
+    public double getActualCapacity() {
+        return actualCapacity;
+    }
+
+    public void setActualCapacity(double actualCapacity) {
+        this.actualCapacity = actualCapacity;
+    }
+
+    private double actualCapacity;
 }
