@@ -16,7 +16,7 @@ public class Constant {
      */
     public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
-    public static int HOST_LogLength = 24;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
+    public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
     public static int HOST_Log_INTERVAL = SCHEDULING_INTERVAL; //    记录日志的时间间隔，默认和系统调度时间一致
     public static int VM_LOG_INTERVAL = HOST_Log_INTERVAL;  //记录虚拟机日志的时间间隔，和主机日志数目一直
@@ -44,8 +44,8 @@ public class Constant {
     /**
      * google真实任务数据源地址
      * */
-    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_events";
-    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage";
+    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
+    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
 //    public static final String TASK_EVENTS_PATH = "D:\\paperWork\\clusterdata2011\\finishId";
 //    public static final String TASK_USAGE_PATH = "D:\\paperWork\\clusterdata2011\\task_usage_process_firstDay_Between_Ramdom1000";
     public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
@@ -92,13 +92,13 @@ public class Constant {
      * 任务长度设置为负数，代表任务可以无限制运行下去，直到读到真实记录的任务结束标志
      * */
     public static final int TEST_CLOUDLET_LENGTH = 200000;
-    public static final boolean USING_TEST_CLOUDLET = true;
+    public static final boolean USING_TEST_CLOUDLET = false;
     public static final int  CLOUDLET_LENGTH = -10_000;
     public static final boolean USING_FILTER = false;
     public static final boolean FILTER_INSIDE_CLOUDLET = false;  //true过滤掉cloudlet里所有5~90%之外的利用率变化,false过滤掉只要出现过5~90%之外利用率的整个cloudlet
     public static final boolean READ_INITIAL_MACHINE_CLOUDLET = false;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成
     public static final int GOOGLE_EVENT_DAYS_FILE = 16;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172，第一天16
-    public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 0;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
+    public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 16;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
     public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
     public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
 //    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
@@ -110,11 +110,11 @@ public class Constant {
     /**
      * 亚马逊数据中心的虚拟机归一化得到vm的相关参数设置,一共有四种，都是单核的
      * */
-    public static final int VMS = 1000;   //虚拟机数目
+    public static final int VMS = 1603;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3700,1700,613};    //1750效果比3750好
+    public static final long[] VM_RAM = {850,1700,1700,613};    //1750效果比3750好
     public static final long[] VM_BW = {100,100,100,100}; //用不到
     public static final long[] VM_SIZE_MB = {10000,10000,10000,10000}; //用不到
 

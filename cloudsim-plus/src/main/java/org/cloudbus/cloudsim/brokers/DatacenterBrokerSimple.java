@@ -132,6 +132,12 @@ public class DatacenterBrokerSimple extends DatacenterBrokerAbstract implements 
         /*If the cloudlet isn't bound to a specific VM or the bound VM was not created,
         cyclically selects the next VM on the list of created VMs.*/
         lastSelectedVmIndex = ++lastSelectedVmIndex % getVmExecList().size();
+//        Vm vm = getVmExecList().get(lastSelectedVmIndex);
+//        while(!vm.getCloudletScheduler().isEmpty()){
+//            lastSelectedVmIndex = ++lastSelectedVmIndex % getVmExecList().size();
+//            vm = getVmExecList().get(lastSelectedVmIndex);
+//        }
+
         return getVmFromCreatedList(lastSelectedVmIndex);
     }
 }

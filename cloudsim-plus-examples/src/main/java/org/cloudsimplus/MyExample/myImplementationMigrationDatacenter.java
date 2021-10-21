@@ -273,7 +273,6 @@ public class myImplementationMigrationDatacenter {
                             reader.setPredicate(event -> ( finalEligibleCloudletIds.contains(event.getUniqueTaskId()) && event.getTimestamp() <= Constant.STOP_TIME));
                         }else{
                             reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME);
-                            reader.setMaxCloudletsToCreate(100);
                         }
 //                reader.setMaxCloudletsToCreate(100);
                     }
@@ -315,7 +314,7 @@ public class myImplementationMigrationDatacenter {
     private Cloudlet createCloudlet(final TaskEvent event) {
         final long pesNumber = positive(event.actualCpuCores(Constant.VM_PES), Constant.VM_PES);
         double RamUsagePercent = event.getResourceRequestForRam();
-        RamUsagePercent = RamUsagePercent > 1 ? Conversion.HUNDRED_PERCENT : 0.0;
+        RamUsagePercent = (RamUsagePercent > 1 ? Conversion.HUNDRED_PERCENT : RamUsagePercent);
         final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(RamUsagePercent,Conversion.HUNDRED_PERCENT);
 //        final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * Constant.VM_SIZE_MB[0] + 1;
         final double sizeInMB    = 1;   //如只研究CPU和MEM，磁盘空间不考虑的话，象征性给个1mb意思一下
@@ -324,8 +323,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
-            .setUtilizationModelRam(utilizationRam)
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0))
+            .setUtilizationModelRam(new UtilizationModelDynamic(0))
 //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
             ;
     }
