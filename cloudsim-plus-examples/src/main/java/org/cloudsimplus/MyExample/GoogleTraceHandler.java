@@ -62,28 +62,30 @@ public class GoogleTraceHandler {
     public void buildTraceFileNames(){
         TRACE_FILENAMES = new ArrayList<>(500);
         Usage_FILENAMES = new ArrayList<>(500);
-        for(int i=0;i<=Constant.GOOGLE_EVENT_DAYS_FILE;++i){
-            String filename;
-            if(i<10){
-                filename = Constant.TASK_EVENTS_PATH+"/part-0000"+i+"-of-00500.csv";
-            }else if(i<100){
-                filename = Constant.TASK_EVENTS_PATH+"/part-000"+i+"-of-00500.csv";
-            }else{
-                filename = Constant.TASK_EVENTS_PATH+"/part-00"+i+"-of-00500.csv";
-            }
-            TRACE_FILENAMES.add(filename);
-        }
-        for(int i=0;i<=Constant.GOOGLE_EVENTUSAGE_DAYS_FILE;++i){
-            String usagename;
-            if(i<10){
-                usagename = Constant.TASK_USAGE_PATH+"/part-0000"+i+"-of-00500.csv.gz";
-            }else if(i<100){
-                usagename = Constant.TASK_USAGE_PATH+"/part-000"+i+"-of-00500.csv.gz";
-            }else{
-                usagename = Constant.TASK_USAGE_PATH+"/part-00"+i+"-of-00500.csv.gz";
-            }
-            Usage_FILENAMES.add(usagename);
-        }
+        TRACE_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_event_process_firstDay\\event.csv");
+        Usage_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_usage_process_firstDay\\usage.csv");
+//        for(int i=0;i<=Constant.GOOGLE_EVENT_DAYS_FILE;++i){
+//            String filename;
+//            if(i<10){
+//                filename = Constant.TASK_EVENTS_PATH+"/part-0000"+i+"-of-00500.csv";
+//            }else if(i<100){
+//                filename = Constant.TASK_EVENTS_PATH+"/part-000"+i+"-of-00500.csv";
+//            }else{
+//                filename = Constant.TASK_EVENTS_PATH+"/part-00"+i+"-of-00500.csv";
+//            }
+//            TRACE_FILENAMES.add(filename);
+//        }
+//        for(int i=0;i<=Constant.GOOGLE_EVENTUSAGE_DAYS_FILE;++i){
+//            String usagename;
+//            if(i<10){
+//                usagename = Constant.TASK_USAGE_PATH+"/part-0000"+i+"-of-00500.csv.gz";
+//            }else if(i<100){
+//                usagename = Constant.TASK_USAGE_PATH+"/part-000"+i+"-of-00500.csv.gz";
+//            }else{
+//                usagename = Constant.TASK_USAGE_PATH+"/part-00"+i+"-of-00500.csv.gz";
+//            }
+//            Usage_FILENAMES.add(usagename);
+//        }
     }
 
     public void buildTraceFileNamesSample(){

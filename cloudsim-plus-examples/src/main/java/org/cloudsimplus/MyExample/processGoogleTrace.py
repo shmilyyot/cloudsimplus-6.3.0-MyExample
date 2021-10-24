@@ -12,8 +12,8 @@ import csv
 # TASK_USAGE_PROCESS_PATH = "D:\\paperWork\\clusterdata2011\\task_usage_process_firstDay_Between_Ramdom1000";
 TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_events";
 TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage";
-TASK_EVENTS_PROCESS_PATH = "F:\\paperData\\clusterdata2011\\task_events_process";
-TASK_USAGE_PROCESS_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process2";
+TASK_EVENTS_PROCESS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
+TASK_USAGE_PROCESS_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
 event_path_list = []
 usage_path_list = []
 event_path_process_list = []
@@ -296,6 +296,25 @@ def filterRamdomCloudletUsages():
         data.to_csv(usage_path_process_list[i], header=False, index=False)
         print('完成过滤第' + str(i) + '个usage文档')
 
+def mergeUsageIntoOneFile():
+    for i in range(17):
+        labels = ['startTimePeriod', 'endTimePeriod', 'jobID', 'taskIndex', 'machineID', 'cpuRate',
+                  'canonicalMemoryUsage', 'assignedMemoryUsage', 'unmappedMemoryUsage', 'totalMemoryUsage',
+                  'maximumMemoryUsage', 'diskIOTime', 'localDiskSpaceUsed', 'maximumCPUUsage', 'maximumDiskIOTime',
+                  'CPI', 'MAI', 'samplePortion', 'aggregationType', 'sampledCPUUsage']
+        df = pd.read_csv(usage_path_process_list[i], names=labels)
+        df.to_csv('F:/paperData/clusterdata2011/task_usage_process_firstDay/usage.csv',mode = 'a',header=False, index=False)
+        print('finish merge'+str(i))
+
+def mergeEventIntoOneFile():
+    for i in range(17):
+        labels = ['Timestamp', 'Missinginfo', 'jobID', 'Taskindex', 'machineID', 'Eventtype', 'username',
+                  'Schedulingclass', 'Priority', 'requestCPU', 'requestRAM', 'requestdisk', 'constraint']
+        df = pd.read_csv(event_path_process_list[i], names=labels)
+        df.to_csv('F:/paperData/clusterdata2011/task_event_process_firstDay/event.csv', mode='a', header=False, index=False)
+        print('finish merge' + str(i))
+
+
 if __name__ == '__main__':
     # collectCloudletIdInFirstDay()
     # filterOutside()
@@ -309,4 +328,6 @@ if __name__ == '__main__':
     # collectfinishId()
     # randomSelectCloudlets()
     # filterRamdomCloudletEvents()
-    filterRamdomCloudletUsages()
+    # filterRamdomCloudletUsages()
+    mergeEventIntoOneFile()
+    mergeUsageIntoOneFile()

@@ -625,7 +625,6 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
                 "{}: {}: {} requested {} {} of {} but {}{} which delays Cloudlet processing.",
                 vm.getSimulation().clockStr(), getClass().getSimpleName(), cloudlet,
                 requested, resource.getUnit(), resource.getClass().getSimpleName(), msg1, msg2);
-
             updateOnResourceAllocationFailListeners(resource, cloudlet, requested, available);
         }
 

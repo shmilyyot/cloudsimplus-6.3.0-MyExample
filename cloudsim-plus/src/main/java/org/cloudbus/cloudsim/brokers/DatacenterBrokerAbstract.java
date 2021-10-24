@@ -39,6 +39,8 @@ import static java.util.Objects.requireNonNull;
  * @author Manoel Campos da Silva Filho
  */
 public abstract class DatacenterBrokerAbstract extends CloudSimEntity implements DatacenterBroker {
+
+    private Map<Long,Vm> cloudletIdToVm = new HashMap<>();
     /**
      * A message tag used for the broker to send a message to itself requesting the shutdown.
      * That ensures a graceful shutdown, after other broker events are processed.
@@ -535,7 +537,8 @@ public abstract class DatacenterBrokerAbstract extends CloudSimEntity implements
     private void processCloudletCancel(final SimEvent evt){
         final Cloudlet cloudlet = (Cloudlet)evt.getData();
         logCloudletStatusChange(cloudlet, "cancel execution of");
-        cloudlet.getVm().getCloudletScheduler().cloudletCancel(cloudlet);
+        Vm vm = cloudlet.getVm();
+        vm.getCloudletScheduler().cloudletCancel(cloudlet);
     }
 
     /**
@@ -644,7 +647,6 @@ public abstract class DatacenterBrokerAbstract extends CloudSimEntity implements
 
             vm.notifyOnCreationFailureListeners(lastSelectedDc);
         }
-
         if (allNonDelayedVmsCreated()) {
             requestDatacentersToCreateWaitingCloudlets();
             notifyOnVmsCreatedListeners();
@@ -955,16 +957,23 @@ public abstract class DatacenterBrokerAbstract extends CloudSimEntity implements
             }
 
             //selects a VM for the given Cloudlet
-            lastSelectedVm = vmMapper.apply(cloudlet);
+            if(cloudletIdToVm.containsKey(cloudlet.getId())){
+                lastSelectedVm = cloudletIdToVm.get(cloudlet.getId());
+            }else{
+                lastSelectedVm = vmMapper.apply(cloudlet);
+            }
+
             if (!lastSelectedVm.isCreated()) {
                 logPostponingCloudletExecution(cloudlet);
                 continue;
             }
 
             ((VmSimple) lastSelectedVm).removeExpectedFreePesNumber(cloudlet.getNumberOfPes());
-
             logCloudletCreationRequest(cloudlet);
             cloudlet.setVm(lastSelectedVm);
+
+            cloudletIdToVm.put(cloudlet.getId(),lastSelectedVm);
+
             send(getDatacenter(lastSelectedVm),
                 cloudlet.getSubmissionDelay(), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
             cloudlet.setLastTriedDatacenter(getDatacenter(lastSelectedVm));

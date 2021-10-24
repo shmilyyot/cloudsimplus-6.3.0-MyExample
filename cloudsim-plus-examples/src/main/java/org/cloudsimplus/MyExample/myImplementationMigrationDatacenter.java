@@ -323,8 +323,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0))
-            .setUtilizationModelRam(new UtilizationModelDynamic(0))
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.5))
+            .setUtilizationModelRam(new UtilizationModelDynamic(0.5))
 //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
             ;
     }
