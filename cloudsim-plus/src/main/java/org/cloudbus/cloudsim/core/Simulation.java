@@ -45,6 +45,8 @@ public interface Simulation {
 
     boolean isTerminationTimeSet();
 
+    double getTerminationTime();
+
     /**
      * Aborts the simulation without finishing the processing
      * of entities in the {@link #getEntityList() entities list}, <b>which may give
@@ -498,4 +500,5 @@ public interface Simulation {
      * @param lastCloudletProcessingUpdate the time to set (in seconds)
      */
     void setLastCloudletProcessingUpdate(double lastCloudletProcessingUpdate);
+
 }

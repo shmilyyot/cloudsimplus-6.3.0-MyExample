@@ -181,6 +181,9 @@ public class myImplementationMigrationDatacenter {
         PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
         powerMeter.setMeasurementInterval(Constant.SCHEDULING_INTERVAL);
 
+        //系统在第一天结束停止运行
+        simulation.terminateAt(Constant.STOP_TIME);
+
         //数据中心模拟器启动
         simulation.start();
 
@@ -323,8 +326,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0.5))
-            .setUtilizationModelRam(new UtilizationModelDynamic(0.5))
+            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
+            .setUtilizationModelRam(new UtilizationModelDynamic(1))
 //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
             ;
     }

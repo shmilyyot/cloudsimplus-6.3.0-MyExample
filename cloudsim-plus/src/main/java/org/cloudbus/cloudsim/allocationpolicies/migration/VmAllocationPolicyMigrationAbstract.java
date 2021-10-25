@@ -129,6 +129,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     @Override
     public Map<Vm, Host> getOptimizedAllocationMap(final List<? extends Vm> vmList) {
+        if(getDatacenter().getSimulation().getTerminationTime() > 85392.0){
+            return new HashMap<>();
+        }
         //@TODO See https://github.com/manoelcampos/cloudsim-plus/issues/94
         final Set<Host> overloadedHosts = getOverloadedHosts();
         final Set<Host> switchedOffHosts = getSwitchedOffHosts();
@@ -594,10 +597,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         for (final Vm vm : vmsToMigrate) {
 
 //            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，徒增迁移次数
-//            //不销毁了，直接整合
-//            if (vm.getCloudletScheduler().isEmpty()) {
-//                return new HashMap<>();
-//            }
+            if (vm.getCloudletScheduler().isEmpty()) {
+                return new HashMap<>();
+            }
 
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));
