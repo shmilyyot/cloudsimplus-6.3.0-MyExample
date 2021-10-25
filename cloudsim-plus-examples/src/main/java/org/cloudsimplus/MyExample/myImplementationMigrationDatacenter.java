@@ -78,6 +78,7 @@ public class myImplementationMigrationDatacenter {
     private int migrationsNumber = 0;   //迁移次数
     private static Set<Double> existTimes = new HashSet<>();
     List<Cloudlet> totalCloudlets;
+    List<Long> activeHostNumber = new ArrayList<>();
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -165,7 +166,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -187,8 +188,8 @@ public class myImplementationMigrationDatacenter {
         //数据中心模拟器启动
         simulation.start();
 
-        //打印所有cloudlet运行状况
-        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
+//        //打印所有cloudlet运行状况
+//        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
@@ -556,9 +557,6 @@ public class myImplementationMigrationDatacenter {
                         return true;
                     });
                 }
-            }else{
-                reader.setPredicate(taskUsage ->
-                    cloudletIds.contains(taskUsage.getUniqueTaskId()));
             }
             final Collection<Cloudlet> processedCloudlets = reader.process();
             System.out.printf("TraceFile： %d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), eachFileUsageName);
@@ -636,7 +634,8 @@ public class myImplementationMigrationDatacenter {
 //        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
 //            collectHostResourceUtilization();
-            dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
+            long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
+            activeHostNumber.add(number);
 //            dataCenterPrinter.activeVmsCount(hostList,simulation.clockStr());
 //            System.out.println();
 //            System.out.println("前");

@@ -648,7 +648,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final Host targetHost = entry.getValue();
 
         if(!targetHost.isActive()){
-            System.out.println("被迁移"+targetHost+"不知道为什么关闭了，立即打开");
+            System.out.println("被迁移"+targetHost+"被关闭了，立即打开");
             targetHost.setActive(true);
         }
 
@@ -823,7 +823,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             return;
         }
 
-        if(getSimulation().getTerminationTime() > 85392.0){
+        if(getSimulation().clock() > 85392.0){
             return;
         }
 

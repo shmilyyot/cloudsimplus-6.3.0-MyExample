@@ -207,7 +207,7 @@ public class GoogleTaskEventsExample1 {
         final long pesNumber = positive(event.actualCpuCores(VM_PES), VM_PES);
 
         final double maxRamUsagePercent = positive(event.getResourceRequestForRam(), Conversion.HUNDRED_PERCENT);
-        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(0, maxRamUsagePercent);
+        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(0, 1);
 
         final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * VM_SIZE_MB + 1;
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));
