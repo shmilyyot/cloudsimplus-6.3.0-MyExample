@@ -129,9 +129,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     @Override
     public Map<Vm, Host> getOptimizedAllocationMap(final List<? extends Vm> vmList) {
-        if(getDatacenter().getSimulation().getTerminationTime() > 85392.0){
-            return new HashMap<>();
-        }
         //@TODO See https://github.com/manoelcampos/cloudsim-plus/issues/94
         final Set<Host> overloadedHosts = getOverloadedHosts();
         final Set<Host> switchedOffHosts = getSwitchedOffHosts();
