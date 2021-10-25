@@ -166,7 +166,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
+//        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -183,7 +183,7 @@ public class myImplementationMigrationDatacenter {
         powerMeter.setMeasurementInterval(Constant.SCHEDULING_INTERVAL);
 
         //系统在第一天结束停止运行
-        simulation.terminateAt(Constant.STOP_TIME);
+//        simulation.terminateAt(Constant.STOP_TIME);
 
         //数据中心模拟器启动
         simulation.start();
