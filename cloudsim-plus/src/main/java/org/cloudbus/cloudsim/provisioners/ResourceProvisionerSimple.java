@@ -9,9 +9,7 @@
 package org.cloudbus.cloudsim.provisioners;
 
 import org.cloudbus.cloudsim.hosts.Host;
-import org.cloudbus.cloudsim.resources.Pe;
-import org.cloudbus.cloudsim.resources.Resource;
-import org.cloudbus.cloudsim.resources.ResourceManageable;
+import org.cloudbus.cloudsim.resources.*;
 import org.cloudbus.cloudsim.vms.Vm;
 
 import java.io.Serializable;
@@ -61,6 +59,7 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
          * this line, this line must be placed here and not at the end
          * where it's in fact used.*/
         final long prevVmResourceAllocation = vm.getResource(getResourceClass()).getAllocatedResource();
+
         if (getResourceAllocationMap().containsKey(vm)) {
             //De-allocates any amount of the resource assigned to the Vm in order to allocate a new capacity
             deallocateResourceForVm(vm);
@@ -72,22 +71,19 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
         This way, if the resource is not found inside the VM
         and it is a Pe, it's OK (as it is expected)
         */
-//        if(!getResource().isSubClassOf(Pe.class) && false){
-//            return false;
-//        }
 
-//        if(!getResource().isSubClassOf(Pe.class) && !vm.getResource(getResourceClass()).isSuitable(newTotalVmResourceCapacity)){
-//            return false;
-//        }
-
-        if(!getResource().isSubClassOf(Pe.class) && !vm.getResource(getResourceClass()).setCapacity(newTotalVmResourceCapacity)){
+        if(!getResource().isSubClassOf(Pe.class) && !vm.getResource(getResourceClass()).setCapacity(vm.getResource(getResourceClass()).getCapacity())){
             return false;
         }
 
         //Allocates the requested resource from the physical resource
         getResource().allocateResource(newTotalVmResourceCapacity);
         getResourceAllocationMap().put(vm, newTotalVmResourceCapacity);
+        vm.getResource(getResourceClass()).setCapacity(vm.getResource(getResourceClass()).getCapacity());
         vm.getResource(getResourceClass()).setAllocatedResource(newTotalVmResourceCapacity);
+        if(getResource().isSubClassOf(Ram.class)){
+            System.out.println(newTotalVmResourceCapacity+"   "+getResource().getAvailableResource());
+        }
         return true;
     }
 
@@ -128,6 +124,13 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
 
     @Override
     public boolean isSuitableForVm(final Vm vm, final Resource resource) {
+        if(getResource().isSubClassOf(Ram.class)){
+            return isSuitableForVm(vm, vm.getCurrentRequestedRam());
+        }else if(getResource().isSubClassOf(Bandwidth.class)){
+            return isSuitableForVm(vm, vm.getCurrentRequestedBw());
+        }else if(getResource().isSubClassOf(Pe.class)){
+            return isSuitableForVm(vm, (long)vm.getCurrentRequestedTotalMips());
+        }
         return isSuitableForVm(vm, resource.getCapacity());
     }
 }

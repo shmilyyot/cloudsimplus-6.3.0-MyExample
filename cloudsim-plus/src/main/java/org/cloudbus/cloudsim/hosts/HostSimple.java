@@ -454,7 +454,7 @@ public class HostSimple implements Host, Serializable {
     }
 
     private void allocateResourcesForVm(Vm vm) {
-        ramProvisioner.allocateResourceForVm(vm, vm.getRam().getCapacity());
+        ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
         bwProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedBw());
         disk.getStorage().allocateResource(vm.getStorage());
         vmScheduler.allocatePesForVm(vm, vm.getCurrentRequestedMips());
@@ -474,7 +474,7 @@ public class HostSimple implements Host, Serializable {
         LOGGER.error(
             "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
             simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
-            pmResource.getClass().getSimpleName(), vmRequestedResource.getCapacity(), msg);
+            pmResource.getClass().getSimpleName(), vm.getCurrentRequestedRam(), msg);
     }
 
     @Override

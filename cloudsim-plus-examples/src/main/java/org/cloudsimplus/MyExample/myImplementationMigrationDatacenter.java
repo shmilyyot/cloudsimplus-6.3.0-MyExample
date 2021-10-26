@@ -637,6 +637,12 @@ public class myImplementationMigrationDatacenter {
 //            collectHostResourceUtilization();
             long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
             activeHostNumber.add(number);
+            hostList.forEach(host->{
+                if(vmList.isEmpty() && host.isIdleEnough(host.getIdleShutdownDeadline()) && !host.hasMigratingVms()){
+                    host.setActive(false);
+                }
+//                System.out.println(host+" "+host.getRam().getAvailableResource());
+            });
 //            dataCenterPrinter.activeVmsCount(hostList,simulation.clockStr());
 //            System.out.println();
 //            System.out.println("前");
