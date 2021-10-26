@@ -136,7 +136,7 @@ public class DataCenterPrinter {
         System.out.println();
     }
 
-    public void printDataCenterTotalEnergyComsumption(PowerMeter powerMeter){
+    public double printDataCenterTotalEnergyComsumption(PowerMeter powerMeter){
         double totalDataCenterPowerConsumption = 0.0;
         for(PowerMeasurement powerMeasurement:powerMeter.getPowerMeasurements()){
             totalDataCenterPowerConsumption += powerMeasurement.getTotalPower();
@@ -145,6 +145,7 @@ public class DataCenterPrinter {
 //        System.out.println("能耗统计的数量："+powerMeter.getPowerMeasurements().size());
         double totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600.0/Constant.SCHEDULING_INTERVAL * 1000);
         System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
+        return totalDataCenterEnergyConsumption;
     }
 
     public void printHostsInformation(List<Host> hostList){
@@ -217,10 +218,12 @@ public class DataCenterPrinter {
         System.out.println(time + ": 当前系统中活跃虚拟机数目是： "+count);
     }
 
-    public void calculateSLAV(List<Host> hostList,List<Vm> vmList){
+    public void calculateSLAV(List<Host> hostList,List<Vm> vmList,double totalEnergyCumsumption,int migrationsNumber){
         double SLAV;
         double SLATAH = 0.0;
         double PDM = 0.0;
+        double ESV = 0.0;
+        double ESVM = 0.0;
         for(Host host:hostList){
             double totalUpTime = host.getTotalUpTime();
             if(totalUpTime == 0.0) continue;
@@ -233,9 +236,13 @@ public class DataCenterPrinter {
         SLATAH /= hostList.size();
         PDM /= vmList.size();
         SLAV = SLATAH * PDM;
+        ESV = SLAV * totalEnergyCumsumption;
+        ESVM = ESV * migrationsNumber;
         System.out.println("当前系统的SLATAH是： " + SLATAH);
         System.out.println("当前系统的PDM是： " + PDM);
         System.out.println("当前系统的SLAV是： " + SLAV);
+        System.out.println("当前系统的ESV是： " + ESV);
+        System.out.println("当前系统的ESVM是： " + ESVM);
     }
 
 

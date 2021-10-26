@@ -76,6 +76,7 @@ public class myImplementationMigrationDatacenter {
     private double lastClockTime;   //上一个时钟时间
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
+    private double totalEnergyCumsumption = 0.0;
     private static Set<Double> existTimes = new HashSet<>();
     List<Cloudlet> totalCloudlets;
     List<Long> activeHostNumber = new ArrayList<>();
@@ -166,7 +167,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -189,7 +190,7 @@ public class myImplementationMigrationDatacenter {
         simulation.start();
 
 //        //打印所有cloudlet运行状况
-//        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
+        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
@@ -199,7 +200,7 @@ public class myImplementationMigrationDatacenter {
 //        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
-        dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
+        totalEnergyCumsumption = dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
 
         //打印迁移次数
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
@@ -214,7 +215,7 @@ public class myImplementationMigrationDatacenter {
 
 //        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
 
-        dataCenterPrinter.calculateSLAV(hostList,vmList);
+        dataCenterPrinter.calculateSLAV(hostList,vmList,totalEnergyCumsumption,migrationsNumber);
 
         //打印当前系统活跃的主机数目
 //        dataCenterPrinter.activeHostCount(hostList);

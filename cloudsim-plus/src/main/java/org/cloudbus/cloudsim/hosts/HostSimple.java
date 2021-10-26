@@ -371,7 +371,7 @@ public class HostSimple implements Host, Serializable {
     @SuppressWarnings("ForLoopReplaceableByForEach")
     @Override
     public double updateProcessing(final double currentTime) {
-        if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline)){
+        if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !this.hasMigratingVms()){
             setActive(false);
         }
 
@@ -442,8 +442,6 @@ public class HostSimple implements Host, Serializable {
      * (if the Host doesn't have enough resources to allocate the Vm)
      */
     private HostSuitability allocateResourcesForVm(final Vm vm, final boolean inMigration){
-        //保存虚拟机的ram容量
-//        long capacity = vm.getRam().getCapacity();
 
         final HostSuitability suitability = isSuitableForVm(vm, inMigration, true);
         if(!suitability.fully()) {
@@ -452,10 +450,6 @@ public class HostSimple implements Host, Serializable {
         vm.setInMigration(inMigration);
         allocateResourcesForVm(vm);
 
-//        //恢复虚拟机的ram容量
-//        if(capacity != vm.getRam().getCapacity()){
-//            vm.setRam(capacity,true);
-//        }
         return suitability;
     }
 
