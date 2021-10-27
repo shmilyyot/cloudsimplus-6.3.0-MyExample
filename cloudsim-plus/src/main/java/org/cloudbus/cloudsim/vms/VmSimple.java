@@ -460,7 +460,10 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public long getCurrentRequestedRam() {
-        if (!isCreated()) {
+//        if (!isCreated()) {
+//            return ram.getCapacity();
+//        }
+        if (getSimulation().clock() < 0.2) {
             return ram.getCapacity();
         }
 

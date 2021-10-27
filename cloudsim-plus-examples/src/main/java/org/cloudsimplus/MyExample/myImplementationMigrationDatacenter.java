@@ -635,12 +635,12 @@ public class myImplementationMigrationDatacenter {
 //        else existTimes.add(time);
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
 //            collectHostResourceUtilization();
-            hostList.forEach(host->{
-                if(vmList.isEmpty() && host.isIdleEnough(host.getIdleShutdownDeadline()) && !host.hasMigratingVms()){
-                    host.setActive(false);
-                }
+//            hostList.forEach(host->{
+//                if(vmList.isEmpty() && host.isIdleEnough(host.getIdleShutdownDeadline()) && !host.hasMigratingVms()){
+//                    host.setActive(false);
+//                }
 //                System.out.println(host+" "+host.getRam().getAvailableResource());
-            });
+//            });
             long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
             activeHostNumber.add(number);
 //            dataCenterPrinter.activeVmsCount(hostList,simulation.clockStr());

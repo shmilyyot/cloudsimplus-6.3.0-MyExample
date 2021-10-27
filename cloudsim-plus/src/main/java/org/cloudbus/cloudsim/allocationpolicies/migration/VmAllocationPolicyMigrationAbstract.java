@@ -530,7 +530,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 addVmToMigrationMap(migrationMap, vm, host);
                 appendVmMigrationMsgToStringBuilder(builder, vm, host);
             }else{
-                System.out.println(getDatacenter().getSimulation().clockStr() + ": Vm "+ vm.getId()+"in source " + vm.getHost() +" can't find a host to place.now trying to awake a sleep host!");
+                System.out.println(getDatacenter().getSimulation().clockStr() + ": Vm "+ vm.getId()+" in source " + vm.getHost() +" can't find a host to place.now trying to awake a sleep host!");
                 //如果有vm没有找到host，没有操作，这里需要开启一台host来进行放置
                 final Stream<Host> stream = switchedOffHosts.stream()
                     .filter(host -> host.isSuitableForVm(vm))
@@ -798,6 +798,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         savedAllocation.clear();
         for (final Host host : getHostList()) {
             for (final Vm vm : host.getVmList()) {
+                if(host.getId() == 19 || host.getId() == 3 || host.getId() == 7){
+                    System.out.println(host+" ram: "+host.getRamPercentUtilization());
+                }
                 /* TODO: this VM loop has a quadratic wost-case complexity (when
                     all Vms already in the VM list are migrating into this Host).
                 *  Instead of looping over the vmsMigratingIn list for every VM,

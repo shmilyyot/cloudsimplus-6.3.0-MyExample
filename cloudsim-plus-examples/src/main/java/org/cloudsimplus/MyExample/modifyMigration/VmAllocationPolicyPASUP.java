@@ -21,6 +21,9 @@ import static java.util.Comparator.comparingDouble;
 //updateMigrationMapFromUnderloadedHosts里面关闭打印欠载信息，太多了
 //checkIfVmMigrationsAreNeeded()关闭打印欠载过载信息
 //在hostsimple和vmsimple里面把cpuUtilizationStats关掉了，不知道有什么影响
+//没有cloudlet的vm要设置为可以被迁移，空虚拟机
+////大于一定时间停止迁移，在datacenter simple里面，应该可以关掉了
+//vmsimple里面把iscreate注释掉了，只有在刚开始放置的时候才会返回capacity，后面都返回实际的ram利用率
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
