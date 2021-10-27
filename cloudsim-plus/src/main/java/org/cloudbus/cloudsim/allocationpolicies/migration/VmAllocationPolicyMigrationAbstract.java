@@ -324,6 +324,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final Vm tempVm = new VmSimple(vm);
+        tempVm.setRam(vm.getCurrentRequestedRam());
+        tempVm.setBw(vm.getCurrentRequestedBw());
 
         if (!host.createTemporaryVm(tempVm).fully()) {
 //            System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
@@ -528,7 +530,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 addVmToMigrationMap(migrationMap, vm, host);
                 appendVmMigrationMsgToStringBuilder(builder, vm, host);
             }else{
-                System.out.println(getDatacenter().getSimulation().clockStr() + ": Vm "+ vm.getId()+" can't find a host to place.now trying to awake a sleep host!");
+                System.out.println(getDatacenter().getSimulation().clockStr() + ": Vm "+ vm.getId()+"in source " + vm.getHost() +" can't find a host to place.now trying to awake a sleep host!");
                 //如果有vm没有找到host，没有操作，这里需要开启一台host来进行放置
                 final Stream<Host> stream = switchedOffHosts.stream()
                     .filter(host -> host.isSuitableForVm(vm))
@@ -541,6 +543,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     addVmToMigrationMap(migrationMap, vm, host);
                     appendVmMigrationMsgToStringBuilder(builder, vm, host);
                     System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
+                }else{
+                    System.out.println(getDatacenter().getSimulation().clockStr() + ": 没有找到合适的host给 "+ vm + " 进行过载迁移");
                 }
 //                for(Host host:switchedOffHosts){
 //                    if(host.isSuitableForVm(vm)){

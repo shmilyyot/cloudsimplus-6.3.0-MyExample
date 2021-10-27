@@ -291,6 +291,13 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
             .setSize(sourceVm.getStorage().getCapacity());
     }
 
+    public VmSimple(final Vm sourceVm,boolean temporary) {
+        this(sourceVm.getTotalCpuMipsUtilization()/sourceVm.getNumberOfPes(), sourceVm.getNumberOfPes());
+        this.setBw(sourceVm.getCurrentRequestedBw())
+            .setRam(sourceVm.getCurrentRequestedRam())
+            .setSize(sourceVm.getStorage().getCapacity());
+    }
+
     @Override
     public double updateProcessing(MipsShare mipsShare) {
         return updateProcessing(getSimulation().clock(), mipsShare);
