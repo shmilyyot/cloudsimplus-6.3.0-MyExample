@@ -798,9 +798,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         savedAllocation.clear();
         for (final Host host : getHostList()) {
             for (final Vm vm : host.getVmList()) {
-                if(host.getId() == 19 || host.getId() == 3 || host.getId() == 7){
-                    System.out.println(host+" ram: "+host.getRamPercentUtilization());
-                }
                 /* TODO: this VM loop has a quadratic wost-case complexity (when
                     all Vms already in the VM list are migrating into this Host).
                 *  Instead of looping over the vmsMigratingIn list for every VM,

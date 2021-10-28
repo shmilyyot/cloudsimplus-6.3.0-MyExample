@@ -647,17 +647,25 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final Host targetHost = entry.getValue();
 
-        if(!targetHost.isActive()){
-            System.out.println("被迁移"+targetHost+"被关闭了，立即打开");
-            targetHost.setActive(true);
-        }
+        //迁移前这台主机不能关闭
+        targetHost.setCantShutdown(true);
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
+
+//        //更新主机状态之后有可能host会被关闭，这时候把vm立刻打开
+//        if(!targetHost.isActive()){
+//            System.out.println("被迁移"+targetHost+"被关闭了，立即打开");
+//            targetHost.setActive(true);
+//        }
+
         //De-allocates the VM on the source Host (where it is migrating out)
         vmAllocationPolicy.deallocateHostForVm(vm);
         targetHost.removeMigratingInVm(vm);
         final HostSuitability suitability = vmAllocationPolicy.allocateHostForVm(vm, targetHost);
+
+        //迁移完之后设置为可以被关闭
+        targetHost.setCantShutdown(false);
         if(suitability.fully()) {
             ((VmSimple)vm).updateMigrationFinishListeners(targetHost);
             /*When the VM is destroyed from the source host, it's removed from the vmExecList.
@@ -917,8 +925,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
      * @return the time (in seconds) that is expected to migrate the VM
      */
     private double timeToMigrateVm(final Vm vm, final Host targetHost) {
-        System.out.println(vm+" 迁移虚拟机内存是："+vm.getCurrentRequestedRam());
-        System.out.println(vm+" 虚拟机容量是："+vm.getRam().getCapacity());
+//        System.out.println(vm+" 迁移虚拟机内存是："+vm.getCurrentRequestedRam());
+//        System.out.println(vm+" 虚拟机容量是："+vm.getRam().getCapacity());
 //        System.out.println("迁移带宽是："+ Conversion.bitesToBytes(targetHost.getBw().getCapacity()));
         return vm.getCurrentRequestedRam() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
 //        return vm.getRam().getCapacity() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());

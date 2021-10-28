@@ -65,6 +65,10 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
 
     double getResourceWastage();
 
+    public boolean isCantShutdown();
+
+    public void setCantShutdown(boolean cantShutdown);
+
     /**
      * Gets the Datacenter where the host is placed.
      *

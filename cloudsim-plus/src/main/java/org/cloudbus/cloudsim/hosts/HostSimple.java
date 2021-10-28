@@ -50,6 +50,16 @@ public class HostSimple implements Host, Serializable {
     private static long defaultBwCapacity = 1000;
     private static long defaultStorageCapacity = (long)Conversion.gigaToMega(500);
 
+    public boolean isCantShutdown() {
+        return CantShutdown;
+    }
+
+    public void setCantShutdown(boolean cantShutdown) {
+        CantShutdown = cantShutdown;
+    }
+
+    private boolean CantShutdown = false;
+
     /** @see #getStateHistory() */
     private final List<HostStateHistoryEntry> stateHistory;
 
@@ -371,7 +381,7 @@ public class HostSimple implements Host, Serializable {
     @SuppressWarnings("ForLoopReplaceableByForEach")
     @Override
     public double updateProcessing(final double currentTime) {
-        if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline)){
+        if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !isCantShutdown()){
             setActive(false);
         }
 
@@ -1001,14 +1011,10 @@ public class HostSimple implements Host, Serializable {
 
         vmsMigratingIn.add(vm);
 
-//        System.out.println("对照组1:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
-
         if(!allocateResourcesForVm(vm, true).fully()){
             vmsMigratingIn.remove(vm);
             return false;
         }
-
-//        System.out.println("对照组2:找到需要迁移的虚拟机   "+vm+" "+vm.getRam().getCapacity());
 
 
         ((VmSimple)vm).updateMigrationStartListeners(this);

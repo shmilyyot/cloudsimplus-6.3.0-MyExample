@@ -636,10 +636,10 @@ public class myImplementationMigrationDatacenter {
         if((int)time % Constant.HOST_Log_INTERVAL == 0){
 //            collectHostResourceUtilization();
 //            hostList.forEach(host->{
-//                if(vmList.isEmpty() && host.isIdleEnough(host.getIdleShutdownDeadline()) && !host.hasMigratingVms()){
+//                if(host.getVmList().isEmpty() && host.isIdleEnough(host.getIdleShutdownDeadline()) && !host.hasMigratingVms()){
 //                    host.setActive(false);
 //                }
-//                System.out.println(host+" "+host.getRam().getAvailableResource());
+////                System.out.println(host+" "+host.getRam().getAvailableResource());
 //            });
             long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
             activeHostNumber.add(number);
@@ -699,7 +699,9 @@ public class myImplementationMigrationDatacenter {
                 host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
             }
 
+//            if(host.getId() == 7){
 //                System.out.println(simulation.clockStr() + ": host" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
+//            }
 //                if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
             hostRamhistory.addLast(hostRamUtilization);
             hostCpuhistory.addLast(hostCpuUtilization);
