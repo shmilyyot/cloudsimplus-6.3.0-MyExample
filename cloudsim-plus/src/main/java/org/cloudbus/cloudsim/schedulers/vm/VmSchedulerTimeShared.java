@@ -269,6 +269,7 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
     @Override
     protected boolean isSuitableForVmInternal(final Vm vm, final MipsShare requestedMips) {
         final double totalRequestedMips = requestedMips.totalMips();
+        //请求的vm额外10%mips开销
         if(vm.isSearchForHost()){
             vm.setSearchForHost(false);
             return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips + totalRequestedMips * getVmMigrationCpuOverhead();

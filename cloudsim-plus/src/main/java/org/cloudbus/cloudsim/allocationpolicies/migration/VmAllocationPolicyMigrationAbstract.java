@@ -828,12 +828,20 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
         for (final Vm vm : savedAllocation.keySet()) {
             final Host host = savedAllocation.get(vm);
-            if (host.createTemporaryVm(vm).fully())
+            if (host.createTemporaryVm(vm).fully()){
                 vm.setCreated(true);
+            }
             //有可能放不回去，因为原本利用率太高
             else{
-
-                LOGGER.error("VmAllocationPolicy: Couldn't restore {} on {}", vm, host);
+                LOGGER.error("VmAllocationPolicy: Couldn't restore {} on {}, now try to force it to restore", vm, host);
+                vm.setForcePlace(true);
+                if(host.createTemporaryVm(vm).fully()){
+                    vm.setCreated(true);
+                    LOGGER.error("VmAllocationPolicy:force {} to restore on {} successsful!",vm,host);
+                }else{
+                    LOGGER.error("VmAllocationPolicy: force restore {} on {} failed!", vm, host);
+                }
+                vm.setForcePlace(false);
             };
         }
     }

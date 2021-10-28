@@ -25,6 +25,8 @@ import static java.util.Comparator.comparingDouble;
 ////大于一定时间停止迁移，在datacenter simple里面，应该可以关掉了
 //vmsimple里面把iscreate注释掉了，只有在刚开始放置的时候才会返回capacity，后面都返回实际的ram利用率
 //不应该按照系统间隔1秒来记录利用率变化，应该按照实际变化来记录，这样预测才有效
+//请求的vm额外10%mips开销在vmschedulertimeshare
+//现在是大于85392.0就停止迁移，在datacentersimple里面
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;

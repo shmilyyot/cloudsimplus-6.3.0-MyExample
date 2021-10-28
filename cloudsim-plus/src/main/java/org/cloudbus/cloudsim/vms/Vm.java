@@ -52,19 +52,22 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
      */
     Vm NULL = new VmNull();
 
-    public Vm setRam(final long ramCapacity,boolean forceChange);
+    Vm setRam(final long ramCapacity,boolean forceChange);
 
-    public double getRequestUtilization();
+    double getRequestUtilization();
 
-    public void setRequestUtilization(double requestUtilization);
+    void setRequestUtilization(double requestUtilization);
 
-    public double getTotalrequestUtilization();
+    double getTotalrequestUtilization();
 
-    public void setTotalrequestUtilization(double totalrequestUtilization);
+    void setTotalrequestUtilization(double totalrequestUtilization);
 
-    public boolean isSearchForHost();
+    boolean isSearchForHost();
 
-    public void setSearchForHost(boolean searchForHost);
+    void setSearchForHost(boolean searchForHost);
+
+    boolean isForcePlace();
+    void setForcePlace(boolean forcePlace);
 
     /**
      * Gets the Vm description, which is an optional text

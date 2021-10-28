@@ -695,7 +695,7 @@ public class myImplementationMigrationDatacenter {
             double hostRamUtilization = host.getRamPercentUtilization();
             double hostCpuUtilization = host.getCpuPercentUtilization();
 
-            if(hostRamUtilization >= 1.0 || hostCpuUtilization >= 1.0){
+            if(hostRamUtilization >= 0.99 || hostCpuUtilization >= 0.99){
                 host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
             }
 

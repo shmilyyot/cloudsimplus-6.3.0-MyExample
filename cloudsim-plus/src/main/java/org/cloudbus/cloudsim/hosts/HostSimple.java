@@ -452,8 +452,16 @@ public class HostSimple implements Host, Serializable {
      * (if the Host doesn't have enough resources to allocate the Vm)
      */
     private HostSuitability allocateResourcesForVm(final Vm vm, final boolean inMigration){
-
-        final HostSuitability suitability = isSuitableForVm(vm, inMigration, true);
+        HostSuitability suitability;
+        if(!vm.isForcePlace()){
+            suitability = isSuitableForVm(vm, inMigration, true);
+        }else{
+            suitability = new HostSuitability();
+            suitability.setForStorage(true);
+            suitability.setForRam(true);
+            suitability.setForBw(true);
+            suitability.setForPes(true);
+        }
         if(!suitability.fully()) {
             return suitability;
         }
@@ -464,10 +472,15 @@ public class HostSimple implements Host, Serializable {
     }
 
     private void allocateResourcesForVm(Vm vm) {
-        ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
+        if(!vm.isForcePlace()){
+            ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
+        }else{
+            long leftRam = ramProvisioner.getAvailableResource();
+            ramProvisioner.allocateResourceForVm(vm,leftRam);
+        }
+        vmScheduler.allocatePesForVm(vm, vm.getCurrentRequestedMips());
         bwProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedBw());
         disk.getStorage().allocateResource(vm.getStorage());
-        vmScheduler.allocatePesForVm(vm, vm.getCurrentRequestedMips());
     }
 
     private void logAllocationError(

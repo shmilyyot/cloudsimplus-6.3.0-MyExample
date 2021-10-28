@@ -143,6 +143,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     private boolean searchForHost = true;
 
+    public boolean isForcePlace() {
+        return forcePlace;
+    }
+
+    public void setForcePlace(boolean forcePlace) {
+        this.forcePlace = forcePlace;
+    }
+
+    private boolean forcePlace = false;
+
     /**
      * Creates a Vm with 1024 MEGA of RAM, 100 Megabits/s of Bandwidth and 1024 MEGA of Storage Size.
      * To change these values, use the respective setters. While the Vm {@link #isCreated()
