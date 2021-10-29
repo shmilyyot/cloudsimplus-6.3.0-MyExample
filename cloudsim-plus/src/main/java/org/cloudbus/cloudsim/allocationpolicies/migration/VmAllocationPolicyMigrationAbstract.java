@@ -543,8 +543,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     addVmToMigrationMap(migrationMap, vm, host);
                     appendVmMigrationMsgToStringBuilder(builder, vm, host);
                     System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
+                    System.out.println();
                 }else{
                     System.out.println(getDatacenter().getSimulation().clockStr() + ": 没有找到合适的host给 "+ vm + " 进行过载迁移");
+                    System.out.println();
                 }
 //                for(Host host:switchedOffHosts){
 //                    if(host.isSuitableForVm(vm)){
@@ -842,6 +844,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     LOGGER.error("VmAllocationPolicy: force restore {} on {} failed!", vm, host);
                 }
                 vm.setForcePlace(false);
+                System.out.println();
             };
         }
     }
