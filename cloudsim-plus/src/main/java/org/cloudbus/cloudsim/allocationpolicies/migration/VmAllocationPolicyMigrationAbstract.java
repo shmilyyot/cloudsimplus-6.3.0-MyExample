@@ -328,7 +328,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         tempVm.setBw(vm.getCurrentRequestedBw());
 
         if (!host.createTemporaryVm(tempVm).fully()) {
-//            System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
+            System.out.println(vm+" 选了 "+host+" 之后，实际放置放不进去");
             return false;
         }
 
