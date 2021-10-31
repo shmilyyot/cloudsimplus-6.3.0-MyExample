@@ -167,7 +167,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
+//        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -349,9 +349,9 @@ public class myImplementationMigrationDatacenter {
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
+            .setUtilizationModelCpu(utilizationCpu)
             .setUtilizationModelBw(new UtilizationModelFull())
-            .setUtilizationModelRam(new UtilizationModelDynamic(1));
+            .setUtilizationModelRam(utilizationRam);
         return cloudlet;
     }
 
@@ -593,7 +593,7 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-//        broker.setVmDestructionDelay(0.2);
+        broker.setVmDestructionDelay(0.2);
 
 
         vmList.addAll(createVms());

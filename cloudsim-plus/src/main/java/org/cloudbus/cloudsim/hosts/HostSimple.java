@@ -520,6 +520,7 @@ public class HostSimple implements Host, Serializable {
 
     @Override
     public boolean isSuitableForVm(final Vm vm) {
+        System.out.println(vm.getSimulation().clockStr()+" : before: "+vm+" 当前的ram利用： "+vm.getCurrentRequestedRam());
         return getSuitabilityFor(vm).fully();
     }
 

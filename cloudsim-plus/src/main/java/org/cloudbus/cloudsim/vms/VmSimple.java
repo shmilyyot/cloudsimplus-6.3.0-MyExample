@@ -314,7 +314,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
-        this(sourceVm.getTotalCpuMipsUtilization()/sourceVm.getNumberOfPes(), sourceVm.getNumberOfPes());
+        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
             .setRam(sourceVm.getCurrentRequestedRam())
             .setSize(sourceVm.getStorage().getCapacity());
