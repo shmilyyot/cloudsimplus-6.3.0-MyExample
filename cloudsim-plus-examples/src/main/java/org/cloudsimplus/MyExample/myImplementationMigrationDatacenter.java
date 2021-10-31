@@ -349,9 +349,9 @@ public class myImplementationMigrationDatacenter {
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(utilizationCpu)
-            .setUtilizationModelBw(UtilizationModel.NULL)
-            .setUtilizationModelRam(utilizationRam);
+            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
+            .setUtilizationModelBw(new UtilizationModelFull())
+            .setUtilizationModelRam(new UtilizationModelDynamic(1));
         return cloudlet;
     }
 
@@ -718,8 +718,9 @@ public class myImplementationMigrationDatacenter {
 
 
                 //更新vm总共请求的mips数目
-                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization()* Constant.SCHEDULING_INTERVAL);
-
+                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization() * Constant.SCHEDULING_INTERVAL);
+                vm.setMipsUtilizationBeforeMigration(vm.getTotalCpuMipsUtilization());
+//                System.out.println(vm+ "   "+vm.getCpuPercentUtilization());
                 vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                 vmRamHistory.addLast(vm.getRam().getPercentUtilization());
             });

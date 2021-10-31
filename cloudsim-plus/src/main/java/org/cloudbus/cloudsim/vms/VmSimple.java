@@ -133,6 +133,18 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     //总请求的mips
     private double totalrequestUtilization = 0.0;
 
+    @Override
+    public double getMipsUtilizationBeforeMigration() {
+        return mipsUtilizationBeforeMigration;
+    }
+
+    @Override
+    public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration) {
+        this.mipsUtilizationBeforeMigration = mipsUtilizationBeforeMigration;
+    }
+
+    private double mipsUtilizationBeforeMigration = 0.0;
+
     public boolean isSearchForHost() {
         return searchForHost;
     }

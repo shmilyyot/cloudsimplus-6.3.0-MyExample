@@ -213,7 +213,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 if (numberOfHosts == ignoredSourceHosts.size()) {
                     break;
                 }
-
                 //每次循环选择一个低负载的host出来
                 final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
                 if (underloadedHost == Host.NULL) {
@@ -599,10 +598,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
 
+
 //            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，徒增迁移次数
-            if (vm.getCloudletScheduler().isEmpty()) {
-                return new HashMap<>();
-            }
+//            if (vm.getCloudletScheduler().isEmpty()) {
+//                return new HashMap<>();
+//            }
 
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));

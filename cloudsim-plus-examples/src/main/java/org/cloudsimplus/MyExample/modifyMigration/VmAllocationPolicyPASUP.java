@@ -189,7 +189,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         tempVm.setBw(vm.getCurrentRequestedBw());
         //初始放置的时候，假装放置，vm请求的mips是0，所以利用率是0，但是ram是真的扣了整个vm的ram
         if (!host.createTemporaryVm(tempVm).fully()) {
-            System.out.println(tempVm+"放不进去，因为放进去会过载");
+            System.out.println(vm+"放不进去，因为放进去会过载");
             return false;
         }
 

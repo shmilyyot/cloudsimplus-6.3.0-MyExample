@@ -494,10 +494,17 @@ public class HostSimple implements Host, Serializable {
 
         final String migration = inMigration ? "VM Migration" : "VM Creation";
         final String msg = pmResource.getAvailableResource() > 0 ? "just "+pmResource.getAvailableResource()+" " + resourceUnit : "no amount";
-        LOGGER.error(
-            "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
-            simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
-            pmResource.getClass().getSimpleName(), vm.getCurrentRequestedRam(), msg);
+        if(vm.getId() == -1){
+            LOGGER.error(
+                "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
+                simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
+                pmResource.getClass().getSimpleName(), vm.getRam().getCapacity(), msg);
+        }else{
+            LOGGER.error(
+                "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
+                simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
+                pmResource.getClass().getSimpleName(), vm.getCurrentRequestedRam(), msg);
+        }
     }
 
     @Override

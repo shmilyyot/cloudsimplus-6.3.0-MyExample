@@ -905,8 +905,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             "It's expected to finish in %.2f seconds, considering the %.0f%% of bandwidth allowed for migration and the VM RAM size.",
             delay, getBandwidthPercentForMigration()*100);
 
-        //统计迁移产生的额外开销
-        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getTotalCpuMipsUtilization());
+//        //统计迁移产生的额外开销
+        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getMipsUtilizationBeforeMigration());
 
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
 

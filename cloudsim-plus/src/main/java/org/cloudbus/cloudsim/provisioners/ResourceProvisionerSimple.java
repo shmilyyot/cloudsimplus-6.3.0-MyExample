@@ -124,9 +124,9 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
 
     @Override
     public boolean isSuitableForVm(final Vm vm, final Resource resource) {
-        if(getResource().isSubClassOf(Ram.class)){
+        if(getResource().isSubClassOf(Ram.class) && vm.getId() != -1){
             return isSuitableForVm(vm, vm.getCurrentRequestedRam());
-        }else if(getResource().isSubClassOf(Bandwidth.class)){
+        }else if(getResource().isSubClassOf(Bandwidth.class) && vm.getId() != -1){
             return isSuitableForVm(vm, vm.getCurrentRequestedBw());
         }
         return isSuitableForVm(vm, resource.getCapacity());

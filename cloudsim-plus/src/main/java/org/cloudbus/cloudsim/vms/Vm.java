@@ -58,6 +58,10 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     void setRequestUtilization(double requestUtilization);
 
+    public double getMipsUtilizationBeforeMigration();
+
+    public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration);
+
     double getTotalrequestUtilization();
 
     void setTotalrequestUtilization(double totalrequestUtilization);

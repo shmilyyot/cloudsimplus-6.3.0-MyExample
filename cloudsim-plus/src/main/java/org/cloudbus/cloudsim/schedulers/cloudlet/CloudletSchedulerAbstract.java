@@ -187,7 +187,6 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
         if(totalPesOfAllExecCloudlets > currentMipsShare.pes()) {
             return getTotalMipsShare() / totalPesOfAllExecCloudlets;
         }
-
         return getPeCapacity();
     }
 
@@ -1139,7 +1138,6 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
         final double cloudletCpuUsageForOnePe =
             getAbsoluteCloudletResourceUtilization(
                 cloudlet.getUtilizationModelCpu(), time, getAvailableMipsByPe());
-
         return cloudletCpuUsageForOnePe * cloudlet.getNumberOfPes();
     }
 
@@ -1214,7 +1212,6 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
         if (model.getUnit() == Unit.ABSOLUTE) {
             return Math.min(model.getUtilization(time), maxResourceAllowedToUse);
         }
-
         return model.getUtilization() * maxResourceAllowedToUse;
     }
 
