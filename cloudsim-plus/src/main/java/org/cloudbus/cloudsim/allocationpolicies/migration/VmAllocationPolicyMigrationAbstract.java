@@ -323,7 +323,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final Vm tempVm = new VmSimple(vm,true);
-        System.out.println(host.getSimulation().clockStr()+" : after: "+vm+" 当前的ram利用： "+vm.getCurrentRequestedRam());
+//        System.out.println(host.getSimulation().clockStr()+" : after: "+vm+" 当前的ram利用： "+vm.getCurrentRequestedRam());
 //        tempVm.setRam(vm.getCurrentRequestedRam());
 //        tempVm.setBw(vm.getCurrentRequestedBw());
 
@@ -601,9 +601,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
 
 //            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，徒增迁移次数
-            if (vm.getCloudletScheduler().isEmpty()) {
-                return new HashMap<>();
-            }
+//            if (vm.getCloudletScheduler().isEmpty()) {
+//                return new HashMap<>();
+//            }
 
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));

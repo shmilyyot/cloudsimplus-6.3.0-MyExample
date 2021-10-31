@@ -167,7 +167,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");

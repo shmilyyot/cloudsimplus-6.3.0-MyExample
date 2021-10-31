@@ -119,6 +119,9 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
     public boolean isSuitableForVm(final Vm vm, final long newVmTotalAllocatedResource) {
         final long currentAllocatedResource = getAllocatedResourceForVm(vm);
         final long allocationDifference = newVmTotalAllocatedResource - currentAllocatedResource;
+//        if(getResource().isSubClassOf(Ram.class)){
+//            System.out.println(vm+" 当前可用ram： "+getResource().getAvailableResource()+ "  分配差异："+allocationDifference + " 当前这个host已分配： "+currentAllocatedResource);
+//        }
         return getResource().getAvailableResource() >=  allocationDifference;
     }
 
