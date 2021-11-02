@@ -80,6 +80,7 @@ public class myImplementationMigrationDatacenter {
     private static Set<Double> existTimes = new HashSet<>();
     List<Cloudlet> totalCloudlets;
     List<Long> activeHostNumber = new ArrayList<>();
+    private double preClockTime = -0.0;
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -593,7 +594,7 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-        broker.setVmDestructionDelay(0.2);
+//        broker.setVmDestructionDelay(0.2);
 
 
         vmList.addAll(createVms());
@@ -612,46 +613,12 @@ public class myImplementationMigrationDatacenter {
      * @param info information about the event happened.
      */
     private void clockTickListener(final EventInfo info) {
-//        double systemTime = simulation.clock();
-//        //收集每个时刻每个虚拟机的RAM利用率
-//        collectVmResourceUtilization(allVmsRamUtilizationHistory, systemTime, Ram.class);
-//        //收集每个时刻每个host的RAM利用率
-//        collectHostRamResourceUtilization(systemTime);
-
-//        collectHostRamResourceUtilization();
-//        collectHostCpuResourceUtilization();
         double time = simulation.clock();
-//        hostList.forEach(host -> {
-//            double hostRamUtilization = host.getRamPercentUtilization();
-//            double hostCpuUtilization = host.getCpuPercentUtilization();
-//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
-//        });
-        if(time - (int)time != 0.0) return;
-//        vmList.forEach(vm->{
-//            System.out.println(simulation.clockStr()+" "+vm+" 容量："+vm.getRam().getCapacity());
-//            System.out.println(simulation.clockStr()+" "+vm+" 请求的："+ vm.getCurrentRequestedRam());
-//        });
-//        if(existTimes.contains(time)) return;
-//        else existTimes.add(time);
-        if((int)time % Constant.HOST_Log_INTERVAL == 0){
-//            collectHostResourceUtilization();
-//            hostList.forEach(host->{
-//                if(host.getVmList().isEmpty() && host.isIdleEnough(host.getIdleShutdownDeadline()) && !host.hasMigratingVms()){
-//                    host.setActive(false);
-//                }
-////                System.out.println(host+" "+host.getRam().getAvailableResource());
-//            });
-            long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
-            activeHostNumber.add(number);
-//            dataCenterPrinter.activeVmsCount(hostList,simulation.clockStr());
-//            System.out.println();
-//            System.out.println("前");
-//            for(double num:allHostsRamUtilizationHistoryQueue.get(hostList.get(1))){
-//                System.out.println(num);
-//            }
-//            System.out.println("后");
-//            System.out.println();
-        }
+        int currentTime = (int)time;
+        if(time - currentTime != 0.0 || currentTime == preClockTime) return;
+        long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
+        activeHostNumber.add(number);
+        preClockTime = currentTime;
     }
 
     /**
@@ -695,17 +662,12 @@ public class myImplementationMigrationDatacenter {
             double hostRamUtilization = host.getRamPercentUtilization();
             double hostCpuUtilization = host.getCpuPercentUtilization();
 
-            if(hostRamUtilization >= 0.99 || hostCpuUtilization >= 0.99){
+            if(hostRamUtilization > 0.99 || hostCpuUtilization > 0.99){
                 host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
             }
 
-//            if(host.getId() == 7){
-//                System.out.println(simulation.clockStr() + ": host" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
-//            }
-//                if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
             hostRamhistory.addLast(hostRamUtilization);
             hostCpuhistory.addLast(hostCpuUtilization);
-//                System.out.println("当前时间是："+simulation.clockStr()+"  host id: " +host.getId());
             host.getVmList().forEach(vm -> {
                 LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
                 LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
@@ -716,11 +678,11 @@ public class myImplementationMigrationDatacenter {
                 }
 //                }
 
-
                 //更新vm总共请求的mips数目
-                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization() * Constant.SCHEDULING_INTERVAL);
-                vm.setMipsUtilizationBeforeMigration(vm.getTotalCpuMipsUtilization());
-//                System.out.println(vm+ "   "+vm.getCpuPercentUtilization());
+                double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
+                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
+                vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
+
                 vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                 vmRamHistory.addLast(vm.getRam().getPercentUtilization());
             });
