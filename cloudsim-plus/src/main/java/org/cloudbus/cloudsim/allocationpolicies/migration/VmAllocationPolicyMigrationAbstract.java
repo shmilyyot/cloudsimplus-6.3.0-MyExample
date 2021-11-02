@@ -336,7 +336,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             return false;
         }
 
-        final double usagePercent = getHostCpuPercentRequested(host);
+        final double usagePercent = host.getCpuPercentUtilization();
         final boolean notOverloadedAfterAllocation;
         if(isHostRamThreshold()){
             final double usageRamPercent = getHostRamPercentRequested(host);

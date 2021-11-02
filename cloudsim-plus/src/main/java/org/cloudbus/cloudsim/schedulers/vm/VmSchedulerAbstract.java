@@ -72,7 +72,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
 
     @Override
     public final boolean isSuitableForVm(final Vm vm) {
-        return isSuitableForVm(vm, vm.getCurrentRequestedMips());
+        return isSuitableForVm(vm, vm.getCurrentUtilizationMips());
     }
 
     @Override
@@ -105,7 +105,8 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
             host.removeVmMigratingOut(vm);
         }
 
-        requestedMipsMap.put(vm, new MipsShare(requestedMips));
+        requestedMipsMap.put(vm,new MipsShare(vm.getCurrentRequestedMips()));
+
         if(allocatePesForVmInternal(vm, requestedMips)) {
             updateStatusOfHostPesUsedByVm(vm, getHost().getFreePeList(), Pe.Status.BUSY);
             return true;
