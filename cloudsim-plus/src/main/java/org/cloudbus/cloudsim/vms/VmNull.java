@@ -188,6 +188,8 @@ class VmNull implements Vm {
     @Override public Vm setRam(long ramCapacity, boolean forceChange) {return null;}
     @Override public double getRequestUtilization() {return 0;}
     @Override public void setRequestUtilization(double requestUtilization) {}
+    @Override public double getMipsUtilizationBeforeMigration() {return 0;}
+    @Override public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration) {}
     @Override public double getTotalrequestUtilization() {return 0;}
     @Override public void setTotalrequestUtilization(double totalrequestUtilization) {}
     @Override public boolean isSearchForHost() {return false;}

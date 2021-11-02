@@ -325,7 +325,6 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
     protected void deallocatePesFromVmInternal(final Vm vm, final int pesToRemove) {
         removePesFromMap(vm, getRequestedMipsMap(), pesToRemove);
         removePesFromMap(vm, getAllocatedMipsMap(), pesToRemove);
-
         //After removing some PEs from a VM, updates the MIPS allocation for all VMs on this scheduler
         for (final Map.Entry<Vm, MipsShare> entry : getRequestedMipsMap().entrySet()) {
             allocateMipsShareForVmInternal(entry.getKey(), entry.getValue());

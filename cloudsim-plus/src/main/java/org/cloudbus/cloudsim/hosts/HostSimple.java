@@ -494,10 +494,17 @@ public class HostSimple implements Host, Serializable {
 
         final String migration = inMigration ? "VM Migration" : "VM Creation";
         final String msg = pmResource.getAvailableResource() > 0 ? "just "+pmResource.getAvailableResource()+" " + resourceUnit : "no amount";
-        LOGGER.error(
-            "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
-            simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
-            pmResource.getClass().getSimpleName(), vm.getCurrentRequestedRam(), msg);
+        if(vm.getId() == -1){
+            LOGGER.error(
+                "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
+                simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
+                pmResource.getClass().getSimpleName(), vm.getRam().getCapacity(), msg);
+        }else{
+            LOGGER.error(
+                "{}: {}: [{}] Allocation of {} to {} failed due to lack of {}. Required {} but there is {} available.",
+                simulation.clockStr(), getClass().getSimpleName(), migration, vm, this,
+                pmResource.getClass().getSimpleName(), vm.getCurrentRequestedRam(), msg);
+        }
     }
 
     @Override
@@ -513,6 +520,7 @@ public class HostSimple implements Host, Serializable {
 
     @Override
     public boolean isSuitableForVm(final Vm vm) {
+//        System.out.println(vm.getSimulation().clockStr()+" : before: "+vm+" 当前的ram利用： "+vm.getCurrentRequestedRam());
         return getSuitabilityFor(vm).fully();
     }
 
@@ -543,6 +551,9 @@ public class HostSimple implements Host, Serializable {
         }
 
         suitability.setForRam(ramProvisioner.isSuitableForVm(vm, vm.getRam()));
+//        if(getSimulation().clock() >= 10800.0 && getSimulation().clock() <= 10801.0 && (vm.getId() == 1270 || vm.getId() == 1255)){
+//            System.out.println(suitability.forRam() +" "+this+" 可用ram："+ramProvisioner.getAvailableResource()+" gerram.getaviliable:"+this.getRam().getAvailableResource()+ "  "+ vm + " 请求的ram："+vm.getCurrentRequestedRam());
+//        }
         if (!suitability.forRam()) {
 //            System.out.println("当前不可以选的"+this+"还有多少剩余内存"+this.getRam().getAvailableResource());
             logAllocationError(showFailureLog, vm, inMigration, "MB", this.getRam(), vm.getRam());
@@ -560,9 +571,7 @@ public class HostSimple implements Host, Serializable {
 //        if(this.getRam().getAvailableResource() < vm.getRam().getCapacity()) suitability.setForRam(false);
 //        System.out.println(vm+" "+vm.getRam().getCapacity() + " "+this+" "+this.getRam().getAvailableResource() +" "+suitability.forRam());
 
-        suitability.setForPes(vmScheduler.isSuitableForVm(vm));
-
-        return suitability;
+        return suitability.setForPes(vmScheduler.isSuitableForVm(vm));
     }
 
     @Override

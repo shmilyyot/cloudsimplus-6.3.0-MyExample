@@ -119,14 +119,17 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
     public boolean isSuitableForVm(final Vm vm, final long newVmTotalAllocatedResource) {
         final long currentAllocatedResource = getAllocatedResourceForVm(vm);
         final long allocationDifference = newVmTotalAllocatedResource - currentAllocatedResource;
+//        if(getResource().isSubClassOf(Ram.class) && vm.getSimulation().clock() >= 10800.0 &&  vm.getSimulation().clock() <= 10801.0 && (vm.getId() == 1270 || vm.getId() == 1255)){
+//            System.out.println(vm + " 请求的ram："+" 其所在host是"+ vm.getHost()+" "+ newVmTotalAllocatedResource+" difference: "+allocationDifference+"  available: "+getResource().getAvailableResource());
+//        }
         return getResource().getAvailableResource() >=  allocationDifference;
     }
 
     @Override
     public boolean isSuitableForVm(final Vm vm, final Resource resource) {
-        if(getResource().isSubClassOf(Ram.class)){
+        if(getResource().isSubClassOf(Ram.class) && vm.getId() != -1){
             return isSuitableForVm(vm, vm.getCurrentRequestedRam());
-        }else if(getResource().isSubClassOf(Bandwidth.class)){
+        }else if(getResource().isSubClassOf(Bandwidth.class) && vm.getId() != -1){
             return isSuitableForVm(vm, vm.getCurrentRequestedBw());
         }
         return isSuitableForVm(vm, resource.getCapacity());

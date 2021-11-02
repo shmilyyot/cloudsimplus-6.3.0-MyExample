@@ -155,7 +155,6 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         if(pesToRemove <= 0 || vm.getNumberOfPes() == 0){
             return;
         }
-
         deallocatePesFromVmInternal(vm, pesToRemove);
         updateHostUsedPesToFree();
     }

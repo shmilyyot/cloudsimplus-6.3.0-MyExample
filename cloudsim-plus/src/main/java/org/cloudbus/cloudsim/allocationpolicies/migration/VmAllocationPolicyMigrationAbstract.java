@@ -11,6 +11,7 @@ import org.apache.commons.math3.analysis.function.Constant;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicyAbstract;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.hosts.HostSuitability;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
@@ -213,7 +214,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 if (numberOfHosts == ignoredSourceHosts.size()) {
                     break;
                 }
-
                 //每次循环选择一个低负载的host出来
                 final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
                 if (underloadedHost == Host.NULL) {
@@ -323,12 +323,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      *         false otherwise
      */
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-        final Vm tempVm = new VmSimple(vm);
-        tempVm.setRam(vm.getCurrentRequestedRam());
-        tempVm.setBw(vm.getCurrentRequestedBw());
-
-        if (!host.createTemporaryVm(tempVm).fully()) {
-            System.out.println(vm+" 选了 "+host+" 之后，实际放置放不进去");
+        final Vm tempVm = new VmSimple(vm,true);
+//        System.out.println(host.getSimulation().clockStr()+" : after: "+vm+" 当前的ram利用： "+vm.getCurrentRequestedRam());
+//        tempVm.setRam(vm.getCurrentRequestedRam());
+//        tempVm.setBw(vm.getCurrentRequestedBw());
+        HostSuitability suitability = host.createTemporaryVm(tempVm);
+        if (!suitability.fully()) {
+//            if(!suitability.forRam() && host.getSimulation().clock() <= 10801.0 && host.getSimulation().clock() >= 10800.0){
+//                System.out.println(host+" "+vm+" "+" host可用ram是"+host.getRam().getAvailableResource()+"  vm需要的ram是："+vm.getCurrentRequestedRam()+ "  tempVm需要的是"+tempVm.getRam().getCapacity()+ " currentAllocatedResource: "+host.getRamProvisioner().getAllocatedResourceForVm(vm));
+//            }
+//            System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
             return false;
         }
 
@@ -599,16 +603,19 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
 
+
 //            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，徒增迁移次数
-            if (vm.getCloudletScheduler().isEmpty()) {
-                return new HashMap<>();
-            }
+//            if (vm.getCloudletScheduler().isEmpty()) {
+//                return new HashMap<>();
+//            }
 
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));
             //只要有一个vm找不到host，直接返回空map，之前找到host的也不算了
             if (!optional.isPresent()) {
-
+                for(Map.Entry<Vm,Host> entry:migrationMap.entrySet()){
+                    entry.getValue().destroyTemporaryVm(entry.getKey());
+                }
                 //不打印
 //                LOGGER.warn(
 //                    "{}: VmAllocationPolicy: A new Host, which isn't also underloaded or won't be overloaded, couldn't be found to migrate {}. Migration of VMs from the underloaded {} cancelled.",

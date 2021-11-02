@@ -350,7 +350,7 @@ public class myImplementationMigrationDatacenter {
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
             .setUtilizationModelCpu(utilizationCpu)
-            .setUtilizationModelBw(UtilizationModel.NULL)
+            .setUtilizationModelBw(new UtilizationModelFull())
             .setUtilizationModelRam(utilizationRam);
         return cloudlet;
     }
@@ -593,7 +593,7 @@ public class myImplementationMigrationDatacenter {
 
     public void createAndSubmitVms(DatacenterBroker broker) {
         //虚拟机闲置0.2s之后销毁
-//        broker.setVmDestructionDelay(0.2);
+        broker.setVmDestructionDelay(0.2);
 
 
         vmList.addAll(createVms());
@@ -718,8 +718,9 @@ public class myImplementationMigrationDatacenter {
 
 
                 //更新vm总共请求的mips数目
-                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization()* Constant.SCHEDULING_INTERVAL);
-
+                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization() * Constant.SCHEDULING_INTERVAL);
+                vm.setMipsUtilizationBeforeMigration(vm.getTotalCpuMipsUtilization());
+//                System.out.println(vm+ "   "+vm.getCpuPercentUtilization());
                 vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                 vmRamHistory.addLast(vm.getRam().getPercentUtilization());
             });

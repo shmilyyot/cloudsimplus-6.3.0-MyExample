@@ -133,6 +133,18 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     //总请求的mips
     private double totalrequestUtilization = 0.0;
 
+    @Override
+    public double getMipsUtilizationBeforeMigration() {
+        return mipsUtilizationBeforeMigration;
+    }
+
+    @Override
+    public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration) {
+        this.mipsUtilizationBeforeMigration = mipsUtilizationBeforeMigration;
+    }
+
+    private double mipsUtilizationBeforeMigration = 0.0;
+
     public boolean isSearchForHost() {
         return searchForHost;
     }
@@ -302,7 +314,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
-        this(sourceVm.getTotalCpuMipsUtilization()/sourceVm.getNumberOfPes(), sourceVm.getNumberOfPes());
+        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
             .setRam(sourceVm.getCurrentRequestedRam())
             .setSize(sourceVm.getStorage().getCapacity());
