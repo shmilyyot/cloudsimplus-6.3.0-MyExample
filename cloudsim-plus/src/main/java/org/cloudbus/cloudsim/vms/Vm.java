@@ -73,6 +73,8 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
     boolean isForcePlace();
     void setForcePlace(boolean forcePlace);
 
+    MipsShare getCurrentUtilizationMips();
+
     /**
      * Gets the Vm description, which is an optional text
      * which one can use to provide details about this of this VM.

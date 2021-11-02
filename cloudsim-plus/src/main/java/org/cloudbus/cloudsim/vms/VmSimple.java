@@ -466,6 +466,15 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         return new MipsShare(getNumberOfPes(), getMips());
     }
 
+
+    @Override
+    public MipsShare getCurrentUtilizationMips(){
+        if (getSimulation().clock() < 0.2) {
+            return new MipsShare(getNumberOfPes(), getMips());
+        }
+        return new MipsShare(getNumberOfPes(),getCpuPercentUtilization() * getMips());
+    }
+
     @Override
     public long getCurrentRequestedBw() {
         if (!isCreated()) {

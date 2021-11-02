@@ -196,6 +196,7 @@ class VmNull implements Vm {
     @Override public void setSearchForHost(boolean searchForHost) {}
     @Override public boolean isForcePlace() {return false;}
     @Override public void setForcePlace(boolean forcePlace) {}
+    @Override public MipsShare getCurrentUtilizationMips() {return null;}
     @Override public String getDescription() { return ""; }
     @Override public Vm setDescription(String description) { return this; }
     @Override public VmGroup getGroup() { return null; }
