@@ -138,13 +138,20 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      * @param mipsShare the {@link #getAllocatedMipsMap()} for that VM
      */
     private void allocatePesListForVm(final Vm vm, final MipsShare mipsShare) {
+        final MipsShare actualAllocateMipsShare = vm.getCurrentUtilizationMips();
         final Iterator<Pe> hostPesIterator = getWorkingPeList().iterator();
-        for (int i = 0; i < mipsShare.pes(); i++) {
-            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, mipsShare.mips(), hostPesIterator);
-            if(mipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
-                logMipsUnavailable(vm, mipsShare.mips(), allocatedPeMips);
+        for (int i = 0; i < actualAllocateMipsShare.pes(); i++) {
+            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, actualAllocateMipsShare.mips(), hostPesIterator);
+            if(actualAllocateMipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
+                logMipsUnavailable(vm, actualAllocateMipsShare.mips(), allocatedPeMips);
             }
         }
+//        for (int i = 0; i < mipsShare.pes(); i++) {
+//            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, mipsShare.mips(), hostPesIterator);
+//            if(mipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
+//                logMipsUnavailable(vm, mipsShare.mips(), allocatedPeMips);
+//            }
+//        }
     }
 
     /**
@@ -267,6 +274,7 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      * The non-emptiness of the list is ensured by the {@link VmScheduler#isSuitableForVm(Vm, MipsShare)} method.
      */
     @Override
+    //（更改） ，availablemips应该改成总容量减去实际使用的用量
     protected boolean isSuitableForVmInternal(final Vm vm, final MipsShare requestedMips) {
         final double totalRequestedMips = requestedMips.totalMips();
         //请求的vm额外10%mips开销
@@ -299,7 +307,7 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      * @return the allocated MIPS share to the VM
      */
     protected MipsShare getMipsShareToAllocate(final Vm vm, final MipsShare requestedMips) {
-        return getMipsShareToAllocate(requestedMips, percentOfMipsToRequest(vm));
+        return getMipsShareToAllocate(vm.getCurrentRequestedMips(), percentOfMipsToRequest(vm));
     }
 
     /**

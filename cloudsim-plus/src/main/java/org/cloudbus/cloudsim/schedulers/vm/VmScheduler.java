@@ -168,6 +168,10 @@ public interface VmScheduler {
      */
     double getTotalAllocatedMipsForVm(Vm vm);
 
+    MipsShare getActualAllocatedMips(final Vm vm);
+
+    double getActualTotalAllocatedMipsForVm(final Vm vm);
+
     /**
      * Gets the max percentage of CPU a VM migrating out of this Host can use.
      * Since there may be an overhead associated to the migration process

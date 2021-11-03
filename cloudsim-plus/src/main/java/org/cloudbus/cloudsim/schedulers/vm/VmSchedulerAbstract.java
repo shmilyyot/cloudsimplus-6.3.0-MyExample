@@ -106,7 +106,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         }
 
         //request的mips不变
-        requestedMipsMap.put(vm,new MipsShare(requestedMips));
+        requestedMipsMap.put(vm,new MipsShare(vm.getCurrentRequestedMips()));
 
         if(allocatePesForVmInternal(vm, requestedMips)) {
             updateStatusOfHostPesUsedByVm(vm, getHost().getFreePeList(), Pe.Status.BUSY);
@@ -221,6 +221,20 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
          */
         return host.getVmsMigratingOut().contains(vm) ? getMipsShareRequestedReduced(vm, mipsShare) : mipsShare;
     }
+
+    //获取真实的内部分配的mips
+    @Override
+    public MipsShare getActualAllocatedMips(final Vm vm){
+        MipsShare mipsShare = getAllocatedMips(vm);
+        return new MipsShare(mipsShare.pes(),mipsShare.mips() * vm.getCpuPercentUtilization());
+    }
+
+    //获取真实总mips正在使用的
+    @Override
+    public double getActualTotalAllocatedMipsForVm(final Vm vm) {
+        return getActualAllocatedMips(vm).totalMips();
+    }
+
 
     /**
      * Gets an adjusted List of MIPS requested by a VM, reducing every MIPS which is higher
