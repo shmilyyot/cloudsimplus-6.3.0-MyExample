@@ -182,7 +182,7 @@ public class myImplementationMigrationDatacenter {
         //创建数据中心能耗跟踪模型
         //记录每个数据中心的能耗
         PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
-        powerMeter.setMeasurementInterval(Constant.SCHEDULING_INTERVAL);
+        powerMeter.setMeasurementInterval(Constant.COLLECTTIME);
 
         //系统在第一天结束停止运行
 //        simulation.terminateAt(Constant.STOP_TIME);
@@ -505,7 +505,7 @@ public class myImplementationMigrationDatacenter {
             .setVmScheduler(new VmSchedulerTimeShared())
             .setPowerModel(powerModel);
         host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
-        host.addOnUpdateProcessingListener(this::updateHostResource);
+//        host.addOnUpdateProcessingListener(this::updateHostResource);
 //        host.setLazySuitabilityEvaluation(true);
         //host创建之后的活跃状态
 //        final boolean activateHost = true;
@@ -517,6 +517,8 @@ public class myImplementationMigrationDatacenter {
 
         //启用host记录历史状态
 //        host.enableStateHistory();
+
+        //记录cpu历史利用率的一些数据
 //        host.enableUtilizationStats();
         return host;
     }
@@ -618,6 +620,17 @@ public class myImplementationMigrationDatacenter {
         if(time - currentTime != 0.0 || currentTime == preClockTime) return;
         long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
         activeHostNumber.add(number);
+        //不应该一直记录运行时间的请求mips，因为利用率本来就是大概300秒变一次，应该一致
+        if(currentTime % Constant.COLLECTTIME == 0){
+            hostList.forEach(host->{
+                host.getVmList().forEach(vm->{
+                    //更新vm总共请求的mips数目
+                    double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
+                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
+                    vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
+                });
+            });
+        }
         preClockTime = currentTime;
     }
 
@@ -677,11 +690,6 @@ public class myImplementationMigrationDatacenter {
                     vmRamHistory.removeFirst();
                 }
 //                }
-
-                //更新vm总共请求的mips数目
-                double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
-                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
-                vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
 
                 vmCpuHistory.addLast(vm.getCpuPercentUtilization());
                 vmRamHistory.addLast(vm.getRam().getPercentUtilization());

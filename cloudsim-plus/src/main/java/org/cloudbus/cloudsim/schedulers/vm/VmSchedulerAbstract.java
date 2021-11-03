@@ -105,7 +105,8 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
             host.removeVmMigratingOut(vm);
         }
 
-        requestedMipsMap.put(vm,new MipsShare(vm.getCurrentRequestedMips()));
+        //request的mips不变
+        requestedMipsMap.put(vm,new MipsShare(requestedMips));
 
         if(allocatePesForVmInternal(vm, requestedMips)) {
             updateStatusOfHostPesUsedByVm(vm, getHost().getFreePeList(), Pe.Status.BUSY);

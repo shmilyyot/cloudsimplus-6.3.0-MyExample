@@ -397,7 +397,7 @@ public class HostSimple implements Host, Serializable {
 
         notifyOnUpdateProcessingListeners(currentTime);
 
-//        cpuUtilizationStats.add(currentTime);
+        cpuUtilizationStats.add(currentTime);
 
         addStateHistory(currentTime);
         if (!vmList.isEmpty()) {
@@ -478,7 +478,7 @@ public class HostSimple implements Host, Serializable {
             long leftRam = ramProvisioner.getAvailableResource();
             ramProvisioner.allocateResourceForVm(vm,leftRam);
         }
-        vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+        vmScheduler.allocatePesForVm(vm, vm.getCurrentRequestedMips());
         bwProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedBw());
         disk.getStorage().allocateResource(vm.getStorage());
     }

@@ -10,6 +10,7 @@ public class Constant {
     public static final boolean USING_GOOGLE_HOST = false;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
     public static final int SCHEDULING_INTERVAL = 1;   //调度时间间隔，决定系统多久更新一次cloudlet的相关状态，如vm和host的能耗，vm运行的指令数等等，不影响cloudlet的运行，越小计算越精确
+    public static final int COLLECTTIME = 300;  //记录vm请求mips的间隔（利用率300秒变一次）和记录能耗的间隔
 
     /**
      * 数据中心日志设置

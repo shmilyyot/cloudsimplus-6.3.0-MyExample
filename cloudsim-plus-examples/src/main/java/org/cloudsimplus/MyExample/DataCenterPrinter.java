@@ -231,6 +231,7 @@ public class DataCenterPrinter {
 
         }
         for(Vm vm:vmList){
+            System.out.println(vm+ " migration degration:"+vm.getRequestUtilization()+"  totalrequestmips: "+vm.getTotalrequestUtilization());
             PDM += vm.getRequestUtilization()/vm.getTotalrequestUtilization();
         }
         SLATAH /= hostList.size();
