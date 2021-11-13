@@ -606,7 +606,7 @@ public class myImplementationMigrationDatacenter {
         Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES);
         vm
             .setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type])
-            .setSize(Constant.VM_SIZE_MB[type]);
+            .setSize(0);
 //        vm.enableUtilizationStats();
         return vm;
     }
