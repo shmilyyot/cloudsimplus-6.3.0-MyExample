@@ -196,7 +196,11 @@ class VmNull implements Vm {
     @Override public void setSearchForHost(boolean searchForHost) {}
     @Override public boolean isForcePlace() {return false;}
     @Override public void setForcePlace(boolean forcePlace) {}
+    @Override public boolean isCpuForcePlace() {return false;}
+    @Override public void setCpuForcePlace(boolean cpuForcePlace) {}
     @Override public MipsShare getCurrentUtilizationMips() {return null;}
+    @Override public double getCpuUtilizationBeforeMigration() {return 0;}
+    @Override public void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration) {}
     @Override public String getDescription() { return ""; }
     @Override public Vm setDescription(String description) { return this; }
     @Override public VmGroup getGroup() { return null; }

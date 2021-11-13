@@ -27,6 +27,8 @@ import static java.util.Comparator.comparingDouble;
 //不应该按照系统间隔1秒来记录利用率变化，应该按照实际变化来记录，这样预测才有效
 //请求的vm额外10%mips开销在vmschedulertimeshare
 //现在是大于85392.0就停止迁移，在datacentersimple里面
+//vm.getCpuPercentUtilization()基本都是没用的，都要改过来。相关使用利用率的方法都要改
+//mips findhost的时候调大0.1倍好像没道理
 public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
     private Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
@@ -184,9 +186,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     @Override
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
 
-        Vm tempVm = new VmSimple(vm);
-        tempVm.setRam(vm.getCurrentRequestedRam());
-        tempVm.setBw(vm.getCurrentRequestedBw());
+        final Vm tempVm = new VmSimple(vm,true);
+
         //初始放置的时候，假装放置，vm请求的mips是0，所以利用率是0，但是ram是真的扣了整个vm的ram
         if (!host.createTemporaryVm(tempVm).fully()) {
             System.out.println(vm+"放不进去，因为放进去会过载");

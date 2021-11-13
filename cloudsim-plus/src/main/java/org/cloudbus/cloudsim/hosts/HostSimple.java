@@ -391,7 +391,15 @@ public class HostSimple implements Host, Serializable {
          * e.g., in cases when Vm is destroyed during simulation execution.*/
         for (int i = 0; i < vmList.size(); i++) {
             final Vm vm = vmList.get(i);
-            final double delay = vm.updateProcessing(currentTime, vmScheduler.getAllocatedMips(vm));
+
+            //（更改）
+            MipsShare mipsShare = vm.getCurrentRequestedMips();
+            double scalingFactor = this.getVmScheduler().percentOfMipsToRequest(vm);
+            if(scalingFactor != 1){
+                mipsShare = new MipsShare(mipsShare.pes(),mipsShare.mips()*scalingFactor);
+            }
+
+            final double delay = vm.updateProcessing(currentTime, mipsShare);
             nextSimulationDelay = delay > 0 ? Math.min(delay, nextSimulationDelay) : nextSimulationDelay;
         }
 
@@ -467,7 +475,6 @@ public class HostSimple implements Host, Serializable {
         }
         vm.setInMigration(inMigration);
         allocateResourcesForVm(vm);
-
         return suitability;
     }
 
@@ -570,8 +577,11 @@ public class HostSimple implements Host, Serializable {
 
 //        if(this.getRam().getAvailableResource() < vm.getRam().getCapacity()) suitability.setForRam(false);
 //        System.out.println(vm+" "+vm.getRam().getCapacity() + " "+this+" "+this.getRam().getAvailableResource() +" "+suitability.forRam());
-
-        return suitability.setForPes(vmScheduler.isSuitableForVm(vm));
+        suitability.setForPes(vmScheduler.isSuitableForVm(vm));
+//        if(simulation.clock()> 0.2)
+//        if(simulation.clock()> 0.2)
+//            System.out.println(vm+" "+this+" "+suitability);
+        return suitability;
     }
 
     @Override
@@ -1033,14 +1043,21 @@ public class HostSimple implements Host, Serializable {
 
         vmsMigratingIn.add(vm);
 
+        //在这里确实分配了所有资源，但是没有加入vmlist
+
+//        System.out.println("before migration:"+vm+": "+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
+
         if(!allocateResourcesForVm(vm, true).fully()){
+            System.out.println(vm+" 请求的mips："+vm.getCurrentUtilizationMips().totalMips()+"  请求的ram:"+vm.getCurrentRequestedRam()+" cpu利用率："+vm.getCpuPercentUtilization()+" beforeMigration:"+vm.getCpuUtilizationBeforeMigration());
+            System.out.println(this+" 剩余的mips："+this.getVmScheduler().getTotalAvailableMips()+"  剩余ram"+this.getRam().getAvailableResource());
             vmsMigratingIn.remove(vm);
             return false;
         }
 
-
+//        System.out.println("after migration:"+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
         ((VmSimple)vm).updateMigrationStartListeners(this);
-
+        //迁移前这台主机不能关闭
+        this.setCantShutdown(true);
         updateProcessing(simulation.clock());
         vm.getHost().updateProcessing(simulation.clock());
 

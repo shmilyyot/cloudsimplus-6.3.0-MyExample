@@ -14,6 +14,8 @@ import org.cloudbus.cloudsim.vms.Vm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * An interface that represents the policy used by a
  * Virtual Machine Monitor (VMM) to share processing power of a PM among VMs
@@ -40,6 +42,8 @@ public interface VmScheduler {
      */
     VmScheduler NULL = new VmSchedulerNull();
 
+    double percentOfMipsToRequest(final Vm vm);
+
     /**
      * Requests the allocation of PEs for a VM.
      *
@@ -61,6 +65,8 @@ public interface VmScheduler {
      */
     boolean
     allocatePesForVm(Vm vm, MipsShare requestedMips);
+
+    Map<Vm, MipsShare> getAllocatedMipsMap();
 
     /**
      * Requests the allocation of PEs for a VM, according

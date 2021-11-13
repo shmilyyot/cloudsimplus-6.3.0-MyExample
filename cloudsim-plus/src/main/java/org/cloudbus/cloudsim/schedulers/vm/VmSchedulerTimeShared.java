@@ -138,20 +138,20 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      * @param mipsShare the {@link #getAllocatedMipsMap()} for that VM
      */
     private void allocatePesListForVm(final Vm vm, final MipsShare mipsShare) {
-        final MipsShare actualAllocateMipsShare = vm.getCurrentUtilizationMips();
+//        final MipsShare actualAllocateMipsShare = vm.getCurrentUtilizationMips();
         final Iterator<Pe> hostPesIterator = getWorkingPeList().iterator();
-        for (int i = 0; i < actualAllocateMipsShare.pes(); i++) {
-            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, actualAllocateMipsShare.mips(), hostPesIterator);
-            if(actualAllocateMipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
-                logMipsUnavailable(vm, actualAllocateMipsShare.mips(), allocatedPeMips);
-            }
-        }
-//        for (int i = 0; i < mipsShare.pes(); i++) {
-//            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, mipsShare.mips(), hostPesIterator);
-//            if(mipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
-//                logMipsUnavailable(vm, mipsShare.mips(), allocatedPeMips);
+//        for (int i = 0; i < actualAllocateMipsShare.pes(); i++) {
+//            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, actualAllocateMipsShare.mips(), hostPesIterator);
+//            if(actualAllocateMipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
+//                logMipsUnavailable(vm, actualAllocateMipsShare.mips(), allocatedPeMips);
 //            }
 //        }
+        for (int i = 0; i < mipsShare.pes(); i++) {
+            final double allocatedPeMips = allocateMipsFromHostPesToGivenVirtualPe(vm, mipsShare.mips(), hostPesIterator);
+            if(mipsShare.mips() > 0.1 && allocatedPeMips <= 0.1){
+                logMipsUnavailable(vm, mipsShare.mips(), allocatedPeMips);
+            }
+        }
     }
 
     /**
@@ -274,12 +274,13 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      * The non-emptiness of the list is ensured by the {@link VmScheduler#isSuitableForVm(Vm, MipsShare)} method.
      */
     @Override
-    //（更改） ，availablemips应该改成总容量减去实际使用的用量
     protected boolean isSuitableForVmInternal(final Vm vm, final MipsShare requestedMips) {
         final double totalRequestedMips = requestedMips.totalMips();
+        //（更改），这里真的有必要吗？好像已经考虑过了
         //请求的vm额外10%mips开销
         if(vm.isSearchForHost()){
             vm.setSearchForHost(false);
+            //（更改），把0.1的代价取消了
             return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips + totalRequestedMips * getVmMigrationCpuOverhead();
         }
         // This scheduler does not allow over-subscription of PEs' MIPS
@@ -307,7 +308,7 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      * @return the allocated MIPS share to the VM
      */
     protected MipsShare getMipsShareToAllocate(final Vm vm, final MipsShare requestedMips) {
-        return getMipsShareToAllocate(vm.getCurrentRequestedMips(), percentOfMipsToRequest(vm));
+        return getMipsShareToAllocate(requestedMips, percentOfMipsToRequest(vm));
     }
 
     /**
@@ -333,10 +334,11 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
     protected void deallocatePesFromVmInternal(final Vm vm, final int pesToRemove) {
         removePesFromMap(vm, getRequestedMipsMap(), pesToRemove);
         removePesFromMap(vm, getAllocatedMipsMap(), pesToRemove);
+        //（更改）怀疑是更新移除部分pe，但是因为是全移除，不更新应该没事
         //After removing some PEs from a VM, updates the MIPS allocation for all VMs on this scheduler
-        for (final Map.Entry<Vm, MipsShare> entry : getRequestedMipsMap().entrySet()) {
-            allocateMipsShareForVmInternal(entry.getKey(), entry.getValue());
-        }
+//        for (final Map.Entry<Vm, MipsShare> entry : getRequestedMipsMap().entrySet()) {
+//            allocateMipsShareForVmInternal(entry.getKey(), entry.getValue());
+//        }
 
         updatePesAllocationForAllVms();
     }

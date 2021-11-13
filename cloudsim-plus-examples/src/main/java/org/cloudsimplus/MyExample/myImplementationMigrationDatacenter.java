@@ -80,7 +80,8 @@ public class myImplementationMigrationDatacenter {
     private static Set<Double> existTimes = new HashSet<>();
     List<Cloudlet> totalCloudlets;
     List<Long> activeHostNumber = new ArrayList<>();
-    private double preClockTime = -0.0;
+    private double preClockTime = -1.0;
+    private double preLogClockTime = -1.0;
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -136,7 +137,7 @@ public class myImplementationMigrationDatacenter {
         //模拟日志打印，记录开始时间
         final double startSecs = TimeUtil.currentTimeSecs();
         System.out.printf("Simulation started at %s%n%n", LocalTime.now());
-//        Log.setLevel(DatacenterBroker.LOGGER, Level.TRACE);
+        Log.setLevel(DatacenterBroker.LOGGER, Level.TRACE);
         Log.setLevel(Level.TRACE);
 
         //创建模拟仿真
@@ -168,7 +169,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
+//        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -189,7 +190,6 @@ public class myImplementationMigrationDatacenter {
 
         //数据中心模拟器启动
         simulation.start();
-
 //        //打印所有cloudlet运行状况
         brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
 
@@ -325,14 +325,25 @@ public class myImplementationMigrationDatacenter {
 //        final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * Constant.VM_SIZE_MB[0] + 1;
         final double sizeInMB    = 1;   //如只研究CPU和MEM，磁盘空间不考虑的话，象征性给个1mb意思一下
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));
-        return new CloudletSimple(Constant.CLOUDLET_LENGTH, pesNumber)
+        Cloudlet cloudlet = new CloudletSimple(Constant.CLOUDLET_LENGTH, pesNumber)
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
             .setUtilizationModelCpu(new UtilizationModelDynamic(1))
-            .setUtilizationModelRam(new UtilizationModelDynamic(1))
-//            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener)
-            ;
+            .setUtilizationModelRam(new UtilizationModelDynamic(1));
+        //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener);
+        cloudlet.addOnFinishListener(info -> {
+            Vm vm = info.getVm();
+            System.out.printf(
+                "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
+                info.getTime(), vm);
+            vm.getHost().destroyVm(vm);
+//            Host host = vm.getHost();
+//            host.destroyVm(vm);
+//                System.out.printf("\t# %.2f: Requesting creation of new Cloudlet after %s finishes executing.%n", info.getTime(), info.getCloudlet());
+//                createAndSubmitOneCloudlet();
+        });
+        return cloudlet;
     }
     private Cloudlet createCloudlet() {
         final long length = Constant.TEST_CLOUDLET_LENGTH;
@@ -345,14 +356,20 @@ public class myImplementationMigrationDatacenter {
         UtilizationModelStochastic utilizationRam = new UtilizationModelStochastic();
         utilizationRam.setHistoryEnabled(false);
         utilizationCpu.setHistoryEnabled(false);
-//        utilizationRam.setOverCapacityRequestAllowed(true);
 
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(utilizationCpu)
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
             .setUtilizationModelBw(new UtilizationModelFull())
-            .setUtilizationModelRam(utilizationRam);
+            .setUtilizationModelRam(new UtilizationModelDynamic(0.1));
+        cloudlet.addOnFinishListener(info -> {
+            Vm vm = info.getVm();
+            System.out.printf(
+                "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
+                info.getTime(), vm);
+            vm.getHost().destroyVm(vm);
+        });
         return cloudlet;
     }
 
@@ -505,7 +522,7 @@ public class myImplementationMigrationDatacenter {
             .setVmScheduler(new VmSchedulerTimeShared())
             .setPowerModel(powerModel);
         host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
-//        host.addOnUpdateProcessingListener(this::updateHostResource);
+        host.addOnUpdateProcessingListener(this::updateHostResource);
 //        host.setLazySuitabilityEvaluation(true);
         //host创建之后的活跃状态
 //        final boolean activateHost = true;
@@ -617,19 +634,30 @@ public class myImplementationMigrationDatacenter {
     private void clockTickListener(final EventInfo info) {
         double time = simulation.clock();
         int currentTime = (int)time;
-        if(time - currentTime != 0.0 || currentTime == preClockTime) return;
+        if(time - currentTime != 0.0 && currentTime == preClockTime) return;
         long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
         activeHostNumber.add(number);
+        Host host = hostList.get(0);
+//        vmList.forEach(vm->{
+//            double cpuUtilization = vm.getCpuPercentUtilization();
+//            vm.setCpuUtilizationBeforeMigration(cpuUtilization);
+//        });
         //不应该一直记录运行时间的请求mips，因为利用率本来就是大概300秒变一次，应该一致
         if(currentTime % Constant.COLLECTTIME == 0){
-            hostList.forEach(host->{
-                host.getVmList().forEach(vm->{
-                    //更新vm总共请求的mips数目
-                    double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
-                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
-                    vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
-                });
+            vmList.forEach(vm->{
+                //更新vm总共请求的mips数目
+                double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
+                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
+                vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
             });
+//            hostList.forEach(host->{
+//                host.getVmList().forEach(vm->{
+//                    //更新vm总共请求的mips数目
+//                    double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
+//                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
+//                    vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
+//                });
+//            });
         }
         preClockTime = currentTime;
     }
@@ -657,7 +685,29 @@ public class myImplementationMigrationDatacenter {
         migrationsNumber++;
     }
 
+    /**
+     * A listener method that is called when a VM migration finishes.
+     * @param info information about the happened event
+     *
+     * @see #createAndSubmitVms(DatacenterBroker)
+     * @see Vm#addOnMigrationStartListener(EventListener)
+     */
+    private void finishMigration(final VmHostEventInfo info) {
+        final Host host = info.getHost();
+        System.out.printf(
+            "# %.2f: %s finished migrating to %s (you can perform any operation you want here)%n",
+            info.getTime(), info.getVm(), host);
+        System.out.print("\t\t");
+        dataCenterPrinter.showHostAllocatedMips(info.getTime(), hostList.get(1));
+        System.out.print("\t\t");
+        dataCenterPrinter.showHostAllocatedMips(info.getTime(), host);
+//        Vm vm = host.getVmList().get(0);
+//        System.out.println(host+" "+host.getVmList().size()+" "+vm+" mips: "+vm.getCurrentUtilizationMips().totalMips()+" ram: "+vm.getCurrentRequestedRam()+" host availablemips: "+
+//            host.getVmScheduler().getTotalAvailableMips()+ " host allocatedmips: "+host.getVmScheduler().getTotalAllocatedMipsForVm(vm)+" host actualallocatedmips: "+host.getVmScheduler().getActualTotalAllocatedMipsForVm(vm));
+    }
+
     private void updateHostResource(final HostUpdatesVmsProcessingEventInfo info) {
+        double time = simulation.clock();
         final Host host = info.getHost();
 
         LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
@@ -702,25 +752,7 @@ public class myImplementationMigrationDatacenter {
             hostRamhistory.addLast(0.0);
             hostCpuhistory.addLast(0.0);
         }
-
-    }
-
-    /**
-     * A listener method that is called when a VM migration finishes.
-     * @param info information about the happened event
-     *
-     * @see #createAndSubmitVms(DatacenterBroker)
-     * @see Vm#addOnMigrationStartListener(EventListener)
-     */
-    private void finishMigration(final VmHostEventInfo info) {
-        final Host host = info.getHost();
-        System.out.printf(
-            "# %.2f: %s finished migrating to %s (you can perform any operation you want here)%n",
-            info.getTime(), info.getVm(), host);
-        System.out.print("\t\t");
-        dataCenterPrinter.showHostAllocatedMips(info.getTime(), hostList.get(1));
-        System.out.print("\t\t");
-        dataCenterPrinter.showHostAllocatedMips(info.getTime(), host);
+        preLogClockTime = time;
     }
 
     /**

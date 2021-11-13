@@ -15,7 +15,7 @@ public class Constant {
     /**
      * 数据中心日志设置
      */
-    public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
+    public static final boolean PRINT_LOCAL_LOG = false;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
     public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
@@ -91,7 +91,7 @@ public class Constant {
      * 任务长度设置为负数，代表任务可以无限制运行下去，直到读到真实记录的任务结束标志
      * */
     public static final int TEST_CLOUDLET_LENGTH = 200000;
-    public static final boolean USING_TEST_CLOUDLET = false;
+    public static final boolean USING_TEST_CLOUDLET = true;
     public static final int  CLOUDLET_LENGTH = -10_000;
     public static final boolean USING_FILTER = false;
     public static final boolean FILTER_INSIDE_CLOUDLET = false;  //true过滤掉cloudlet里所有5~90%之外的利用率变化,false过滤掉只要出现过5~90%之外利用率的整个cloudlet
@@ -109,11 +109,11 @@ public class Constant {
     /**
      * 亚马逊数据中心的虚拟机归一化得到vm的相关参数设置,一共有四种，都是单核的
      * */
-    public static final int VMS = 1603;   //虚拟机数目
+    public static final int VMS = 1000;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,1700,1700,613};    //1750效果比3750好
+    public static final long[] VM_RAM = {850,3750,1750,613};    //1750效果比3750好
     public static final long[] VM_BW = {100,100,100,100}; //用不到
     public static final long[] VM_SIZE_MB = {10000,10000,10000,10000}; //用不到
 

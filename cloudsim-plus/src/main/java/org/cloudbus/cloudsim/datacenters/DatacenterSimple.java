@@ -22,6 +22,7 @@ import org.cloudbus.cloudsim.power.models.PowerModelDatacenter;
 import org.cloudbus.cloudsim.power.models.PowerModelDatacenterSimple;
 import org.cloudbus.cloudsim.resources.DatacenterStorage;
 import org.cloudbus.cloudsim.resources.SanStorage;
+import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletScheduler;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.MathUtil;
@@ -576,6 +577,13 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final boolean hostAllocatedForVm = vmAllocationPolicy.allocateHostForVm(vm).fully();
         if (hostAllocatedForVm) {
+            //（更改）
+//            MipsShare mipsShare = vm.getCurrentRequestedMips();
+//            double scalingFactor = vm.getHost().getVmScheduler().percentOfMipsToRequest(vm);
+//            if(scalingFactor != 1){
+//                mipsShare = new MipsShare(mipsShare.pes(),mipsShare.mips()*scalingFactor);
+//            }
+//            vm.updateProcessing(mipsShare);
             vm.updateProcessing(vm.getHost().getVmScheduler().getAllocatedMips(vm));
         }
 
@@ -647,17 +655,17 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final Host targetHost = entry.getValue();
 
-        //迁移前这台主机不能关闭
-        targetHost.setCantShutdown(true);
+        //不变是不是因为已经提前放进去分配了内存？
+//        System.out.println("before migration:"+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
 
-//        //更新主机状态之后有可能host会被关闭，这时候把vm立刻打开
-//        if(!targetHost.isActive()){
-//            System.out.println("被迁移"+targetHost+"被关闭了，立即打开");
-//            targetHost.setActive(true);
-//        }
+        //更新主机状态之后有可能host会被关闭，这时候把vm立刻打开
+        if(!targetHost.isActive()){
+            System.out.println("被迁移"+targetHost+"被关闭了，立即打开");
+            targetHost.setActive(true);
+        }
 
         //De-allocates the VM on the source Host (where it is migrating out)
         vmAllocationPolicy.deallocateHostForVm(vm);
@@ -666,6 +674,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         //迁移完之后设置为可以被关闭
         targetHost.setCantShutdown(false);
+
         if(suitability.fully()) {
             ((VmSimple)vm).updateMigrationFinishListeners(targetHost);
             /*When the VM is destroyed from the source host, it's removed from the vmExecList.
@@ -683,8 +692,10 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             updateHostsProcessing();
         }
 
-        if (suitability.fully())
+        if (suitability.fully()){
             LOGGER.info("{}: Migration of {} to {} is completed", getSimulation().clockStr(), vm, targetHost);
+//            System.out.println("after migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+        }
         else{
             //这里需要改！！！
             //万一到点之后发现迁移不进去，需要额外处理这个vm
@@ -835,7 +846,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         //有主机过载但是migrationmap里面为空，所以报错
         if(areThereUnderOrOverloadedHostsAndMigrationIsSupported()){
 
-//            logHostSearchRetry();
+            logHostSearchRetry();
 
             lastTimeUnderOrOverloadedHostsDetected = clock();
         }

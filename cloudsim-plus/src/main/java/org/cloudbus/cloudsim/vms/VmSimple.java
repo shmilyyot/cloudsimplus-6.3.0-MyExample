@@ -145,6 +145,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     private double mipsUtilizationBeforeMigration = 0.0;
 
+    public double getCpuUtilizationBeforeMigration() {
+        return cpuUtilizationBeforeMigration;
+    }
+
+    public void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration) {
+        this.cpuUtilizationBeforeMigration = cpuUtilizationBeforeMigration;
+    }
+
+    private double cpuUtilizationBeforeMigration = 0.0;
+
     public boolean isSearchForHost() {
         return searchForHost;
     }
@@ -164,6 +174,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     private boolean forcePlace = false;
+
+    public boolean isCpuForcePlace() {
+        return cpuForcePlace;
+    }
+
+    public void setCpuForcePlace(boolean cpuForcePlace) {
+        this.cpuForcePlace = cpuForcePlace;
+    }
+
+    private boolean cpuForcePlace = false;
 
     /**
      * Creates a Vm with 1024 MEGA of RAM, 100 Megabits/s of Bandwidth and 1024 MEGA of Storage Size.
@@ -314,7 +334,8 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
-        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
+        this(sourceVm.getSimulation().clock() > 0.2 ? sourceVm.getCpuUtilizationBeforeMigration()*sourceVm.getMips() : sourceVm.getMips(),sourceVm.getNumberOfPes());
+//        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
             .setRam(sourceVm.getCurrentRequestedRam())
             .setSize(sourceVm.getStorage().getCapacity());
@@ -345,6 +366,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
          * before the utilization drop.
          */
         final double decimals = currentTime - (int) currentTime;
+
 
 //        cpuUtilizationStats.add(currentTime);
 
@@ -469,10 +491,12 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public MipsShare getCurrentUtilizationMips(){
-        if (getSimulation().clock() < 0.2) {
-            return new MipsShare(getNumberOfPes(), getMips());
+        if (getSimulation().clock() < 0.2 || this.getId() == -1) {
+            return getCurrentRequestedMips();
         }
-        return new MipsShare(getNumberOfPes(),getCpuPercentUtilization() * getMips());
+        double currentCpuercent = getCpuPercentUtilization();
+        double cpuPercent = currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent;
+        return new MipsShare(getNumberOfPes(),cpuPercent * getMips());
     }
 
     @Override

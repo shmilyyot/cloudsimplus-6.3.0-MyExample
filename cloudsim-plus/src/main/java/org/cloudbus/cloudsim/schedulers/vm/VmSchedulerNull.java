@@ -4,6 +4,8 @@ import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.util.Map;
+
 /**
  * A class that implements the Null Object Design Pattern for {@link VmScheduler}
  * class.
@@ -12,9 +14,11 @@ import org.cloudbus.cloudsim.vms.Vm;
  * @see VmScheduler#NULL
  */
 final class VmSchedulerNull implements VmScheduler {
+    @Override public double percentOfMipsToRequest(Vm vm) {return 0;}
     @Override public boolean allocatePesForVm(Vm vm, MipsShare requestedMips) {
         return false;
     }
+    @Override public Map<Vm, MipsShare> getAllocatedMipsMap() {return null;}
     @Override public boolean allocatePesForVm(Vm vm) { return false; }
     @Override public MipsShare getAllocatedMips(Vm vm) {
         return MipsShare.NULL;

@@ -211,12 +211,24 @@ public class GoogleTaskEventsExample1 {
 
         final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * VM_SIZE_MB + 1;
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));
-        return new CloudletSimple(CLOUDLET_LENGTH, pesNumber)
+        Cloudlet cloudlet = new CloudletSimple(CLOUDLET_LENGTH, pesNumber)
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(new UtilizationModelFull())
             .setUtilizationModelCpu(new UtilizationModelFull())
             .setUtilizationModelRam(utilizationRam);
+        cloudlet.addOnFinishListener(info -> {
+            Vm vm = info.getVm();
+            System.out.printf(
+                "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
+                info.getTime(), vm);
+            vm.getHost().destroyVm(vm);
+//            Host host = vm.getHost();
+//            host.destroyVm(vm);
+//                System.out.printf("\t# %.2f: Requesting creation of new Cloudlet after %s finishes executing.%n", info.getTime(), info.getCloudlet());
+//                createAndSubmitOneCloudlet();
+        });
+        return cloudlet;
     }
 
     /**
@@ -235,6 +247,7 @@ public class GoogleTaskEventsExample1 {
             GoogleTaskUsageTraceReader.getInstance(brokers, fileName);
         final Collection<Cloudlet> processedCloudlets = reader.process();
         System.out.printf("%d Cloudlets processed from the %s trace file.%n", processedCloudlets.size(), fileName);
+        System.out.println();
         System.out.println();
     }
 

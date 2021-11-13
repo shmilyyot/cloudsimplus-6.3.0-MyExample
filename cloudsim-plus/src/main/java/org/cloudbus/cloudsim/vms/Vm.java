@@ -58,9 +58,9 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     void setRequestUtilization(double requestUtilization);
 
-    public double getMipsUtilizationBeforeMigration();
+    double getMipsUtilizationBeforeMigration();
 
-    public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration);
+    void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration);
 
     double getTotalrequestUtilization();
 
@@ -73,7 +73,15 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
     boolean isForcePlace();
     void setForcePlace(boolean forcePlace);
 
+    boolean isCpuForcePlace();
+
+    void setCpuForcePlace(boolean cpuForcePlace);
+
     MipsShare getCurrentUtilizationMips();
+
+    double getCpuUtilizationBeforeMigration();
+
+    void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration);
 
     /**
      * Gets the Vm description, which is an optional text

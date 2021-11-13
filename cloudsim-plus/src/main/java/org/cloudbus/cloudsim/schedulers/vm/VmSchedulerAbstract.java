@@ -72,16 +72,20 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
 
     @Override
     public final boolean isSuitableForVm(final Vm vm) {
+        if(vm.getId() == -1 && vm.getSimulation().clock() > 0.2){
+            return isSuitableForVm(vm,vm.getCurrentRequestedMips());
+        }
         return isSuitableForVm(vm, vm.getCurrentUtilizationMips());
     }
 
     @Override
     public final boolean isSuitableForVm(final Vm vm, final MipsShare requestedMips) {
+        //其实应该允许分配空的虚拟机
         if(requestedMips.isEmpty()){
             //如果当前利用率为空，直接返回就是了
-//            LOGGER.warn(
-//                "{}: {}: It was requested an empty list of PEs for {} in {}",
-//                getHost().getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
+            LOGGER.warn(
+                "{}: {}: It was requested an empty list of PEs for {} in {}",
+                getHost().getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
             return false;
         }
 
@@ -311,7 +315,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
      * @see #getAllocatedMips(Vm)
      * @see #getRequestedMipsMap()
      */
-    protected Map<Vm, MipsShare> getAllocatedMipsMap() {
+    public Map<Vm, MipsShare> getAllocatedMipsMap() {
         return allocatedMipsMap;
     }
 
@@ -384,7 +388,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
      * @return the percentage of MIPS requested by the VM that will be in fact
      * requested to the Host (in scale from [0 to 1], where  is 100%)
      */
-    protected double percentOfMipsToRequest(final Vm vm) {
+    public double percentOfMipsToRequest(final Vm vm) {
         if (host.getVmsMigratingIn().contains(vm)) {
             /* While the VM is migrating in,
             the destination host only increases CPU usage according
@@ -404,6 +408,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         //VM is not migrating, thus 100% of its requested MIPS will be requested to the Host.
         return 1;
     }
+
 
     @Override
     public double getMaxCpuUsagePercentDuringOutMigration() {
