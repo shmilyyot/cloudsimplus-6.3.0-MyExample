@@ -1054,7 +1054,7 @@ public class HostSimple implements Host, Serializable {
             return false;
         }
 
-//        System.out.println("after migration:"+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
+//        System.out.println("after migration: "+ this+" "+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
         ((VmSimple)vm).updateMigrationStartListeners(this);
         //迁移前这台主机不能关闭
         this.setCantShutdown(true);

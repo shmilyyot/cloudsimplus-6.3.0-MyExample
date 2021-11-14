@@ -133,6 +133,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     //总请求的mips
     private double totalrequestUtilization = 0.0;
 
+    public boolean isDestory() {
+        return isDestory;
+    }
+
+    public void setDestory(boolean destory) {
+        isDestory = destory;
+    }
+
+    private boolean isDestory = false;
+
     @Override
     public double getMipsUtilizationBeforeMigration() {
         return mipsUtilizationBeforeMigration;

@@ -198,6 +198,8 @@ class VmNull implements Vm {
     @Override public void setForcePlace(boolean forcePlace) {}
     @Override public boolean isCpuForcePlace() {return false;}
     @Override public void setCpuForcePlace(boolean cpuForcePlace) {}
+    @Override public boolean isDestory() {return false;}
+    @Override public void setDestory(boolean destory) {}
     @Override public MipsShare getCurrentUtilizationMips() {return null;}
     @Override public double getCpuUtilizationBeforeMigration() {return 0;}
     @Override public void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration) {}

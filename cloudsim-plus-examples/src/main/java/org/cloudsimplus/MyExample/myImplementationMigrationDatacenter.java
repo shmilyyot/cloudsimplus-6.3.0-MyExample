@@ -337,11 +337,10 @@ public class myImplementationMigrationDatacenter {
             System.out.printf(
                 "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
                 info.getTime(), vm);
-            vm.getHost().destroyVm(vm);
-//            Host host = vm.getHost();
-//            host.destroyVm(vm);
-//                System.out.printf("\t# %.2f: Requesting creation of new Cloudlet after %s finishes executing.%n", info.getTime(), info.getCloudlet());
-//                createAndSubmitOneCloudlet();
+            if(!vm.isInMigration()){
+                vm.getHost().destroyVm(vm);
+            }
+            vm.setDestory(true);
         });
         return cloudlet;
     }
@@ -368,7 +367,10 @@ public class myImplementationMigrationDatacenter {
             System.out.printf(
                 "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
                 info.getTime(), vm);
-            vm.getHost().destroyVm(vm);
+            if(!vm.isInMigration()){
+                vm.getHost().destroyVm(vm);
+            }
+            vm.setDestory(true);
         });
         return cloudlet;
     }

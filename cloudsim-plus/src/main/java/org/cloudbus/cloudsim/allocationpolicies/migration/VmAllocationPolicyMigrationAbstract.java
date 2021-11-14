@@ -628,10 +628,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
 
-//            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，徒增迁移次数
-//            if (vm.getCloudletScheduler().isEmpty()) {
-//                return new HashMap<>();
-//            }
+            //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，会自己销毁
+            if (vm.getCloudletScheduler().isEmpty()) {
+                return new HashMap<>();
+            }
+
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             //（更改）万一没有低负载迁移，问题出在这里
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> true);
@@ -701,7 +702,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         final List<Vm> vmsToMigrate = new LinkedList<>();
         while (true) {
             final Vm vm = getVmSelectionPolicy().getVmToMigrate(host);
-            if (Vm.NULL == vm) {
+            if (Vm.NULL == vm || vm.getCloudletScheduler().isEmpty()) {
                 break;
             }
             vmsToMigrate.add(vm);
@@ -838,8 +839,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             //抹除所有host上所有ram分配
             ResourceProvisioner ramProvisioner = host.getRamProvisioner();
             ramProvisioner.deallocateResourceForAllVms();
-
+            List<Vm> removeDestroyVms = new ArrayList<>();
             for (final Vm vm : host.getVmList()) {
+
+                //排除掉已完成改毁灭的虚拟机
+                if(vm.isDestory() && vm.getCloudletScheduler().isEmpty()){
+                    vm.setCreated(true);
+                    removeDestroyVms.add(vm);
+                    continue;
+                }
+
                 //记录下每个vm当前的cpu利用率
                 vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
 
@@ -861,6 +870,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 if (!host.getVmsMigratingIn().contains(vm)) {
                     savedAllocation.put(vm, host);
                 }
+            }
+            for(Vm vm:removeDestroyVms){
+                host.destroyVm(vm);
             }
 //            System.out.println(host+ " vmsize:"+host.getVmList().size()+" mips:"+host.getVmScheduler().getTotalAvailableMips()+" ram:"+host.getRam().getAvailableResource());
         }

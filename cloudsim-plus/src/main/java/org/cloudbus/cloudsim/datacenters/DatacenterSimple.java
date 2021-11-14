@@ -656,7 +656,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final Host targetHost = entry.getValue();
 
         //不变是不是因为已经提前放进去分配了内存？
-//        System.out.println("before migration:"+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+        System.out.println("before migration: "+targetHost+" "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
@@ -697,13 +697,21 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 //            System.out.println("after migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
         }
         else{
-            //这里需要改！！！
-            //万一到点之后发现迁移不进去，需要额外处理这个vm
+            if(vm.isDestory()){
+//                System.out.println("before migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+                vm.setCreated(true);
+                targetHost.destroyVm(vm);
+                LOGGER.info("release the resource on targetHost successful!!!");
+//                System.out.println("after migration2:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+            }else{
+                //这里需要改！！！
+                //万一到点之后发现迁移不进去，需要额外处理这个vm
 //            targetHost.setTotalOver100Time(targetHost.getTotalOver100Time()+1);
-            LOGGER.error(
-                "{}: {}: Allocation of {} to the destination {} failed due to {}!",
-                getSimulation().clockStr(), this, vm, targetHost, suitability);
+                LOGGER.error(
+                    "{}: {}: Allocation of {} to the destination {} failed due to {}!",
+                    getSimulation().clockStr(), this, vm, targetHost, suitability);
 //            System.out.println(vm.get+" "+targetHost.getTotalAvailableMips()+" "+targetHost.getTotalMipsCapacity());
+            }
         }
 
         onVmMigrationFinishListeners.forEach(listener -> listener.update(DatacenterVmMigrationEventInfo.of(listener, vm, suitability)));

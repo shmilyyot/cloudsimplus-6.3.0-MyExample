@@ -77,6 +77,10 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     void setCpuForcePlace(boolean cpuForcePlace);
 
+    boolean isDestory();
+
+    void setDestory(boolean destory);
+
     MipsShare getCurrentUtilizationMips();
 
     double getCpuUtilizationBeforeMigration();

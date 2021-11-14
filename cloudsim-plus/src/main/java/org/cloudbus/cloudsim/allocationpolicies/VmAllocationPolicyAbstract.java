@@ -324,7 +324,13 @@ public abstract class VmAllocationPolicyAbstract implements VmAllocationPolicy {
             LOGGER.info(
                 "{}: {}: {} has been allocated to {}",
                 vm.getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
-        } else LOGGER.error("{}: {} Creation of {} on {} failed", vm.getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
+        } else{
+            if(!vm.isDestory()){
+                LOGGER.error("{}: {} Creation of {} on {} failed", vm.getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
+            }else{
+                LOGGER.info("{}: {} Creation of {} on {} failed but it is ok because this vm should be destroy", vm.getSimulation().clockStr(), getClass().getSimpleName(), vm, host);
+            }
+        };
         return suitability;
     }
 
