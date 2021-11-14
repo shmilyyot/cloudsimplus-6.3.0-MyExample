@@ -698,11 +698,11 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
         else{
             if(vm.isDestory()){
-//                System.out.println("before migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+                System.out.println("before migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
                 vm.setCreated(true);
                 targetHost.destroyVm(vm);
                 LOGGER.info("release the resource on targetHost successful!!!");
-//                System.out.println("after migration2:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+                System.out.println("after migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
             }else{
                 //这里需要改！！！
                 //万一到点之后发现迁移不进去，需要额外处理这个vm

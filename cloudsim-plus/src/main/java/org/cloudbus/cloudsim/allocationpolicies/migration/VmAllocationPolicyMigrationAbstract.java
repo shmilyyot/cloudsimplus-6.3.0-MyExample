@@ -844,7 +844,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
                 //排除掉已完成改毁灭的虚拟机
                 if(vm.isDestory() && vm.getCloudletScheduler().isEmpty()){
-                    vm.setCreated(true);
                     removeDestroyVms.add(vm);
                     continue;
                 }
@@ -872,6 +871,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 }
             }
             for(Vm vm:removeDestroyVms){
+                vm.setCreated(true);
                 host.destroyVm(vm);
             }
 //            System.out.println(host+ " vmsize:"+host.getVmList().size()+" mips:"+host.getVmScheduler().getTotalAvailableMips()+" ram:"+host.getRam().getAvailableResource());

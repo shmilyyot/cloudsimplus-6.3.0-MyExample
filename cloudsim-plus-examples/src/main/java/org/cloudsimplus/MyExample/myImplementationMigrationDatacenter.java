@@ -700,8 +700,6 @@ public class myImplementationMigrationDatacenter {
             "# %.2f: %s finished migrating to %s (you can perform any operation you want here)%n",
             info.getTime(), info.getVm(), host);
         System.out.print("\t\t");
-        dataCenterPrinter.showHostAllocatedMips(info.getTime(), hostList.get(1));
-        System.out.print("\t\t");
         dataCenterPrinter.showHostAllocatedMips(info.getTime(), host);
 //        Vm vm = host.getVmList().get(0);
 //        System.out.println(host+" "+host.getVmList().size()+" "+vm+" mips: "+vm.getCurrentUtilizationMips().totalMips()+" ram: "+vm.getCurrentRequestedRam()+" host availablemips: "+
