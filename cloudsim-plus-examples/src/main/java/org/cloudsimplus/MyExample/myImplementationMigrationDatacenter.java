@@ -365,8 +365,8 @@ public class myImplementationMigrationDatacenter {
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();
             System.out.printf(
-                "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
-                info.getTime(), vm);
+                "%n# %.2f: Intentionally destroying %s on %s due to cloudlet finished.",
+                info.getTime(), vm,vm.getHost());
             if(!vm.isInMigration()){
                 vm.getHost().destroyVm(vm);
             }

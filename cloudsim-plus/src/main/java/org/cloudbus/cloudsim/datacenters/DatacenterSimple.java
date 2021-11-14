@@ -656,7 +656,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final Host targetHost = entry.getValue();
 
         //不变是不是因为已经提前放进去分配了内存？
-        System.out.println("before migration: "+targetHost+" "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
+//        System.out.println("before migration: "+targetHost+" "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
