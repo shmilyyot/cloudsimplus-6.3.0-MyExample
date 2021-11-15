@@ -342,6 +342,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         HostSuitability suitability = host.createTemporaryVm(tempVm);
         if (!suitability.fully()) {
             System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
+//            System.out.println("mark1:"+vm.isInMigration());
             return false;
         }
 
@@ -870,7 +871,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 if (!host.getVmsMigratingIn().contains(vm)) {
                     savedAllocation.put(vm, host);
                 }else{
-                    System.out.println("执行了！！！"+vm);
+                    System.out.println(vm+" 同时在迁入虚拟机列表里也在虚拟机列表里");
                 }
             }
             for(final Vm vm:host.getVmsMigratingIn()){

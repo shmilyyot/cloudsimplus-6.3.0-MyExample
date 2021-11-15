@@ -473,7 +473,9 @@ public class HostSimple implements Host, Serializable {
         if(!suitability.fully()) {
             return suitability;
         }
-        vm.setInMigration(inMigration);
+        if(!(vm.isInMigration() && !inMigration)){
+            vm.setInMigration(inMigration);
+        }
         allocateResourcesForVm(vm);
         return suitability;
     }

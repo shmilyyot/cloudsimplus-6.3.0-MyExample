@@ -761,6 +761,9 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public final void setInMigration(final boolean migrating) {
+        if((inMigration && !migrating) && (this.getId() == 264 || this.getId() == 269 || this.getId() == 274)){
+//            System.out.println("mark3:"+this+" "+this.getHost());
+        }
         this.inMigration = migrating;
     }
 
