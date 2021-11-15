@@ -1060,7 +1060,6 @@ public class HostSimple implements Host, Serializable {
         this.setCantShutdown(true);
         updateProcessing(simulation.clock());
         vm.getHost().updateProcessing(simulation.clock());
-
         return true;
     }
 

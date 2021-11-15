@@ -692,7 +692,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
         return vmsToMigrate;
     }
-
     private List<Vm> getVmsToMigrateFromOverloadedHost(final Host host) {
         /*
         @TODO The method doesn't just gets a list of VMs to migrate from an overloaded Host,
@@ -848,13 +847,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     continue;
                 }
 
-                //记录下每个vm当前的cpu利用率
-                vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
-
-                //（更改）修改每个更新后的vm已分配的mips，有可能会溢出，导致available为负数，在恢复的时候需要forceplace
-                MipsShare mipsShare = vm.getCurrentUtilizationMips();
-                vmScheduler.getAllocatedMipsMap().put(vm,new MipsShare(mipsShare.pes(), mipsShare.mips()*vmScheduler.percentOfMipsToRequest(vm)));
-
                 //(修改更新的host的ram provisioner),有可能会溢出，要修改
                 ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
 
@@ -868,7 +860,19 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 * to see if the VM is migrating into the Host. */
                 if (!host.getVmsMigratingIn().contains(vm)) {
                     savedAllocation.put(vm, host);
+                    //记录下每个vm当前的cpu利用率
+                    vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
+
+                    //（更改）修改每个更新后的vm已分配的mips，有可能会溢出，导致available为负数，在恢复的时候需要forceplace
+                    MipsShare mipsShare = vm.getCurrentUtilizationMips();
+                    vmScheduler.getAllocatedMipsMap().put(vm,new MipsShare(mipsShare.pes(), mipsShare.mips()*vmScheduler.percentOfMipsToRequest(vm)));
+                }else{
+                    System.out.println("执行了！！！"+vm);
                 }
+            }
+            for(final Vm vm:host.getVmsMigratingIn()){
+                //(修改更新的host的ram provisioner),有可能会溢出，要修改
+                ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
             }
             for(Vm vm:removeDestroyVms){
                 vm.setCreated(true);

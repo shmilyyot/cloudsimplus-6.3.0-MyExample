@@ -174,11 +174,13 @@ public class DataCenterPrinter {
         final String msg = String.format("# %.2f: %s in %s: total allocated", time, vm, targetHost);
         //（更改）target host已经分配了0.01的mips，为什么
         final MipsShare allocatedMips = targetHost.getVmScheduler().getAllocatedMips(vm);
+//        System.out.println(vm+"  "+vm.getHost()+" "+targetHost+" "+vm.getCpuPercentUtilization()+" "+vm.getCpuUtilizationBeforeMigration());
         final String msg2 = allocatedMips.totalMips() == vm.getMips() * 0.9 ? " - reduction due to migration overhead" : "";
         System.out.printf("%s %.0f MIPs (divided by %d PEs)%s\n", msg, allocatedMips.totalMips(), allocatedMips.pes(), msg2);
     }
 
     public void showHostAllocatedMips(final double time, final Host host) {
+        System.out.println("");
         System.out.printf(
             "%.2f: %s allocated %.2f MIPS from %.2f total capacity%n",
             time, host, host.getTotalAllocatedMips(), host.getTotalMipsCapacity());
