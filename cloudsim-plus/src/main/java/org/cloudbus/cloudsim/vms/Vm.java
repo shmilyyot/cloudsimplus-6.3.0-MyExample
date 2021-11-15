@@ -87,6 +87,10 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration);
 
+    long getActualIdForTempVm();
+
+    void setActualIdForTempVm(long actualIdForTempVm);
+
     /**
      * Gets the Vm description, which is an optional text
      * which one can use to provide details about this of this VM.

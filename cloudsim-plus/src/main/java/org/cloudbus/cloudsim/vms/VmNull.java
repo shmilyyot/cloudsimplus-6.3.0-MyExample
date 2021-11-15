@@ -203,6 +203,8 @@ class VmNull implements Vm {
     @Override public MipsShare getCurrentUtilizationMips() {return null;}
     @Override public double getCpuUtilizationBeforeMigration() {return 0;}
     @Override public void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration) {}
+    @Override public long getActualIdForTempVm() {return 0;}
+    @Override public void setActualIdForTempVm(long actualIdForTempVm) {}
     @Override public String getDescription() { return ""; }
     @Override public Vm setDescription(String description) { return this; }
     @Override public VmGroup getGroup() { return null; }

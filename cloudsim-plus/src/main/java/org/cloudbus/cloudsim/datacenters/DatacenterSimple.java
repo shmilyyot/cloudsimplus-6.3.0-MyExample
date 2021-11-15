@@ -928,11 +928,11 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getMipsUtilizationBeforeMigration());
 
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
-
         if(targetHost.addMigratingInVm(sourceVm)) {
             sourceHost.addVmMigratingOut(sourceVm);
             send(this, delay, CloudSimTags.VM_MIGRATE, new TreeMap.SimpleEntry<>(sourceVm, targetHost));
         }
+//        System.out.println("A:"+targetHost.getVmScheduler().getAllocatedMips(sourceVm)+" B:"+sourceHost.getVmScheduler().getAllocatedMips(sourceVm));
     }
 
     /**

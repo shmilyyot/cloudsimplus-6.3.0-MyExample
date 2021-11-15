@@ -46,6 +46,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     private static long defaultBwCapacity = 100;
     /** @see #setDefaultStorageCapacity(long) */
     private static long defaultStorageCapacity = 1024;
+
     /** @see #getCpuUtilizationStats() */
     private VmResourceStats cpuUtilizationStats;
 
@@ -121,6 +122,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     //迁移产生的开销
     private double requestUtilization = 0.0;
+
+    public long getActualIdForTempVm() {
+        return actualIdForTempVm;
+    }
+
+    public void setActualIdForTempVm(long actualIdForTempVm) {
+        this.actualIdForTempVm = actualIdForTempVm;
+    }
+
+    public long actualIdForTempVm = -1;
 
     public double getTotalrequestUtilization() {
         return totalrequestUtilization;
@@ -345,6 +356,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
         this(sourceVm.getSimulation().clock() > 0.2 ? sourceVm.getCpuUtilizationBeforeMigration()*sourceVm.getMips() : sourceVm.getMips(),sourceVm.getNumberOfPes());
+        this.setActualIdForTempVm(sourceVm.getId());
 //        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
             .setRam(sourceVm.getCurrentRequestedRam())
@@ -505,7 +517,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
             return getCurrentRequestedMips();
         }
         double currentCpuercent = getCpuPercentUtilization();
-        double cpuPercent = currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent;
+        double cpuPercent = (currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent);
         return new MipsShare(getNumberOfPes(),cpuPercent * getMips());
     }
 

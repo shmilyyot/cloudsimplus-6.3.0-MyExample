@@ -337,17 +337,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      *         false otherwise
      */
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-//        System.out.println("before here:"+vm+"  "+vm.getCurrentRequestedMips()+"  "+host.getVmScheduler().getAllocatedMips(vm)+ " "+vm.getCpuUtilizationBeforeMigration());
+
         final Vm tempVm = new VmSimple(vm,true);
-//        System.out.println("tempvm的ram："+tempVm.getCurrentRequestedRam());
-//        System.out.println(host.getSimulation().clockStr()+" : after: "+vm+" 当前的ram利用： "+vm.getCurrentRequestedRam());
-//        tempVm.setRam(vm.getCurrentRequestedRam());
-//        tempVm.setBw(vm.getCurrentRequestedBw());
         HostSuitability suitability = host.createTemporaryVm(tempVm);
         if (!suitability.fully()) {
-//            if(!suitability.forRam() && host.getSimulation().clock() <= 10801.0 && host.getSimulation().clock() >= 10800.0){
-//                System.out.println(host+" "+vm+" "+" host可用ram是"+host.getRam().getAvailableResource()+"  vm需要的ram是："+vm.getCurrentRequestedRam()+ "  tempVm需要的是"+tempVm.getRam().getCapacity()+ " currentAllocatedResource: "+host.getRamProvisioner().getAllocatedResourceForVm(vm));
-//            }
             System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
             return false;
         }
@@ -648,7 +641,14 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 //                    getDatacenter().getSimulation().clockStr(), vm, vm.getHost());
                 return new HashMap<>();
             }
-            addVmToMigrationMap(migrationMap, vm, optional.get());
+            Host host = optional.get();
+//            if(vm.getId() == 264){
+//                System.out.println("mark: "+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" "+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
+//            }
+            addVmToMigrationMap(migrationMap, vm, host);
+//            if(vm.getId() == 264){
+//                System.out.println("mark: "+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" "+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
+//            }
         }
         System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭，过段时间系统自动关闭" );
 //        underloadedHost.setActive(false);
@@ -847,6 +847,15 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     continue;
                 }
 
+                //记录下每个vm当前的cpu利用率
+                if(!vm.isInMigration()){
+                    vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
+                }
+
+                //（更改）修改每个更新后的vm已分配的mips，有可能会溢出，导致available为负数，在恢复的时候需要forceplace
+                MipsShare mipsShare = vm.getCurrentUtilizationMips();
+                vmScheduler.getAllocatedMipsMap().put(vm,new MipsShare(mipsShare.pes(), mipsShare.mips()*vmScheduler.percentOfMipsToRequest(vm)));
+
                 //(修改更新的host的ram provisioner),有可能会溢出，要修改
                 ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
 
@@ -860,12 +869,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 * to see if the VM is migrating into the Host. */
                 if (!host.getVmsMigratingIn().contains(vm)) {
                     savedAllocation.put(vm, host);
-                    //记录下每个vm当前的cpu利用率
-                    vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
-
-                    //（更改）修改每个更新后的vm已分配的mips，有可能会溢出，导致available为负数，在恢复的时候需要forceplace
-                    MipsShare mipsShare = vm.getCurrentUtilizationMips();
-                    vmScheduler.getAllocatedMipsMap().put(vm,new MipsShare(mipsShare.pes(), mipsShare.mips()*vmScheduler.percentOfMipsToRequest(vm)));
                 }else{
                     System.out.println("执行了！！！"+vm);
                 }
