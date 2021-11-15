@@ -517,9 +517,10 @@ public class HostSimple implements Host, Serializable {
     @Override
     public void reallocateMigratingInVms() {
         for (final Vm vm : getVmsMigratingIn()) {
-            if (!vmList.contains(vm)) {
-                vmList.add(vm);
-            }
+            //（更改） 迁移vm先不加入targethost，只分配空间
+//            if (!vmList.contains(vm)) {
+//                vmList.add(vm);
+//            }
 
             allocateResourcesForVm(vm);
         }
