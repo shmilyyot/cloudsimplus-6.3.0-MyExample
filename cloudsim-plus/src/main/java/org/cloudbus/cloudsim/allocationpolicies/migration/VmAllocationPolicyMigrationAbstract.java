@@ -854,6 +854,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 //记录下每个vm当前的cpu利用率
                 if(!vm.isInMigration()){
                     vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
+                    forceMipsPlace(host, vmScheduler, vm);
                 }
 
                 //（更改）修改每个更新后的vm已分配的mips，有可能会溢出，导致available为负数，在恢复的时候需要forceplace
@@ -863,9 +864,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 ////                vmScheduler.deallocatePesFromVm(vm);
 //                MipsShare newMipeShare = new MipsShare(mipsShare.pes(), defaultMips*percentage);
 //                vmScheduler.allocatePesForVm(vm,newMipeShare);
-                System.out.println("mark1: "+vm+" "+vmScheduler.getAllocatedMipsMap().get(vm).totalMips()+" "+vmScheduler.getTotalAvailableMips());
-                System.out.println("mark2: "+vm+" "+vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips()));
-                System.out.println("mark3: "+vm+" "+vmScheduler.getAllocatedMipsMap().get(vm).totalMips()+" "+vmScheduler.getTotalAvailableMips());
+//                System.out.println("mark1: "+vm+" "+vmScheduler.getAllocatedMipsMap().get(vm).totalMips()+" "+vmScheduler.getTotalAvailableMips());
+//                System.out.println("mark2: "+vm+" "+vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips())+" "+vm.getCurrentUtilizationMips());
+//                System.out.println("mark3: "+vm+" "+vmScheduler.getAllocatedMipsMap().get(vm).totalMips()+" "+vmScheduler.getTotalAvailableMips());
 //                vmScheduler.getAllocatedMipsMap().put(vm,mipsShare);
 
                 //(修改更新的host的ram provisioner),防止溢出
@@ -886,9 +887,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 }
             }
             for(final Vm vm:host.getVmsMigratingIn()){
-                //(修改更新的host的ram provisioner),防止溢出
                 forceRamtoPlace(host, ramProvisioner, vm);
-                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+//                forceMipsPlace(host, vmScheduler, vm);
+                //(修改更新的host的ram provisioner),防止溢出
             }
             for(Vm vm:removeDestroyVms){
                 vm.setCreated(true);
@@ -898,10 +899,35 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         }
     }
 
+    private void forceMipsPlace(Host host, VmScheduler vmScheduler, Vm vm) {
+        MipsShare currentMips = vm.getCurrentUtilizationMips();
+        if(vm.isInMigration() && vm.getHost().getId() != host.getId()){
+            currentMips = new MipsShare(currentMips.pes(),(vm.getCurrentRequestedMips().totalMips()-currentMips.totalMips())/currentMips.pes());
+//            if(vm.getId() == 749){
+//                System.out.println(currentMips);
+//            }
+        }
+        if(!vmScheduler.allocatePesForVm(vm, currentMips)){
+            LOGGER.error("VmAllocationPolicy: Couldn't update {} resource on {}, probably because it increase too many mips,now try to force it to place", vm, host);
+
+            System.out.println("mark:"+currentMips);
+            System.out.println("mark2:"+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getVmScheduler().getAllocatedMips(vm));
+
+            double availableMips = vmScheduler.getTotalAvailableMips();
+            long pes = vm.getNumberOfPes();
+            MipsShare mipsShare = new MipsShare(pes,availableMips/pes);
+            if(!vmScheduler.allocatePesForVm(vm, mipsShare)){
+                LOGGER.error("VmAllocationPolicy: force update {} resource on {} unfortunately failed !!! try to sovle it !!!", vm, host);
+            }else{
+                LOGGER.error("VmAllocationPolicy: force update {} resource on {} successful", vm, host);
+            }
+        }
+    }
+
     //防止溢出并且强制ram防止进host
     private void forceRamtoPlace(Host host, ResourceProvisioner ramProvisioner, Vm vm) {
         if(!ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam())){
-            LOGGER.error("VmAllocationPolicy: Couldn't update {} resource on {}, probably because it increase too many resource,now try to force it to place", vm, host);
+            LOGGER.error("VmAllocationPolicy: Couldn't update {} resource on {}, probably because it increase too many ram,now try to force it to place", vm, host);
             long avaliableResource = ramProvisioner.getAvailableResource();
             if(ramProvisioner.allocateResourceForVm(vm, avaliableResource)){
                 LOGGER.error("VmAllocationPolicy: force update {} resource on {} successful", vm, host);
@@ -939,7 +965,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     vm.setForcePlace(true);
                 }
                 if(!hostSuitability.forPes()){
-
+                    vm.setCpuForcePlace(true);
                 }
                 if(host.createTemporaryVm(vm).fully()){
                     vm.setCreated(true);

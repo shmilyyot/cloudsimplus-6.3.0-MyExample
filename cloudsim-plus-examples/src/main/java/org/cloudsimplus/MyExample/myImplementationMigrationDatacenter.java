@@ -359,9 +359,9 @@ public class myImplementationMigrationDatacenter {
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
+            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
             .setUtilizationModelBw(new UtilizationModelFull())
-            .setUtilizationModelRam(new UtilizationModelDynamic(0.1));
+            .setUtilizationModelRam(new UtilizationModelDynamic(1));
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();
             System.out.printf(
@@ -639,7 +639,6 @@ public class myImplementationMigrationDatacenter {
         if(time - currentTime != 0.0 && currentTime == preClockTime) return;
         long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
         activeHostNumber.add(number);
-        Host host = hostList.get(0);
 //        vmList.forEach(vm->{
 //            double cpuUtilization = vm.getCpuPercentUtilization();
 //            vm.setCpuUtilizationBeforeMigration(cpuUtilization);

@@ -392,12 +392,12 @@ public class HostSimple implements Host, Serializable {
         for (int i = 0; i < vmList.size(); i++) {
             final Vm vm = vmList.get(i);
 
-            //（更改）
+            //（更改）放弃修改迁移时cloudlet可以请求的最大mips数目
             MipsShare mipsShare = vm.getCurrentRequestedMips();
-            double scalingFactor = this.getVmScheduler().percentOfMipsToRequest(vm);
-            if(scalingFactor != 1){
-                mipsShare = new MipsShare(mipsShare.pes(),mipsShare.mips()*scalingFactor);
-            }
+//            double scalingFactor = this.getVmScheduler().percentOfMipsToRequest(vm);
+//            if(scalingFactor != 1){
+//                mipsShare = new MipsShare(mipsShare.pes(),mipsShare.mips()*scalingFactor);
+//            }
 
             final double delay = vm.updateProcessing(currentTime, mipsShare);
             nextSimulationDelay = delay > 0 ? Math.min(delay, nextSimulationDelay) : nextSimulationDelay;
@@ -487,7 +487,13 @@ public class HostSimple implements Host, Serializable {
             long leftRam = ramProvisioner.getAvailableResource();
             ramProvisioner.allocateResourceForVm(vm,leftRam);
         }
-        vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+        if(!vm.isCpuForcePlace()){
+            vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+        }else{
+            double leftMips = vmScheduler.getTotalAvailableMips();
+            long pes = vm.getNumberOfPes();
+            vmScheduler.allocatePesForVm(vm,new MipsShare(pes,leftMips/pes));
+        }
         bwProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedBw());
         disk.getStorage().allocateResource(vm.getStorage());
     }

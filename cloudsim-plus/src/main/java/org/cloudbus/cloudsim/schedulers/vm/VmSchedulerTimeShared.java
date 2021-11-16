@@ -277,16 +277,21 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
     protected boolean isSuitableForVmInternal(final Vm vm, final MipsShare requestedMips) {
         final double totalRequestedMips = requestedMips.totalMips();
         final double exsitRequestedMips = getAllocatedMips(vm).totalMips();
+//        if(vm.getId() == 749){
+//            System.out.println("mark3: "+exsitRequestedMips+" "+totalRequestedMips+" "+getTotalAvailableMips());
+//        }
+
+
         //（更改），这里真的有必要吗？好像已经考虑过了
         //请求的vm额外10%mips开销
         if(vm.isSearchForHost()){
             vm.setSearchForHost(false);
             //（更改），把0.1的代价取消了
 //            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips + totalRequestedMips * getVmMigrationCpuOverhead();
-            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() - exsitRequestedMips >= totalRequestedMips ;
+            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips ;
         }
         // This scheduler does not allow over-subscription of PEs' MIPS
-        return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() - exsitRequestedMips >= totalRequestedMips;
+        return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips;
 
 //        final double totalRequestedMips = requestedMips.totalMips();
 //        //（更改），这里真的有必要吗？好像已经考虑过了
