@@ -425,6 +425,7 @@ public final class GoogleTaskUsageTraceReader extends GoogleTraceReaderAbstract<
     private boolean requestCloudletUsageChange(final Cloudlet cloudlet, final TaskUsage taskUsage)
     {
         final Runnable resourceUsageUpdateRunnable = () -> {
+//            System.out.println("更新前：cpu:"+cloudlet.getVm().getHost().getCpuPercentUtilization()+" ram:"+cloudlet.getVm().getHost().getRamPercentUtilization());
             final StringBuilder builder = new StringBuilder();
             if (cloudlet.getUtilizationOfCpu() != taskUsage.getMeanCpuUsageRate()) {
                 builder.append("CPU Utilization: ")
@@ -449,6 +450,7 @@ public final class GoogleTaskUsageTraceReader extends GoogleTraceReaderAbstract<
             final DatacenterBroker broker = cloudlet.getBroker();
             broker.LOGGER.trace("{}: {}: {} resource usage changed: {}", simulation.clockStr(), broker.getName(), cloudlet, builder);
             cloudlet.getVm().getHost().updateProcessing(simulation.clock());
+//            System.out.println("更新后：cpu:"+cloudlet.getVm().getHost().getCpuPercentUtilization()+" ram:"+cloudlet.getVm().getHost().getRamPercentUtilization());
         };
 
 

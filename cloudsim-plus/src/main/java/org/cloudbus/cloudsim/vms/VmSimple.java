@@ -355,7 +355,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
-        this(sourceVm.getSimulation().clock() > 0.2 ? sourceVm.getCpuUtilizationBeforeMigration()*sourceVm.getMips() : sourceVm.getMips(),sourceVm.getNumberOfPes());
+        this(sourceVm.getSimulation().clock() >= 0.2 ? sourceVm.getCpuUtilizationBeforeMigration()*sourceVm.getMips() : sourceVm.getMips(),sourceVm.getNumberOfPes());
         this.setActualIdForTempVm(sourceVm.getId());
 //        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
@@ -506,19 +506,21 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         if (isCreated()) {
             return host.getVmScheduler().getRequestedMips(this);
         }
-
+        if (getSimulation().clock() < 0.2) {
+            return new MipsShare(getNumberOfPes(), 0.1 * getMips());
+        }
         return new MipsShare(getNumberOfPes(), getMips());
     }
 
 
     @Override
     public MipsShare getCurrentUtilizationMips(){
-        if (this.getId() == -1) {
+        if (this.getId() == -1 || getSimulation().clock() < 0.2) {
             return getCurrentRequestedMips();
         }
-        if (getSimulation().clock() < 0.2) {
-            return new MipsShare(getNumberOfPes(),0.1 * getMips());
-        }
+//        if (getSimulation().clock() < 0.2) {
+//            return new MipsShare(getNumberOfPes(),getMips());
+//        }
         double currentCpuercent = getCpuPercentUtilization();
         double cpuPercent = (currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent);
         return new MipsShare(getNumberOfPes(),cpuPercent * getMips());

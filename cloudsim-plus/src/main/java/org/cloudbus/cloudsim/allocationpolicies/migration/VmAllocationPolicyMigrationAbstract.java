@@ -343,7 +343,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         HostSuitability suitability = host.createTemporaryVm(tempVm);
         if (!suitability.fully()) {
             System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
-//            System.out.println("mark1:"+vm.isInMigration());
+            System.out.println("mark:"+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
+            System.out.println("mark:"+tempVm+" "+tempVm.getCurrentRequestedMips()+" "+tempVm.getRam().getCapacity());
+            System.out.println("mark:"+host+" "+host.getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" allocatemips:"+host.getVmScheduler().getAllocatedMips(vm));
             return false;
         }
 
@@ -900,6 +902,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     private void forceMipsPlace(Host host, VmScheduler vmScheduler, Vm vm) {
+        if(vm.getCloudletScheduler().isEmpty()) return;
         MipsShare currentMips = vm.getCurrentUtilizationMips();
         if(vm.isInMigration() && vm.getHost().getId() != host.getId()){
             currentMips = new MipsShare(currentMips.pes(),(vm.getCurrentRequestedMips().totalMips()-currentMips.totalMips())/currentMips.pes());
@@ -910,8 +913,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         if(!vmScheduler.allocatePesForVm(vm, currentMips)){
             LOGGER.error("VmAllocationPolicy: Couldn't update {} resource on {}, probably because it increase too many mips,now try to force it to place", vm, host);
 
-            System.out.println("mark:"+currentMips);
-            System.out.println("mark2:"+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getVmScheduler().getAllocatedMips(vm));
+            System.out.println("mark1:"+vm+" currentMips:"+currentMips+" CurrentRequestedMips:"+vm.getCurrentRequestedMips()+" CpuPercentUtilization:"+vm.getCpuPercentUtilization());
+            System.out.println("mark2:"+host+" AvailableMips:"+host.getVmScheduler().getTotalAvailableMips()+" AllocatedMips:"+host.getVmScheduler().getAllocatedMips(vm));
 
             int availableMips = (int)vmScheduler.getTotalAvailableMips();
             long pes = vm.getNumberOfPes();
