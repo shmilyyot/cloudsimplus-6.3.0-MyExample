@@ -164,7 +164,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         this.mipsUtilizationBeforeMigration = mipsUtilizationBeforeMigration;
     }
 
-    private double mipsUtilizationBeforeMigration = 0.0;
+    private double mipsUtilizationBeforeMigration = 1.0;
 
     public double getCpuUtilizationBeforeMigration() {
         return cpuUtilizationBeforeMigration;
