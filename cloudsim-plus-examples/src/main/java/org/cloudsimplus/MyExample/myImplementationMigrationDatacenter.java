@@ -169,7 +169,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -329,8 +329,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
-            .setUtilizationModelRam(new UtilizationModelDynamic(1));
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
+            .setUtilizationModelRam(new UtilizationModelDynamic(0.1));
         //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener);
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();
@@ -359,9 +359,9 @@ public class myImplementationMigrationDatacenter {
         Cloudlet cloudlet = new CloudletSimple(length, 1);
         cloudlet.setFileSize(fileSize)
             .setOutputSize(outputSize)
-            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
             .setUtilizationModelBw(new UtilizationModelFull())
-            .setUtilizationModelRam(new UtilizationModelDynamic(1));
+            .setUtilizationModelRam(new UtilizationModelDynamic(0.1));
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();
             System.out.printf(
@@ -438,16 +438,16 @@ public class myImplementationMigrationDatacenter {
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
 
             this.allocationPolicy =
-                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
-
-//            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
 //                    new VmSelectionPolicyMinimumUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
@@ -475,6 +475,7 @@ public class myImplementationMigrationDatacenter {
 //            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
 
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            hostList.sort((a,b)-> (int) (b.getRam().getCapacity()-a.getRam().getCapacity()));
             Datacenter datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
             datacenter
                 .setSchedulingInterval(Constant.SCHEDULING_INTERVAL)

@@ -9,7 +9,7 @@ public class Constant {
     public static final double STOP_TIME = 86400.0;    //读取多长时间的数据，默认10天，google中默认微秒为单位，cloudsimplus自动处理为秒
     public static final boolean USING_GOOGLE_HOST = false;   //使用谷歌的主机模板或者自定义主机模板
     public static final int DATACENTERS_NUMBER = 1;     //数据中心的个数
-    public static final int SCHEDULING_INTERVAL = 1;   //调度时间间隔，决定系统多久更新一次cloudlet的相关状态，如vm和host的能耗，vm运行的指令数等等，不影响cloudlet的运行，越小计算越精确
+    public static final int SCHEDULING_INTERVAL = 300;   //调度时间间隔，决定系统多久更新一次cloudlet的相关状态，如vm和host的能耗，vm运行的指令数等等，不影响cloudlet的运行，越小计算越精确
     public static final int COLLECTTIME = 300;  //记录vm请求mips的间隔（利用率300秒变一次）和记录能耗的间隔
 
     /**
@@ -83,7 +83,7 @@ public class Constant {
     public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
     public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
     public static final double[] IDLE_POWER = {86,93};
-    public static final double IDLE_SHUTDOWN_TIME = SCHEDULING_INTERVAL;    //主机闲置关机的时间
+    public static final double IDLE_SHUTDOWN_TIME = 0.2;    //主机闲置关机的时间
 
 
     /**
@@ -91,7 +91,7 @@ public class Constant {
      * 任务长度设置为负数，代表任务可以无限制运行下去，直到读到真实记录的任务结束标志
      * */
     public static final int TEST_CLOUDLET_LENGTH = 200000;
-    public static final boolean USING_TEST_CLOUDLET = true;
+    public static final boolean USING_TEST_CLOUDLET = false;
     public static final int  CLOUDLET_LENGTH = -10_000;
     public static final boolean USING_FILTER = false;
     public static final boolean FILTER_INSIDE_CLOUDLET = false;  //true过滤掉cloudlet里所有5~90%之外的利用率变化,false过滤掉只要出现过5~90%之外利用率的整个cloudlet
@@ -109,11 +109,11 @@ public class Constant {
     /**
      * 亚马逊数据中心的虚拟机归一化得到vm的相关参数设置,一共有四种，都是单核的
      * */
-    public static final int VMS = 1000;   //虚拟机数目
+    public static final int VMS = 1600;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3750,1750,613};    //1750效果比3750好
+    public static final long[] VM_RAM = {850,1750,1750,613};    //1750效果比3750好
     public static final long[] VM_BW = {100,100,100,100}; //用不到
     public static final long[] VM_SIZE_MB = {10000,10000,10000,10000}; //用不到
 

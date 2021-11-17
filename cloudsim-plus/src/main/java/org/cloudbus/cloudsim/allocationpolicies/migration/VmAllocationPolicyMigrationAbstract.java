@@ -913,14 +913,15 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             System.out.println("mark:"+currentMips);
             System.out.println("mark2:"+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getVmScheduler().getAllocatedMips(vm));
 
-            double availableMips = vmScheduler.getTotalAvailableMips();
+            int availableMips = (int)vmScheduler.getTotalAvailableMips();
             long pes = vm.getNumberOfPes();
-            MipsShare mipsShare = new MipsShare(pes,availableMips/pes);
+            MipsShare mipsShare = new MipsShare(pes,(double)availableMips/pes);
             if(!vmScheduler.allocatePesForVm(vm, mipsShare)){
                 LOGGER.error("VmAllocationPolicy: force update {} resource on {} unfortunately failed !!! try to sovle it !!!", vm, host);
             }else{
                 LOGGER.error("VmAllocationPolicy: force update {} resource on {} successful", vm, host);
             }
+//            System.out.println("mark3:"+host.getCpuPercentUtilization()+" "+host.getRamPercentUtilization());
         }
     }
 
@@ -935,7 +936,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 LOGGER.error("VmAllocationPolicy: force update {} resource on {} unfortunately failed !!! try to sovle it !!!", vm, host);
             }
         }
+//        System.out.println("mark4:"+host.getCpuPercentUtilization()+" "+host.getRamPercentUtilization());
     }
+
 
     /**
      * Restore VM allocation from the allocation history.

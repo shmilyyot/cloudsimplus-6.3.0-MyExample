@@ -164,7 +164,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         this.mipsUtilizationBeforeMigration = mipsUtilizationBeforeMigration;
     }
 
-    private double mipsUtilizationBeforeMigration = 1.0;
+    private double mipsUtilizationBeforeMigration = 0.1;
 
     public double getCpuUtilizationBeforeMigration() {
         return cpuUtilizationBeforeMigration;
@@ -513,8 +513,11 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public MipsShare getCurrentUtilizationMips(){
-        if (getSimulation().clock() < 0.2 || this.getId() == -1) {
+        if (this.getId() == -1) {
             return getCurrentRequestedMips();
+        }
+        if (getSimulation().clock() < 0.2) {
+            return new MipsShare(getNumberOfPes(),0.1 * getMips());
         }
         double currentCpuercent = getCpuPercentUtilization();
         double cpuPercent = (currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent);
