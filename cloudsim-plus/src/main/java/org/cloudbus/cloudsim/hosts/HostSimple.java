@@ -1058,7 +1058,7 @@ public class HostSimple implements Host, Serializable {
 
         if(!allocateResourcesForVm(vm, true).fully()){
             System.out.println(vm+" 请求的mips："+vm.getCurrentUtilizationMips().totalMips()+"  请求的ram:"+vm.getCurrentRequestedRam()+" cpu利用率："+vm.getCpuPercentUtilization()+" beforeMigration:"+vm.getCpuUtilizationBeforeMigration());
-            System.out.println(this+" 剩余的mips："+this.getVmScheduler().getTotalAvailableMips()+"  剩余ram"+this.getRam().getAvailableResource());
+            System.out.println(this+" 剩余的mips："+this.getVmScheduler().getTotalAvailableMips()+"  剩余ram"+this.getRam().getAvailableResource()+" host已分配mips："+this.getVmScheduler().getAllocatedMips(vm));
             vmsMigratingIn.remove(vm);
             return false;
         }

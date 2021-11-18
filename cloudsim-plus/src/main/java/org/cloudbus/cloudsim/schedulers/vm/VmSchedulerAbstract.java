@@ -81,7 +81,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
     @Override
     public final boolean isSuitableForVm(final Vm vm, final MipsShare requestedMips) {
         //其实应该允许分配空的虚拟机
-        if(requestedMips.isEmpty()){
+        if(requestedMips.isEmpty() && !vm.getCloudletScheduler().isEmpty()){
             //如果当前利用率为空，直接返回就是了
             LOGGER.warn(
                 "{}: {}: It was requested an empty list of PEs for {} in {}",

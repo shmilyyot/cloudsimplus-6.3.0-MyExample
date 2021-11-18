@@ -507,7 +507,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
             return host.getVmScheduler().getRequestedMips(this);
         }
         if (getSimulation().clock() < 0.2) {
-            return new MipsShare(getNumberOfPes(), 0.1 * getMips());
+            return new MipsShare(getNumberOfPes(), getMips());
         }
         return new MipsShare(getNumberOfPes(), getMips());
     }

@@ -654,6 +654,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final Vm vm = entry.getKey();
 
         final Host targetHost = entry.getValue();
+        final Host sourceHost = vm.getHost();
+        System.out.println("mark3: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" TotalAvailableMips:"+targetHost.getTotalAvailableMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
 
         //不变是不是因为已经提前放进去分配了内存？
 //        System.out.println("before migration: "+targetHost+" "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
@@ -715,6 +717,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
 
         onVmMigrationFinishListeners.forEach(listener -> listener.update(DatacenterVmMigrationEventInfo.of(listener, vm, suitability)));
+        System.out.println("mark4: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" TotalAvailableMips:"+targetHost.getTotalAvailableMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
     }
 
     /**

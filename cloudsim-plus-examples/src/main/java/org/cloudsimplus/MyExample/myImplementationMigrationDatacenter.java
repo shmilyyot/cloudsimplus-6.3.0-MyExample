@@ -280,7 +280,7 @@ public class myImplementationMigrationDatacenter {
                         }else{
                             reader.setPredicate(event -> event.getTimestamp() <= Constant.STOP_TIME);
                         }
-//                reader.setMaxCloudletsToCreate(100);
+                reader.setMaxCloudletsToCreate(1569);
                     }
                 }
                 if(broker != null){
@@ -329,8 +329,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
-            .setUtilizationModelRam(new UtilizationModelDynamic(0.1));
+            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
+            .setUtilizationModelRam(new UtilizationModelDynamic(1));
         //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener);
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();
@@ -619,7 +619,7 @@ public class myImplementationMigrationDatacenter {
 
 
         vmList.addAll(createVms());
-        vmList.sort((k,v)-> (int)(v.getRam().getCapacity()-k.getRam().getCapacity()));
+//        vmList.sort((k,v)-> (int)(v.getRam().getCapacity()-k.getRam().getCapacity()));
         broker.submitVmList(vmList);
 
         vmList.forEach(vm -> vm.addOnMigrationStartListener(this::startMigration));

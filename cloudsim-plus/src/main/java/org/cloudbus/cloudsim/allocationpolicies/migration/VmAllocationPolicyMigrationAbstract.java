@@ -632,6 +632,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
             //try to find a target Host to place a VM from an underloaded Host that is not underloaded too
             //（更改）万一没有低负载迁移，问题出在这里
+//            final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> !isHostUnderloaded(host));
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> true);
             //只要有一个vm找不到host，直接返回空map，之前找到host的也不算了
             if (!optional.isPresent()) {
@@ -855,7 +856,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
                 //记录下每个vm当前的cpu利用率
                 if(!vm.isInMigration()){
-                    vm.setCpuUtilizationBeforeMigration(vm.getCpuPercentUtilization());
+                    double percentage = vm.getCpuPercentUtilization();
+//                    System.out.println(vm+" "+percentage+" "+vm.getCurrentUtilizationMips()+" "+vm.getCloudletScheduler().getRequestedCpuPercentUtilization(vm.getSimulation().clock()));
+                    vm.setCpuUtilizationBeforeMigration(percentage);
                     forceMipsPlace(host, vmScheduler, vm);
                 }
 

@@ -521,7 +521,6 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
 
         setPreviousTime(currentTime);
         vm.getSimulation().setLastCloudletProcessingUpdate(currentTime);
-
         return nextSimulationDelay;
     }
 
