@@ -169,7 +169,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -329,8 +329,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
-            .setUtilizationModelRam(new UtilizationModelDynamic(1));
+            .setUtilizationModelCpu(new UtilizationModelDynamic(0.1))
+            .setUtilizationModelRam(new UtilizationModelDynamic(0.1));
         //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener);
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();
