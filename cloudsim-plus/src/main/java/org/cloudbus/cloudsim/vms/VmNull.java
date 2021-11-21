@@ -205,6 +205,8 @@ class VmNull implements Vm {
     @Override public void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration) {}
     @Override public long getActualIdForTempVm() {return 0;}
     @Override public void setActualIdForTempVm(long actualIdForTempVm) {}
+    @Override public boolean isRestorePlace() {return false;}
+    @Override public void setRestorePlace(boolean restorePlace) {}
     @Override public String getDescription() { return ""; }
     @Override public Vm setDescription(String description) { return this; }
     @Override public VmGroup getGroup() { return null; }

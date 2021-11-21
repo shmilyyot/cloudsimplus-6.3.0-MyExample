@@ -448,7 +448,7 @@ public final class GoogleTaskUsageTraceReader extends GoogleTraceReaderAbstract<
              * if this Runnable is executed is because something was.
              * An event to execute such Runnable is just sent in such a condition.*/
             final DatacenterBroker broker = cloudlet.getBroker();
-            broker.LOGGER.trace("{}: {}: {} resource usage changed: {}", simulation.clockStr(), broker.getName(), cloudlet, builder);
+            broker.LOGGER.trace("{}: {}: {} on {} on {} resource usage changed: {}", simulation.clockStr(), broker.getName(), cloudlet,cloudlet.getVm(), cloudlet.getVm().getHost(), builder);
             cloudlet.getVm().getHost().updateProcessing(simulation.clock());
 //            System.out.println("更新后：cpu:"+cloudlet.getVm().getHost().getCpuPercentUtilization()+" ram:"+cloudlet.getVm().getHost().getRamPercentUtilization());
         };

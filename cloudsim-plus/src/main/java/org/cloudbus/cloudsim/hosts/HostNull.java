@@ -9,6 +9,7 @@ import org.cloudbus.cloudsim.resources.FileStorage;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.Resource;
 import org.cloudbus.cloudsim.resources.ResourceManageable;
+import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.vm.VmScheduler;
 import org.cloudbus.cloudsim.vms.HostResourceStats;
 import org.cloudbus.cloudsim.vms.Vm;
@@ -19,6 +20,7 @@ import org.cloudsimplus.listeners.HostUpdatesVmsProcessingEventInfo;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -65,6 +67,10 @@ final class HostNull implements Host, Serializable {
     @Override public double getResourceWastage() {return 0;}
     @Override public boolean isCantShutdown() {return false;}
     @Override public void setCantShutdown(boolean cantShutdown) {}
+    @Override public Map<Vm, MipsShare> getVmMipsReAllocations() {return null;}
+    @Override public void setVmMipsReAllocations(Map<Vm, MipsShare> vmMipsReAllocations) {}
+    @Override public Map<Vm, Long> getVmsRamReAllocations() {return null;}
+    @Override public void setVmsRamReAllocations(Map<Vm, Long> vmsRamReAllocations) {}
     @Override public Datacenter getDatacenter() {
         return Datacenter.NULL;
     }

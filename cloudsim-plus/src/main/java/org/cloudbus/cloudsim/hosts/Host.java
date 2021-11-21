@@ -19,6 +19,7 @@ import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.Pe.Status;
 import org.cloudbus.cloudsim.resources.Ram;
 import org.cloudbus.cloudsim.resources.ResourceManageable;
+import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.vm.VmScheduler;
 import org.cloudbus.cloudsim.vms.HostResourceStats;
 import org.cloudbus.cloudsim.vms.Vm;
@@ -29,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -65,9 +67,17 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
 
     double getResourceWastage();
 
-    public boolean isCantShutdown();
+    boolean isCantShutdown();
 
-    public void setCantShutdown(boolean cantShutdown);
+    void setCantShutdown(boolean cantShutdown);
+
+    Map<Vm, MipsShare> getVmMipsReAllocations();
+
+    void setVmMipsReAllocations(Map<Vm, MipsShare> vmMipsReAllocations);
+
+    Map<Vm, Long> getVmsRamReAllocations();
+
+    void setVmsRamReAllocations(Map<Vm, Long> vmsRamReAllocations);
 
     /**
      * Gets the Datacenter where the host is placed.

@@ -75,6 +75,25 @@ public class HostSimple implements Host, Serializable {
     private boolean active;
     private boolean stateHistoryEnabled;
 
+    public Map<Vm, MipsShare> getVmMipsReAllocations() {
+        return VmMipsReAllocations;
+    }
+
+    public void setVmMipsReAllocations(Map<Vm, MipsShare> vmMipsReAllocations) {
+        VmMipsReAllocations = vmMipsReAllocations;
+    }
+
+    public Map<Vm, Long> getVmsRamReAllocations() {
+        return VmsRamReAllocations;
+    }
+
+    public void setVmsRamReAllocations(Map<Vm, Long> vmsRamReAllocations) {
+        VmsRamReAllocations = vmsRamReAllocations;
+    }
+
+    Map<Vm,MipsShare> VmMipsReAllocations = new HashMap<>();
+    Map<Vm,Long> VmsRamReAllocations = new HashMap<>();
+
     public double getIdlePower() {
         return idlePower;
     }
@@ -482,13 +501,21 @@ public class HostSimple implements Host, Serializable {
 
     private void allocateResourcesForVm(Vm vm) {
         if(!vm.isForcePlace()){
-            ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
+            if(vm.isRestorePlace()){
+                ramProvisioner.allocateResourceForVm(vm, getVmsRamReAllocations().get(vm));
+            }else{
+                ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
+            }
         }else{
             long leftRam = ramProvisioner.getAvailableResource();
             ramProvisioner.allocateResourceForVm(vm,leftRam);
         }
         if(!vm.isCpuForcePlace()){
-            vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+            if(vm.isRestorePlace()){
+                vmScheduler.allocatePesForVm(vm, getVmMipsReAllocations().get(vm));
+            }else{
+                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+            }
         }else{
             double leftMips = vmScheduler.getTotalAvailableMips();
             long pes = vm.getNumberOfPes();
@@ -529,7 +556,6 @@ public class HostSimple implements Host, Serializable {
             if (!vmList.contains(vm)) {
                 vmList.add(vm);
             }
-            System.out.println();
             allocateResourcesForVm(vm);
         }
     }

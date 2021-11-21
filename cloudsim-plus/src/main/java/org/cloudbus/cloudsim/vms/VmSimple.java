@@ -112,6 +112,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     private VmGroup group;
     private double timeZone;
 
+    public boolean isRestorePlace() {
+        return restorePlace;
+    }
+
+    public void setRestorePlace(boolean restorePlace) {
+        this.restorePlace = restorePlace;
+    }
+
+    private boolean restorePlace;
+
     public double getRequestUtilization() {
         return requestUtilization;
     }
