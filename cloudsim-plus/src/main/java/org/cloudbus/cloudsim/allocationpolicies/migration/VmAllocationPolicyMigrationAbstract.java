@@ -848,6 +848,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             final VmScheduler vmScheduler = host.getVmScheduler();
             final ResourceProvisioner ramProvisioner = host.getRamProvisioner();
 
+            //抹除所有host上所有mips分配,迁移中的也释放了
+            vmScheduler.deallocatePesForAllVms();
+            //恢复迁移中的vm的mips资源，给迁移中的资源让步，就算迁移中涨了资源，优先满足迁移中的，压缩其他vm的资源
+            for (final Vm vm : host.getVmsMigratingIn()) {
+                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+            }
+
             //抹除所有host上所有ram分配
             ramProvisioner.deallocateResourceForAllVms();
 
@@ -905,23 +912,35 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         Map<Vm,MipsShare> VmMipsReAllocations = new HashMap<>();
         double hostCpuPercentage = host.getCpuPercentUtilization();
         double vmsRequestMipsTotal = 0.0;
+        double vmsMigratingRequestMipsTotal = 0.0;
         if(hostCpuPercentage > 0.9999){
             System.out.println("mark5: "+host+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated");
             for(Vm vm:host.getVmList()){
                 vmsRequestMipsTotal += vm.getCurrentUtilizationMips().totalMips();
             }
-
+            for(Vm vm:host.getVmsMigratingIn()){
+                if(host.getVmList().contains(vm)){
+                    vmsRequestMipsTotal -= vm.getCurrentUtilizationMips().totalMips();
+                }
+                vmsMigratingRequestMipsTotal += vm.getCurrentUtilizationMips().totalMips();
+            }
+            double hostTotalMipsCapacity = host.getTotalMipsCapacity();
+            double vmsWithoutMigratingRequestMipsTotal = hostTotalMipsCapacity - vmsMigratingRequestMipsTotal;
             for(Vm vm:host.getVmList()){
                 double percentage = vm.getCurrentUtilizationMips().totalMips()/vmsRequestMipsTotal;
                 long pes = vm.getNumberOfPes();
-                MipsShare mipsShare = new MipsShare(pes,Math.floor(percentage * host.getTotalMipsCapacity()));
+                MipsShare mipsShare = new MipsShare(pes,Math.floor(percentage * vmsWithoutMigratingRequestMipsTotal));
                 VmMipsReAllocations.put(vm,mipsShare);
+            }
+            for(Vm vm:host.getVmsMigratingIn()){
+                VmMipsReAllocations.put(vm,vm.getCurrentUtilizationMips());
             }
         }else{
             for(Vm vm:host.getVmList()){
-                long pes = vm.getNumberOfPes();
-                MipsShare mipsShare = new MipsShare(pes,Math.floor(vm.getCurrentUtilizationMips().totalMips()));
-                VmMipsReAllocations.put(vm,mipsShare);
+                VmMipsReAllocations.put(vm,vm.getCurrentUtilizationMips());
+            }
+            for(Vm vm:host.getVmsMigratingIn()){
+                VmMipsReAllocations.put(vm,vm.getCurrentUtilizationMips());
             }
         }
         return VmMipsReAllocations;
@@ -930,32 +949,41 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     private Map<Vm,Long> buildVmRamReAllocations(Host host){
         Map<Vm,Long> VmsRamReAllocations = new HashMap<>();
         double hostRamPercentage = host.getRamPercentUtilization();
-        double vmsRequestRamTotal = 0;
+        long vmsRequestRamTotal = 0;
+        long vmsMigratingRequestRamTotal = 0;
+        long hostRamCapacity = host.getRam().getCapacity();
         if(hostRamPercentage > 0.9999){
             System.out.println("mark6: "+host+" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated");
             for(Vm vm:host.getVmList()){
                 vmsRequestRamTotal += vm.getCurrentRequestedRam();
             }
             for(final Vm vm:host.getVmsMigratingIn()){
-                vmsRequestRamTotal += vm.getCurrentRequestedRam();
+                if(host.getVmList().contains(vm)){
+                    vmsRequestRamTotal -= vm.getCurrentRequestedRam();
+                }
+                vmsMigratingRequestRamTotal += vm.getCurrentRequestedRam();
             }
+            //容量除去迁移中的实际容量，迁移中的ram按实际请求分配
+            long vmsWithoutMigratingRequestRamTotal = hostRamCapacity - vmsMigratingRequestRamTotal;
+            //如果vmlist里面也同时有迁移的vm也没关系，下一个for循环计算迁移vm会覆盖上面的结果
             for(Vm vm:host.getVmList()){
-                double percentage = vm.getCurrentRequestedRam()/vmsRequestRamTotal;
-                long requestRam = Math.round(percentage * host.getRam().getCapacity());
+                //不算迁移中的ram，当前请求的ram和总共ram的比例
+                double percentage = (double)vm.getCurrentRequestedRam()/vmsRequestRamTotal;
+                long requestRam = Math.round(percentage * vmsWithoutMigratingRequestRamTotal);
                 VmsRamReAllocations.put(vm,requestRam);
             }
             for(final Vm vm:host.getVmsMigratingIn()){
-                double percentage = vm.getCurrentRequestedRam()/vmsRequestRamTotal;
-                long requestRam = Math.round(percentage * host.getRam().getCapacity());
+                long requestRam = vm.getCurrentRequestedRam();
                 VmsRamReAllocations.put(vm,requestRam);
             }
         }else{
+            //没超总额，全部按实际分配
             for(Vm vm:host.getVmList()){
-                long requestRam = Math.round(vm.getCurrentRequestedRam());
+                long requestRam = vm.getCurrentRequestedRam();
                 VmsRamReAllocations.put(vm,requestRam);
             }
             for(final Vm vm:host.getVmsMigratingIn()){
-                long requestRam = Math.round(vm.getCurrentRequestedRam());
+                long requestRam = vm.getCurrentRequestedRam();
                 VmsRamReAllocations.put(vm,requestRam);
             }
         }
