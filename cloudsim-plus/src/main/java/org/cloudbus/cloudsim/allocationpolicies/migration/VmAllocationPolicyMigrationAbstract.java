@@ -969,12 +969,12 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             for(Vm vm:host.getVmList()){
                 //不算迁移中的ram，当前请求的ram和总共ram的比例
                 double percentage = (double)vm.getCurrentRequestedRam()/vmsRequestRamTotal;
-                long requestRam = Math.round(percentage * hostRamCapacity);
+                long requestRam = (long)(percentage * hostRamCapacity);
                 VmsRamReAllocations.put(vm,requestRam);
             }
             for(final Vm vm:host.getVmsMigratingIn()){
                 double percentage = (double)vm.getCurrentRequestedRam()/vmsRequestRamTotal;
-                long requestRam = Math.round(percentage * hostRamCapacity);
+                long requestRam = (long)(percentage * hostRamCapacity);
                 VmsRamReAllocations.put(vm,requestRam);
             }
         }else{
@@ -1006,6 +1006,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     private void allocateRamAndForcePlace(Host host, ResourceProvisioner ramProvisioner, Vm vm, long allocateRam) {
         if(!ramProvisioner.allocateResourceForVm(vm, allocateRam)){
             LOGGER.error("VmAllocationPolicy: Couldn't update {} resource on {}, probably because it increase too many ram,now try to force it to place", vm, host);
+
+            System.out.println("mark1:"+vm+" allocateRam:"+allocateRam+" CurrentCurrentRequestedRam:"+vm.getCurrentRequestedRam());
+            System.out.println("mark2:"+host+" AvailableRam:"+host.getRam().getAvailableResource()+" AllocatedRam:"+host.getRamProvisioner().getAllocatedResourceForVm(vm));
+
             long avaliableResource = ramProvisioner.getAvailableResource();
             if(ramProvisioner.allocateResourceForVm(vm, avaliableResource)){
                 LOGGER.error("VmAllocationPolicy: force update {} resource on {} successful", vm, host);
