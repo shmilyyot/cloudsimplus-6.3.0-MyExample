@@ -639,10 +639,6 @@ public class myImplementationMigrationDatacenter {
         if(time - currentTime != 0.0 && currentTime == preClockTime) return;
         long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
         activeHostNumber.add(number);
-//        vmList.forEach(vm->{
-//            double cpuUtilization = vm.getCpuPercentUtilization();
-//            vm.setCpuUtilizationBeforeMigration(cpuUtilization);
-//        });
         //不应该一直记录运行时间的请求mips，因为利用率本来就是大概300秒变一次，应该一致
         if(currentTime % Constant.COLLECTTIME == 0){
             vmList.forEach(vm->{
@@ -651,14 +647,17 @@ public class myImplementationMigrationDatacenter {
                 vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
                 vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
             });
-//            hostList.forEach(host->{
-//                host.getVmList().forEach(vm->{
-//                    //更新vm总共请求的mips数目
-//                    double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
-//                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
-//                    vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
-//                });
-//            });
+        }
+        if(currentTime % Constant.SCHEDULING_INTERVAL == 0){
+            hostList.forEach(host->{
+                if(host.isActive()){
+                    double hostRamUtilization = host.getRamPercentUtilization();
+                    double hostCpuUtilization = host.getCpuPercentUtilization();
+                    if(hostRamUtilization >= 0.9999 || hostCpuUtilization > 0.9999){
+                        host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
+                    }
+                }
+            });
         }
         preClockTime = currentTime;
     }
@@ -716,7 +715,6 @@ public class myImplementationMigrationDatacenter {
 
 
         if(host.isActive()){
-//                System.out.println("打印开机时间："+host.getTotalUpTime());
 //            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
             while(hostRamhistory.size() > Constant.HOST_LogLength-1){
                 hostRamhistory.removeFirst();
@@ -725,10 +723,6 @@ public class myImplementationMigrationDatacenter {
 //            }
             double hostRamUtilization = host.getRamPercentUtilization();
             double hostCpuUtilization = host.getCpuPercentUtilization();
-
-            if(hostRamUtilization > 0.99 || hostCpuUtilization > 0.99){
-                host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
-            }
 
             hostRamhistory.addLast(hostRamUtilization);
             hostCpuhistory.addLast(hostCpuUtilization);
