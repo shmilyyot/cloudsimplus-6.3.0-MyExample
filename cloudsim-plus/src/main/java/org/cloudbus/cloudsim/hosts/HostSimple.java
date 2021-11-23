@@ -480,7 +480,7 @@ public class HostSimple implements Host, Serializable {
      */
     private HostSuitability allocateResourcesForVm(final Vm vm, final boolean inMigration){
         HostSuitability suitability;
-        if(!vm.isForcePlace()){
+        if(!vm.isForcePlace() && !vm.isRestorePlace()){
             suitability = isSuitableForVm(vm, inMigration, true);
         }else{
             suitability = new HostSuitability();
