@@ -712,7 +712,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
                 LOGGER.error(
                     "{}: {}: Allocation of {} to the destination {} failed due to {}!",
                     getSimulation().clockStr(), this, vm, targetHost, suitability);
-//            System.out.println(vm.get+" "+targetHost.getTotalAvailableMips()+" "+targetHost.getTotalMipsCapacity());
+            System.out.println(vm.getCurrentUtilizationMips()+" "+targetHost.getTotalAvailableMips()+" "+vm.getCurrentRequestedRam()+" "+targetHost.getRam().getAvailableResource());
             }
         }
 

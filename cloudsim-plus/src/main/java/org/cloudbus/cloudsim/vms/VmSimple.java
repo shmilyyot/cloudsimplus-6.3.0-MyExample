@@ -365,7 +365,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
-        this(sourceVm.getSimulation().clock() >= 0.2 ? sourceVm.getCpuUtilizationBeforeMigration()*sourceVm.getMips() : sourceVm.getMips(),sourceVm.getNumberOfPes());
+        this(sourceVm.getSimulation().clock() >= 0.2 ? Math.floor(sourceVm.getCpuUtilizationBeforeMigration() * sourceVm.getMips()) : sourceVm.getMips(),sourceVm.getNumberOfPes());
         this.setActualIdForTempVm(sourceVm.getId());
 //        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
@@ -533,7 +533,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 //        }
         double currentCpuercent = getCpuPercentUtilization();
         double cpuPercent = (currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent);
-        return new MipsShare(getNumberOfPes(),cpuPercent * getMips());
+        return new MipsShare(getNumberOfPes(),Math.floor(cpuPercent * getMips()));
     }
 
     @Override
@@ -559,7 +559,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
             return ram.getCapacity();
         }
 
-        return (long) (cloudletScheduler.getCurrentRequestedRamPercentUtilization() * ram.getCapacity());
+        return (long)(cloudletScheduler.getCurrentRequestedRamPercentUtilization() * ram.getCapacity());
     }
 
     @Override
