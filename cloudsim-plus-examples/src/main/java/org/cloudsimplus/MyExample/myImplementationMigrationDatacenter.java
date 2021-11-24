@@ -715,37 +715,56 @@ public class myImplementationMigrationDatacenter {
 
 
         if(host.isActive()){
-//            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
-            while(hostRamhistory.size() > Constant.HOST_LogLength-1){
-                hostRamhistory.removeFirst();
-                hostCpuhistory.removeFirst();
-            }
-//            }
             double hostRamUtilization = host.getRamPercentUtilization();
             double hostCpuUtilization = host.getCpuPercentUtilization();
-
-            hostRamhistory.addLast(hostRamUtilization);
-            hostCpuhistory.addLast(hostCpuUtilization);
-            host.getVmList().forEach(vm -> {
-                LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-                LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-//                if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
-                while(vmCpuHistory.size() > Constant.VM_LogLength-1){
-                    vmCpuHistory.removeFirst();
-                    vmRamHistory.removeFirst();
+            if(!hostRamhistory.isEmpty()){
+                if(hostRamUtilization != hostRamhistory.getLast()){
+                    hostRamhistory.addLast(hostRamUtilization);
                 }
-//                }
-
-                vmCpuHistory.addLast(vm.getCpuPercentUtilization());
-                vmRamHistory.addLast(vm.getRam().getPercentUtilization());
+            }else{
+                hostRamhistory.addLast(hostRamUtilization);
+            }
+            if(!hostCpuhistory.isEmpty()){
+                if(hostCpuUtilization != hostCpuhistory.getLast()){
+                    hostCpuhistory.addLast(hostCpuUtilization);
+                }
+            }else{
+                hostCpuhistory.addLast(hostCpuUtilization);
+            }
+            host.getVmList().forEach(vm -> {
+                if(vm.getHost().getId() == host.getId()){
+                    LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
+                    LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
+                    double vmCpuUtilization = vm.getCloudletScheduler().getRequestedCpuPercentUtilization(simulation.clock());
+                    double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+//                    System.out.println("mark: "+vm+" "+vmCpuUtilization+"  "+vmRamUtilization);
+                    if(!vmCpuHistory.isEmpty()){
+                        if(vmCpuUtilization != vmCpuHistory.getLast()){
+                            vmCpuHistory.addLast(vmCpuUtilization);
+                        }
+                    }else{
+                        vmCpuHistory.addLast(vmCpuUtilization);
+                    }
+                    if(!vmRamHistory.isEmpty()){
+                        if(vmRamUtilization != vmRamHistory.getLast()){
+                            vmRamHistory.addLast(vmRamUtilization);
+                        }
+                    }else{
+                        vmRamHistory.addLast(vmRamUtilization);
+                    }
+                    while(vmCpuHistory.size() > Constant.VM_LogLength-1){
+                        vmCpuHistory.removeFirst();
+                        vmRamHistory.removeFirst();
+                    }
+                }
             });
-        }else{
             while(hostRamhistory.size() > Constant.HOST_LogLength-1){
                 hostRamhistory.removeFirst();
                 hostCpuhistory.removeFirst();
             }
-            hostRamhistory.addLast(0.0);
-            hostCpuhistory.addLast(0.0);
+        }else{
+            hostRamhistory.clear();
+            hostCpuhistory.clear();
         }
         preLogClockTime = time;
     }

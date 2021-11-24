@@ -227,17 +227,14 @@ public class DataCenterPrinter {
         double PDM = 0.0;
         double ESV ;
         double ESVM ;
-        double test1 = 0.0,test2 = 0.0;
         for(Host host:hostList){
             double totalUpTime = host.getTotalUpTime();
             if(totalUpTime == 0.0) continue;
             SLATAH += host.getTotalOver100Time()/totalUpTime;
         }
         for(Vm vm:vmList){
-//            System.out.println(vm+ " migration degration:"+vm.getRequestUtilization()+"  totalrequestmips: "+vm.getTotalrequestUtilization());
             PDM += vm.getRequestUtilization()/vm.getTotalrequestUtilization();
         }
-        System.out.println("test1:"+test1+" test2:"+test2);
         SLATAH /= hostList.size();
         PDM /= vmList.size();
         SLAV = SLATAH * PDM;
