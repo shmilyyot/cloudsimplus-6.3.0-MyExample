@@ -712,7 +712,15 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
                 LOGGER.error(
                     "{}: {}: Allocation of {} to the destination {} failed due to {}!",
                     getSimulation().clockStr(), this, vm, targetHost, suitability);
-            System.out.println(vm.getCurrentUtilizationMips()+" "+targetHost.getTotalAvailableMips()+" "+vm.getCurrentRequestedRam()+" "+targetHost.getRam().getAvailableResource());
+                System.out.println();
+                System.out.println("打印host vmlist信息:");
+                for(Vm tvm:targetHost.getVmList()){
+                    System.out.println(tvm+" "+tvm.getCurrentUtilizationMips()+" "+targetHost.getVmScheduler().getAllocatedMips(tvm)+" "+targetHost.getVmScheduler().getTotalAllocatedMipsForVm(tvm)+" "+targetHost.getTotalMipsCapacity());
+                }
+                for(Vm tvm:targetHost.getVmsMigratingIn()){
+                    System.out.println(tvm+" "+tvm.getCurrentUtilizationMips()+" "+targetHost.getVmScheduler().getAllocatedMips(tvm)+" "+targetHost.getVmScheduler().getTotalAllocatedMipsForVm(tvm)+" "+targetHost.getTotalMipsCapacity());
+                }
+                System.out.println(vm.getCurrentUtilizationMips()+" "+targetHost.getTotalAvailableMips()+" "+vm.getCurrentRequestedRam()+" "+targetHost.getRam().getAvailableResource());
             }
         }
 

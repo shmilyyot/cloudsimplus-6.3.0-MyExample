@@ -615,12 +615,12 @@ public class HostSimple implements Host, Serializable {
 //        if(this.getRam().getAvailableResource() < vm.getRam().getCapacity()) suitability.setForRam(false);
 //        System.out.println(vm+" "+vm.getRam().getCapacity() + " "+this+" "+this.getRam().getAvailableResource() +" "+suitability.forRam());
         suitability.setForPes(vmScheduler.isSuitableForVm(vm));
-        if(!suitability.forPes()){
-            if(this.getVmMipsReAllocations().get(vm) != null)
-                LOGGER.error(
-                    "{}: {}: Allocation of {} to {} failed due to lack of Mips. Required {} but there is {} available.",
-                    simulation.clockStr(), getClass().getSimpleName(), vm, this, this.getVmMipsReAllocations().get(vm).totalMips(), this.getVmScheduler().getTotalAvailableMips());
-        }
+//        if(!suitability.forPes()){
+//            if(this.getVmMipsReAllocations().get(vm) != null)
+//                LOGGER.error(
+//                    "{}: {}: Allocation of {} to {} failed due to lack of Mips. Required {} but there is {} available.",
+//                    simulation.clockStr(), getClass().getSimpleName(), vm, this, this.getVmMipsReAllocations().get(vm).totalMips(), this.getVmScheduler().getTotalAvailableMips());
+//        }
 //        if(simulation.clock()> 0.2)
 //        if(simulation.clock()> 0.2)
 //            System.out.println(vm+" "+this+" "+suitability);
