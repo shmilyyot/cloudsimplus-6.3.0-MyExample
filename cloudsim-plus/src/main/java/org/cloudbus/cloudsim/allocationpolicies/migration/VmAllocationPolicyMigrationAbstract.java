@@ -344,7 +344,15 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
             System.out.println("mark:"+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
             System.out.println("mark:"+tempVm+" "+tempVm.getCurrentRequestedMips()+" "+tempVm.getRam().getCapacity());
-            System.out.println("mark:"+host+" "+host.getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" allocatemips:"+host.getVmScheduler().getAllocatedMips(vm));
+            System.out.println("mark:"+host+" TotalAvailableMips()"+host.getTotalAvailableMips()+" allocatemips:"+host.getVmScheduler().getAllocatedMips(vm));
+            System.out.println("mark:"+host+" AllocatedResourceForVm:"+host.getRamProvisioner().getAllocatedResourceForVm(vm)+" AvailableResource:"+host.getRam().getAvailableResource()+" "+host.getRamProvisioner().getAvailableResource());
+            for(Vm tvm:host.getVmList()){
+                System.out.println("mark2: "+host+" "+host.getRamProvisioner().getAvailableResource()+" "+tvm+" "+host.getRamProvisioner().getAllocatedResourceForVm(tvm)+" "+tvm.getCurrentRequestedRam());
+            }
+            System.out.println("---------------------------------");
+            for(Vm tvm:host.getVmsMigratingIn()){
+                System.out.println("mark2: "+host+" "+host.getRamProvisioner().getAvailableResource()+" "+tvm+" "+host.getRamProvisioner().getAllocatedResourceForVm(tvm)+" "+tvm.getCurrentRequestedRam());
+            }
             return false;
         }
 
@@ -646,9 +654,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 return new HashMap<>();
             }
             Host host = optional.get();
-//            if(vm.getId() == 264){
-//                System.out.println("mark: "+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" "+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
-//            }
             addVmToMigrationMap(migrationMap, vm, host);
 //            if(vm.getId() == 264){
 //                System.out.println("mark: "+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" "+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
