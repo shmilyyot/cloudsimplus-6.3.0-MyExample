@@ -324,8 +324,8 @@ public class myImplementationMigrationDatacenter {
         RamUsagePercent = Math.max(Math.min(RamUsagePercent,1), 0.05);
         CpuUsagePercent = Math.max(Math.min(CpuUsagePercent,1), 0.05);
 //        System.out.println(CpuUsagePercent+" "+RamUsagePercent);
-        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(RamUsagePercent,Conversion.HUNDRED_PERCENT);
         final UtilizationModelDynamic utilizationCpu = new UtilizationModelDynamic(CpuUsagePercent,Conversion.HUNDRED_PERCENT);
+        final UtilizationModelDynamic utilizationRam = new UtilizationModelDynamic(RamUsagePercent,Conversion.HUNDRED_PERCENT);
 //        final double sizeInMB    = event.getResourceRequestForLocalDiskSpace() * Constant.VM_SIZE_MB[0] + 1;
         final double sizeInMB    = 1;   //如只研究CPU和MEM，磁盘空间不考虑的话，象征性给个1mb意思一下
         final long   sizeInBytes = (long) Math.ceil(megaBytesToBytes(sizeInMB));
@@ -333,8 +333,8 @@ public class myImplementationMigrationDatacenter {
             .setFileSize(sizeInBytes)
             .setOutputSize(sizeInBytes)
             .setUtilizationModelBw(UtilizationModel.NULL) //如只研究CPU和MEM，忽略BW，所以设置为null
-            .setUtilizationModelCpu(new UtilizationModelDynamic(1))
-            .setUtilizationModelRam(new UtilizationModelDynamic(1));
+            .setUtilizationModelCpu(utilizationCpu)
+            .setUtilizationModelRam(utilizationRam);
         //            .addOnUpdateProcessingListener(dataCenterPrinter::onUpdateCloudletProcessingListener);
         cloudlet.addOnFinishListener(info -> {
             Vm vm = info.getVm();

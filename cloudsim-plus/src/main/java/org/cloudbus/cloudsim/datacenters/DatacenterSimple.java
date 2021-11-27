@@ -671,6 +671,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         //De-allocates the VM on the source Host (where it is migrating out)
         vmAllocationPolicy.deallocateHostForVm(vm);
+        sourceHost.removeVmMigratingOut(vm);
         targetHost.removeMigratingInVm(vm);
         final HostSuitability suitability = vmAllocationPolicy.allocateHostForVm(vm, targetHost);
 

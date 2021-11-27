@@ -135,6 +135,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     public Map<Vm, Host> getOptimizedAllocationMap(final List<? extends Vm> vmList) {
         //@TODO See https://github.com/manoelcampos/cloudsim-plus/issues/94
         final Set<Host> overloadedHosts = getOverloadedHosts();
+        System.out.println("开始");
+        for (Host host:overloadedHosts){
+            System.out.println(host);
+        }
+        System.out.println("结束");
         final Set<Host> switchedOffHosts = getSwitchedOffHosts();
         this.hostsOverloaded = !overloadedHosts.isEmpty();
         printOverUtilizedHosts(overloadedHosts);
@@ -423,10 +428,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
+//        if(cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host)){
+//            System.out.println("mark9: "+host+" "+" "+cpuUsagePercent+" "+ramUsagePercent );
+//        }
         return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
-    protected boolean isHostOverloadedAfter(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
+    protected boolean isHostOverloadedOr(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
         return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
@@ -924,7 +932,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         double vmsRequestMipsTotal = 0.0;
         double vmsMigratingRequestMipsTotal = 0.0;
         if(hostCpuPercentage > 0.9999){
-            System.out.println("mark5: "+host+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated");
+            System.out.println("mark5: "+host.getSimulation().clock()+" "+host+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated");
             for(Vm vm:host.getVmList()){
                 vmsRequestMipsTotal += vm.getCurrentUtilizationMips().totalMips();
             }
@@ -963,7 +971,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         long vmsRequestRamTotal = 0;
         long hostRamCapacity = host.getRam().getCapacity();
         if(hostRamPercentage > 0.9999){
-            System.out.println("mark6: "+host+" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated");
+            System.out.println("mark6: "+host.getSimulation().clock()+" "+host+" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated");
             for(Vm vm:host.getVmList()){
                 vmsRequestRamTotal += vm.getCurrentRequestedRam();
             }
