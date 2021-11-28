@@ -175,6 +175,8 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
      */
     double getCurrentRequestedTotalMips();
 
+    double getCurrentUtilizationTotalMips();
+
     /**
      * Gets the {@link Host} where the Vm is or will be placed.
      * To know if the Vm was already created inside this Host,

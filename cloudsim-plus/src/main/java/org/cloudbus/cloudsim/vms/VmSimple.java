@@ -512,6 +512,11 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     @Override
+    public double getCurrentUtilizationTotalMips() {
+        return getCurrentUtilizationMips().totalMips();
+    }
+
+    @Override
     public MipsShare getCurrentRequestedMips() {
         if (isCreated()) {
             return host.getVmScheduler().getRequestedMips(this);
@@ -558,7 +563,10 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         if (getSimulation().clock() < 0.2) {
             return ram.getCapacity();
         }
-
+        if (getId() == -1) {
+            System.out.println(" -1执行了！！！");
+            return ram.getCapacity();
+        }
         return (long)(cloudletScheduler.getCurrentRequestedRamPercentUtilization() * ram.getCapacity());
     }
 

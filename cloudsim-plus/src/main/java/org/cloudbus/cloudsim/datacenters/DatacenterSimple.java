@@ -655,7 +655,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final Host targetHost = entry.getValue();
         final Host sourceHost = vm.getHost();
-//        System.out.println("mark3: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" TotalAvailableMips:"+targetHost.getTotalAvailableMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
+//        System.out.println("mark3: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHost: "+sourceHost+" targetHost: "+targetHost+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" targetTotalAvailableMips:"+targetHost.getTotalAvailableMips()+" sourceHosttotalAllocated:"+sourceHost.getTotalAllocatedMips()+" targetHosttotalAllocated:"+ targetHost.getTotalAllocatedMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
+//        System.out.println("mark3: sourceramallocated: "+sourceHost.getRam().getAllocatedResource()+" sourceramAvailable: "+sourceHost.getRam().getAvailableResource()+" targetramallocated: "+targetHost.getRam().getAllocatedResource()+" targetramAvailable: "+targetHost.getRam().getAvailableResource());
 
         //不变是不是因为已经提前放进去分配了内存？
 //        System.out.println("before migration: "+targetHost+" "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
@@ -674,7 +675,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         sourceHost.removeVmMigratingOut(vm);
         targetHost.removeMigratingInVm(vm);
         final HostSuitability suitability = vmAllocationPolicy.allocateHostForVm(vm, targetHost);
-
         //迁移完之后设置为可以被关闭
         targetHost.setCantShutdown(false);
 
@@ -726,6 +726,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
 
         onVmMigrationFinishListeners.forEach(listener -> listener.update(DatacenterVmMigrationEventInfo.of(listener, vm, suitability)));
+//        System.out.println("mark4: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHost: "+sourceHost+" targetHost: "+targetHost+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" targetTotalAvailableMips:"+targetHost.getTotalAvailableMips()+" sourceHosttotalAllocated:"+sourceHost.getTotalAllocatedMips()+" targetHosttotalAllocated:"+ targetHost.getTotalAllocatedMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
+//        System.out.println("mark4: sourceramallocated: "+sourceHost.getRam().getAllocatedResource()+" sourceramAvailable: "+sourceHost.getRam().getAvailableResource()+" targetramallocated: "+targetHost.getRam().getAllocatedResource()+" targetramAvailable: "+targetHost.getRam().getAvailableResource());
 //        System.out.println("mark4: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" TotalAvailableMips:"+targetHost.getTotalAvailableMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
     }
 
