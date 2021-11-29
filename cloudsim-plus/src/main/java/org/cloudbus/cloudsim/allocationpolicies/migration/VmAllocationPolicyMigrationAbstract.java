@@ -304,7 +304,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     private String overloadedHostToString(final Host host) {
         return String.format(
-            "      Host %d (upper CPU threshold %.2f, current CPU utilization: %.2f,upper RAM threshold %.2f, current RAM utilization: %.2f)",
+            "      Host %d (upper CPU threshold %f, current CPU utilization: %f,upper RAM threshold %f, current RAM utilization: %f)",
             host.getId(), getOverUtilizationThreshold(host), host.getCpuPercentUtilization(),getRamOverUtilizationThreshold(host),host.getRamPercentUtilization());
     }
 
@@ -326,8 +326,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected double getPowerDifferenceAfterAllocation(final Host host, final Vm vm){
         final double powerAfterAllocation = getPowerAfterAllocation(host, vm);
+        double difference = powerAfterAllocation - host.getPowerModel().getPower();
+//        System.out.println(host+" "+vm+" "+difference+" "+getHostCpuPercentRequested(host)+" "+vm.getCurrentUtilizationTotalMips());
         if (powerAfterAllocation > 0) {
-            return powerAfterAllocation - host.getPowerModel().getPower();
+            return difference;
         }
 
         return 0;
@@ -731,9 +733,18 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         but it temporarily destroys VMs on such Hosts.
         See https://github.com/manoelcampos/cloudsim-plus/issues/94
         */
+        host.setInFindMigrateVm(true);
+//        System.out.println(" stop1: "+host+" 有多少个vm："+(host.getVmList().size()+host.getVmsMigratingIn().size())+" "+host.getCpuPercentUtilization());
         final List<Vm> vmsToMigrate = new LinkedList<>();
         while (true) {
             final Vm vm = getVmSelectionPolicy().getVmToMigrate(host);
+            if(vm == Vm.NULL){
+                System.out.println();
+                System.out.println(" stop2: "+host+" 有多少个vm："+(host.getVmList().size()+host.getVmsMigratingIn().size())+" "+host.getCpuPercentUtilization());
+                for(Vm nvm:host.getVmList()){
+                    System.out.println(nvm+" "+nvm.getCpuPercentUtilization());
+                }
+            }
             MipsShare mipsShare = new MipsShare(vm.getHost().getVmMipsReAllocations().get(vm));
             if (Vm.NULL == vm || vm.getCloudletScheduler().isEmpty()) {
                 break;
@@ -744,6 +755,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             host.destroyTemporaryVm(vm);
             vm.getHost().getVmMipsReAllocations().put(vm,mipsShare);
             if (!isHostOverloaded(host)) {
+                host.setInFindMigrateVm(false);
                 break;
             }
         }
@@ -847,7 +859,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     private double getHostTotalUtilizationMips(final Host host) {
         return host.getVmList().stream()
-            .mapToDouble(Vm::getCurrentUtilizationTotalMips)
+            .mapToDouble(Vm::getTotalCpuMipsUtilization)
             .sum();
     }
 
@@ -958,7 +970,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         double vmsRequestMipsTotal = 0.0;
         double vmsMigratingRequestMipsTotal = 0.0;
         if(hostCpuPercentage > 0.9999){
-            System.out.println("mark5: "+host.getSimulation().clock()+" "+host+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated");
+            System.out.println("mark5: "+host.getSimulation().clock()+" "+host+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated    and currentRamPercentage is:" + host.getRamPercentUtilization());
             for(Vm vm:host.getVmList()){
                 vmsRequestMipsTotal += vm.getCurrentUtilizationMips().totalMips();
             }
@@ -997,7 +1009,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         long vmsRequestRamTotal = 0;
         long hostRamCapacity = host.getRam().getCapacity();
         if(hostRamPercentage > 0.9999){
-            System.out.println("mark6: "+host.getSimulation().clock()+" "+host+" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated");
+            System.out.println("mark6: "+host.getSimulation().clock()+" "+host+" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated    and currentCpuPercentage is:" + host.getCpuPercentUtilization());
             for(Vm vm:host.getVmList()){
                 vmsRequestRamTotal += vm.getCurrentRequestedRam();
             }

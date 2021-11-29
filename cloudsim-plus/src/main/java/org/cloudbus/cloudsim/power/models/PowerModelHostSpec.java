@@ -64,8 +64,8 @@ public class PowerModelHostSpec extends PowerModelHost {
     @Override
     public PowerMeasurement getPowerMeasurement() {
         double idlePower = this.getHost().getIdlePower();
-        double utilizationFraction = getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity();
-        utilizationFraction = Math.min(utilizationFraction, 1.0);
+        int n = powerSpec.size();
+        double utilizationFraction = Math.min(getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity(), 1.0);
         final int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
         if(utilizationIndex == 0){
             return new PowerMeasurement(idlePower, 0);

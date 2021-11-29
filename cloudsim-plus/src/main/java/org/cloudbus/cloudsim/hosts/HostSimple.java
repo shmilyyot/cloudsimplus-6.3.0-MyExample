@@ -50,6 +50,16 @@ public class HostSimple implements Host, Serializable {
     private static long defaultBwCapacity = 1000;
     private static long defaultStorageCapacity = (long)Conversion.gigaToMega(500);
 
+    public boolean isInFindMigrateVm() {
+        return inFindMigrateVm;
+    }
+
+    public void setInFindMigrateVm(boolean inFindMigrateVm) {
+        this.inFindMigrateVm = inFindMigrateVm;
+    }
+
+    private boolean inFindMigrateVm = false;
+
     public boolean isCantShutdown() {
         return CantShutdown;
     }

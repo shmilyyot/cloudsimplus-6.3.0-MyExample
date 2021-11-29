@@ -503,6 +503,9 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public double getTotalCpuMipsUtilization(final double time) {
+        if(this.getId() == -1){
+            return getTotalMipsCapacity();
+        }
         return getCpuPercentUtilization(time) * getTotalMipsCapacity();
     }
 

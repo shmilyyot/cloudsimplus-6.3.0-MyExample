@@ -80,6 +80,7 @@ public class myImplementationMigrationDatacenter {
     private static Set<Double> existTimes = new HashSet<>();
     List<Cloudlet> totalCloudlets;
     List<Long> activeHostNumber = new ArrayList<>();
+    List<Double> resourceWastageList = new ArrayList<>();
     private double preClockTime = -1.0;
     private double preLogClockTime = -1.0;
 
@@ -217,6 +218,8 @@ public class myImplementationMigrationDatacenter {
 //        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
 
         dataCenterPrinter.calculateSLAV(hostList,vmList,totalEnergyCumsumption,migrationsNumber);
+        dataCenterPrinter.calculateAverageActiveHost(activeHostNumber,hostList.size());
+        dataCenterPrinter.printSystemAverageResourceWastage(resourceWastageList);
 
         //打印当前系统活跃的主机数目
 //        dataCenterPrinter.activeHostCount(hostList);
@@ -441,11 +444,11 @@ public class myImplementationMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
 
-            this.allocationPolicy =
-                new VmAllocationPolicyMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyMigrationBestFitStaticThreshold(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
@@ -459,16 +462,16 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPASUP(
-//                    new VmSelectionPolicyUnbalanceUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+            this.allocationPolicy =
+                new VmAllocationPolicyPASUP(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
 
@@ -517,9 +520,11 @@ public class myImplementationMigrationDatacenter {
     private Host createHost(int hostType) {
         PowerModelHost powerModel;
         if(hostType == 0){
-            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G4_SPEC_POWER));
+            powerModel = new PowerModelHostSimple(Constant.HOST_G4_SPEC_POWER[Constant.HOST_G4_SPEC_POWER.length-1],Constant.IDLE_POWER[0]);
+//            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G4_SPEC_POWER));
         }else{
-            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G5_SPEC_POWER));
+            powerModel = new PowerModelHostSimple(Constant.HOST_G5_SPEC_POWER[Constant.HOST_G5_SPEC_POWER.length-1],Constant.IDLE_POWER[0]);
+//            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G5_SPEC_POWER));
         }
         final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType));
         host
@@ -647,12 +652,18 @@ public class myImplementationMigrationDatacenter {
         if(currentTime % Constant.COLLECTTIME == 0){
             vmList.forEach(vm->{
                 //更新vm总共请求的mips数目
-                double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
-                vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization * Constant.SCHEDULING_INTERVAL);
-                vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
+                if(!vm.getCloudletScheduler().isEmpty()){
+                    double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
+                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization);
+                    vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
+                }
             });
         }
         if(currentTime % Constant.SCHEDULING_INTERVAL == 0){
+
+            //每一定时间间隔计算一次资源浪费
+            calculateResourceWastage(hostList,resourceWastageList);
+
             hostList.forEach(host->{
                 if(host.isActive()){
                     double hostRamUtilization = host.getRamPercentUtilization();
@@ -686,7 +697,9 @@ public class myImplementationMigrationDatacenter {
         dataCenterPrinter.showHostAllocatedMips(info.getTime(), targetHost);
         System.out.println();
 
-        migrationsNumber++;
+//        if(simulation.clock() > 599.0){
+            migrationsNumber++;
+//        }
     }
 
     /**
@@ -739,9 +752,9 @@ public class myImplementationMigrationDatacenter {
                 if(vm.getHost().getId() == host.getId()){
                     LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
                     LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-                    double vmCpuUtilization = vm.getCloudletScheduler().getRequestedCpuPercentUtilization(simulation.clock());
-                    double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
-//                    System.out.println("mark: "+vm+" "+vmCpuUtilization+"  "+vmRamUtilization);
+                    double vmCpuUtilization = vm.getCpuPercentUtilization();
+                    double vmRamUtilization = vm.getRam().getPercentUtilization();
+//                    System.out.println(simulation.clock()+"mark: "+vm+" "+vmCpuUtilization+"  "+vmRamUtilization);
                     if(!vmCpuHistory.isEmpty()){
                         if(vmCpuUtilization != vmCpuHistory.getLast()){
                             vmCpuHistory.addLast(vmCpuUtilization);
@@ -756,14 +769,18 @@ public class myImplementationMigrationDatacenter {
                     }else{
                         vmRamHistory.addLast(vmRamUtilization);
                     }
-                    while(vmCpuHistory.size() > Constant.VM_LogLength-1){
+                    while(vmCpuHistory.size() > Constant.VM_LogLength){
                         vmCpuHistory.removeFirst();
+                    }
+                    while(vmRamHistory.size() > Constant.VM_LogLength){
                         vmRamHistory.removeFirst();
                     }
                 }
             });
-            while(hostRamhistory.size() > Constant.HOST_LogLength-1){
+            while(hostRamhistory.size() > Constant.HOST_LogLength){
                 hostRamhistory.removeFirst();
+            }
+            while(hostCpuhistory.size() > Constant.HOST_LogLength){
                 hostCpuhistory.removeFirst();
             }
         }else{
@@ -932,6 +949,26 @@ public class myImplementationMigrationDatacenter {
 //            }
 //        }
 //    }
+    public void calculateResourceWastage(List<Host> hostList,List<Double> resourceWastageList){
+        double systemWastage = 0.0;
+        for(Host host:hostList){
+            systemWastage += resourceWastage(host);
+        }
+        resourceWastageList.add(systemWastage);
+    }
+
+    public double resourceWastage(Host host){
+        double xita = 0.0001;
+        double hostCpuCapacity = host.getTotalMipsCapacity();
+        double hostRamCapacity = host.getRam().getCapacity();
+        double hostCpuUtilization = host.getCpuPercentUtilization();
+        double hostRamUtilization = host.getRamPercentUtilization();
+        double hostRemindingCpuUtilization = (hostCpuCapacity - hostCpuUtilization * hostCpuCapacity ) / hostCpuCapacity;
+        double hostRemindingRamUtilization = (hostRamCapacity - hostRamUtilization * hostRamCapacity ) / hostRamCapacity;
+        double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
+//        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
+        return wastage;
+    }
 
 
 }

@@ -156,13 +156,16 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
 //            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time() + + Constant.SCHEDULING_INTERVAL);
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
+            if(host.isInFindMigrateVm()){
+                return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
+            }else{
+                final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
 //            System.out.println("cpu:"+(1-hostPredict[0]));
 //            System.out.println("ram:"+(1-hostPredict[1]));
 //            System.out.println(host.getId());
 //            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1],hostCpuUtilization,hostRamUtilization);
-            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
-//            return isHostOverloaded(host, host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+                return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
+            }
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
         }

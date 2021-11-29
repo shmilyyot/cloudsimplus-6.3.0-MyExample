@@ -14,14 +14,14 @@ public class VmSelectionPolicyUnbalanceUtilization implements VmSelectionPolicy 
         if(migratableVms.isEmpty())
             return Vm.NULL;
         Vm vmToMigrate = Vm.NULL;
-        double maxWastage = Double.MIN_VALUE;
+        double minWastage = Double.MAX_VALUE;
         for(Vm vm:migratableVms){
             if(vm.isInMigration() || vm.getCloudletScheduler().isEmpty()){
                 continue;
             }
             double wastage = resourceWastage(host,vm);
-            if(wastage > maxWastage){
-                maxWastage = wastage;
+            if(wastage < minWastage){
+                minWastage = wastage;
                 vmToMigrate = vm;
             }
         }
@@ -34,11 +34,13 @@ public class VmSelectionPolicyUnbalanceUtilization implements VmSelectionPolicy 
         double hostRamCapacity = host.getRam().getCapacity();
         double hostCpuUtilization = host.getCpuPercentUtilization();
         double hostRamUtilization = host.getRamPercentUtilization();
-        double vmCpuUsage = vm.getCpuPercentUtilization() * vm.getCurrentRequestedTotalMips();
+        double vmCpuUsage = vm.getCurrentUtilizationTotalMips();
         double vmRamUsage = vm.getCurrentRequestedRam();
-        double hostRemindingCpuUtilization = (hostCpuUtilization * hostCpuCapacity - vmCpuUsage) / hostCpuCapacity;
-        double hostRemindingRamUtilization = (hostRamUtilization * hostRamCapacity - vmRamUsage) / hostRamCapacity;
-        double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
+        double newhostCpuUtilization = (hostCpuUtilization * hostCpuCapacity - vmCpuUsage) / hostCpuCapacity;
+        double newhostRamUtilization = (hostRamUtilization * hostRamCapacity - vmRamUsage) / hostRamCapacity;
+        double hostRemindingCpuUtilization = (hostCpuCapacity - (hostCpuUtilization * hostCpuCapacity - vmCpuUsage)) / hostCpuCapacity;
+        double hostRemindingRamUtilization = (hostRamCapacity - (hostRamUtilization * hostRamCapacity - vmRamUsage)) / hostRamCapacity;
+        double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (newhostCpuUtilization + newhostRamUtilization);
 //        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
         return wastage;
     }

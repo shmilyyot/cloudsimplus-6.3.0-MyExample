@@ -939,8 +939,8 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             delay, getBandwidthPercentForMigration()*100);
 
 //        //统计迁移产生的额外开销
-        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getMipsUtilizationBeforeMigration());
-//        System.out.println("mark:"+sourceVm.getRequestUtilization());
+        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getTotalCpuMipsUtilization());
+//        System.out.println("mark:"+sourceVm.getTotalCpuMipsUtilization());
 
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
         if(targetHost.addMigratingInVm(sourceVm)) {

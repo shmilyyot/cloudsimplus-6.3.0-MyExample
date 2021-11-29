@@ -37,6 +37,7 @@ public class VmSelectionPolicyMinimumUtilization implements VmSelectionPolicy {
     @Override
     public Vm getVmToMigrate(final Host host) {
         final List<? extends Vm> migratableVms = host.getMigratableVms();
+//        System.out.println("mark3: "+migratableVms.size()+" "+host.getVmList().size());
         if (migratableVms.isEmpty()) {
             return Vm.NULL;
         }
@@ -47,6 +48,7 @@ public class VmSelectionPolicyMinimumUtilization implements VmSelectionPolicy {
         final Optional<? extends Vm> optional = migratableVms.stream()
                                                              .filter(inMigration.negate())
                                                              .min(cpuUsageComparator);
+//        System.out.println("mark4: "+migratableVms.size()+" "+host.getVmList().size());
         return optional.isPresent() ? optional.get() : Vm.NULL;
     }
 

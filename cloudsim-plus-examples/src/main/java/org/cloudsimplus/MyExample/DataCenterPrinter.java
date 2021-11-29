@@ -20,6 +20,8 @@ import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
 import org.cloudsimplus.listeners.CloudletVmEventInfo;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -229,10 +231,16 @@ public class DataCenterPrinter {
         for(Host host:hostList){
             double totalUpTime = host.getTotalUpTime();
             if(totalUpTime == 0.0) continue;
-            SLATAH += host.getTotalOver100Time()/totalUpTime;
+            BigDecimal b1 = new BigDecimal(Double.toString(host.getTotalOver100Time()));
+            BigDecimal b2 = new BigDecimal(Double.toString(totalUpTime));
+            SLATAH += b1.divide(b2, 8, RoundingMode.HALF_UP).doubleValue();
         }
         for(Vm vm:vmList){
-            PDM += vm.getRequestUtilization()/vm.getTotalrequestUtilization();
+            BigDecimal b1 = new BigDecimal(Double.toString(vm.getRequestUtilization()));
+            BigDecimal b2 = new BigDecimal(Double.toString(vm.getTotalrequestUtilization()));
+            PDM += b1.divide(b2, 8, RoundingMode.HALF_UP).doubleValue();
+//            System.out.println("PDM "+PDM+" "+vm+" "+vm.getRequestUtilization()+" "+vm.getTotalrequestUtilization());
+
         }
         SLATAH /= hostList.size();
         PDM /= vmList.size();
@@ -246,5 +254,16 @@ public class DataCenterPrinter {
         System.out.println("当前系统的ESVM是： " + ESVM);
     }
 
+    public void printSystemAverageResourceWastage(List<Double> resourceWastageList){
+        double avg = resourceWastageList.stream().mapToDouble(Double::doubleValue).average().orElse(0D);
+        System.out.println("当前系统平均的resourceWastage是： " + avg);
+    }
+
+    public void calculateAverageActiveHost(List<Long> activeHostNumber,int hostsize){
+        double activeHostAverageNumber = activeHostNumber.stream().mapToLong(Long::longValue).average().orElse(0D);
+        double percentage = activeHostAverageNumber/(double)hostsize;
+        System.out.println("当前系统平均活跃host数目是："+activeHostAverageNumber);
+        System.out.println("当前系统平均活跃host的比例是："+ percentage);
+    }
 
 }
