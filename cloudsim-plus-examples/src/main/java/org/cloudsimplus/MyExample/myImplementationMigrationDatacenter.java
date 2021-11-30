@@ -450,11 +450,11 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-//            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
-//                    new VmSelectionPolicyMinimumUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+            this.allocationPolicy =
+                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
@@ -462,16 +462,16 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-            this.allocationPolicy =
-                new VmAllocationPolicyPASUP(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyPASUP(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
 
@@ -604,8 +604,16 @@ public class myImplementationMigrationDatacenter {
     }
 
     private List<Vm> createVms() {
+        List<Vm> vmList = new ArrayList<>();
+        int id = 0;
+        for(int i=0;i<Constant.VM_NUMBER.length;++i){
+            for(int j=0;j<Constant.VM_NUMBER[i];++j){
+                vmList.add(createVm(id,i));
+            }
+        }
+        return vmList;
         //每个代理都创建vms个虚拟机
-        return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
+//        return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
     }
 
     private Vm createVm(final int id) {
@@ -613,6 +621,19 @@ public class myImplementationMigrationDatacenter {
 //        Random r = new Random(System.currentTimeMillis());
 //        int type = r.nextInt(4);
         int type = id % Constant.VM_TYPE.length;
+//        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
+        Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES);
+        vm
+            .setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type])
+            .setSize(0);
+//        vm.enableUtilizationStats();
+        return vm;
+    }
+
+    private Vm createVm(final int id,final int type) {
+        //Uses a CloudletSchedulerTimeShared by default
+//        Random r = new Random(System.currentTimeMillis());
+//        int type = r.nextInt(4);
 //        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
         Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES);
         vm
@@ -952,7 +973,9 @@ public class myImplementationMigrationDatacenter {
     public void calculateResourceWastage(List<Host> hostList,List<Double> resourceWastageList){
         double systemWastage = 0.0;
         for(Host host:hostList){
-            systemWastage += resourceWastage(host);
+            if(host.isActive()){
+                systemWastage += resourceWastage(host);
+            }
         }
         resourceWastageList.add(systemWastage);
     }
@@ -966,6 +989,7 @@ public class myImplementationMigrationDatacenter {
         double hostRemindingCpuUtilization = (hostCpuCapacity - hostCpuUtilization * hostCpuCapacity ) / hostCpuCapacity;
         double hostRemindingRamUtilization = (hostRamCapacity - hostRamUtilization * hostRamCapacity ) / hostRamCapacity;
         double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
+        System.out.println(host+" "+wastage);
 //        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
         return wastage;
     }

@@ -46,16 +46,16 @@ public class Constant {
     /**
      * google真实任务数据源地址
      * */
-//    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
-//    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
-//    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
-//    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-//    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
-    public static final String TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
-    public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
+    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
+    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
     public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
     public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+//    public static final String TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
+//    public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
+//    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
+//    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
+//    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
     public static final boolean TEST_TRACE = false;
 
     /**
@@ -114,9 +114,10 @@ public class Constant {
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,1750,1750,613};    //1750效果比3750好
+    public static final long[] VM_RAM = {850,3750,1750,613};    //1750效果比3750好
     public static final long[] VM_BW = {100,100,100,100}; //用不到
     public static final long[] VM_SIZE_MB = {10000,10000,10000,10000}; //用不到
+    public static final int[] VM_NUMBER = {300,280,466,523};
 
     /**
      * 自定义vm的相关参数设置
