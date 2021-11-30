@@ -255,7 +255,12 @@ public class DataCenterPrinter {
     }
 
     public void printSystemAverageResourceWastage(List<Double> resourceWastageList){
-        double avg = resourceWastageList.stream().mapToDouble(Double::doubleValue).average().orElse(0D);
+        double sum = 0.0;
+        for(double num:resourceWastageList){
+            sum += num;
+        }
+        double avg = sum/resourceWastageList.size();
+//        double avg = resourceWastageList.stream().mapToDouble(Double::doubleValue).average().orElse(0D);
         System.out.println("当前系统平均的resourceWastage是： " + avg);
     }
 

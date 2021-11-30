@@ -450,11 +450,11 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-            this.allocationPolicy =
-                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
-                    new VmSelectionPolicyMinimumUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
+//                    new VmSelectionPolicyMinimumUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
@@ -462,16 +462,16 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPASUP(
-//                    new VmSelectionPolicyMinimumUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+            this.allocationPolicy =
+                new VmAllocationPolicyPASUP(
+                    new VmSelectionPolicyMinimumUtilization(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
 
@@ -984,12 +984,12 @@ public class myImplementationMigrationDatacenter {
         double xita = 0.0001;
         double hostCpuCapacity = host.getTotalMipsCapacity();
         double hostRamCapacity = host.getRam().getCapacity();
-        double hostCpuUtilization = host.getCpuPercentUtilization();
-        double hostRamUtilization = host.getRamPercentUtilization();
+        double hostCpuUtilization = Math.min(host.getCpuPercentUtilization(),1);
+        double hostRamUtilization = Math.min(host.getRamPercentUtilization(),1);
         double hostRemindingCpuUtilization = (hostCpuCapacity - hostCpuUtilization * hostCpuCapacity ) / hostCpuCapacity;
         double hostRemindingRamUtilization = (hostRamCapacity - hostRamUtilization * hostRamCapacity ) / hostRamCapacity;
         double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
-        System.out.println(host+" "+wastage);
+//        System.out.println(host+" "+wastage);
 //        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
         return wastage;
     }

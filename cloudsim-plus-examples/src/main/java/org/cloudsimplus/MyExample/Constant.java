@@ -18,7 +18,7 @@ public class Constant {
      */
     public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
-    public static int HOST_LogLength = 6;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
+    public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
     public static int HOST_Log_INTERVAL = SCHEDULING_INTERVAL; //    记录日志的时间间隔，默认和系统调度时间一致
     public static int VM_LOG_INTERVAL = HOST_Log_INTERVAL;  //记录虚拟机日志的时间间隔，和主机日志数目一直
@@ -26,7 +26,8 @@ public class Constant {
     /**
      * 预测函数相关设置
      */
-    public static final int KSTEP = 1;  //预测往后K个时间段的利用率
+    public static final boolean USING_PREDICT = false;
+    public static final int KSTEP = 6;  //预测往后K个时间段的利用率
 
     /**
      * 数据中心迁移相关设置
@@ -46,16 +47,16 @@ public class Constant {
     /**
      * google真实任务数据源地址
      * */
-    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
-    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
-    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
-    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
-//    public static final String TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
-//    public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
+//    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
+//    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
 //    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
 //    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-//    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+//    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+    public static final String TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
+    public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
+    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
+    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
+    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
     public static final boolean TEST_TRACE = false;
 
     /**
@@ -75,11 +76,11 @@ public class Constant {
     /**
      * 自己给定的host参数设置，一共有两种host
      * */
-    public static final int HOSTS = 800;   //主机数量,请取偶数，因为默认对半分
+    public static final int HOSTS = 800;   //主机数量
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
-    public static final long[] HOST_BW = {1024 * 8,1024 * 8};  //带宽速率，用不到
-    public static final long[] HOST_STORAGE = {1_000_000,1_000_000};  //硬盘大小，用不到
+    public static final long[] HOST_BW = {1024 * 8,1024 * 8};  //带宽速率
+    public static final long[] HOST_STORAGE = {1_000_000,1_000_000};  //硬盘大小
     public static final double[] HOST_MIPS = {1860,2660};  //cpu处理速率
     public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
     public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
@@ -113,11 +114,11 @@ public class Constant {
     public static final int VMS = 1569;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
-    public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3750,1750,613};    //1750效果比3750好
-    public static final long[] VM_BW = {100,100,100,100}; //用不到
-    public static final long[] VM_SIZE_MB = {10000,10000,10000,10000}; //用不到
     public static final int[] VM_NUMBER = {300,280,466,523};
+    public static final int[]  VM_MIPS = {2500,2000,1000,500};
+    public static final long[] VM_RAM = {850,3750,1750,613};
+    public static final long[] VM_BW = {100,100,100,100};
+    public static final long[] VM_SIZE_MB = {10000,10000,10000,10000};
 
     /**
      * 自定义vm的相关参数设置

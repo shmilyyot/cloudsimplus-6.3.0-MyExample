@@ -194,6 +194,9 @@ public class MathHandler {
     }
 
     public double GM11Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
+        if(!Constant.USING_PREDICT){
+            return utilization;
+        }
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
         if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
