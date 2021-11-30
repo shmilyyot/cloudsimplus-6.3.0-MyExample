@@ -11,6 +11,8 @@ import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.vms.Vm;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -275,35 +277,36 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
      */
     @Override
     protected boolean isSuitableForVmInternal(final Vm vm, final MipsShare requestedMips) {
-//        final double totalRequestedMips = requestedMips.totalMips();
-//        final double exsitRequestedMips = getAllocatedMips(vm).totalMips();
-////        if(vm.getId() == 749){
-////            System.out.println("mark3: "+exsitRequestedMips+" "+totalRequestedMips+" "+getTotalAvailableMips());
-////        }
-//
-//
-//        //（更改），这里真的有必要吗？好像已经考虑过了
-//        //请求的vm额外10%mips开销
-//        if(vm.isSearchForHost()){
-//            vm.setSearchForHost(false);
-//            //（更改），把0.1的代价取消了
-////            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips + totalRequestedMips * getVmMigrationCpuOverhead();
-//            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips ;
-//        }
-//        // This scheduler does not allow over-subscription of PEs' MIPS
-//        return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips;
-
         final double totalRequestedMips = requestedMips.totalMips();
+        final double exsitRequestedMips = getAllocatedMips(vm).totalMips();
+//        if(vm.getId() == 1564 && getHost().getId() == 4){
+//            System.out.println("mark3: "+exsitRequestedMips+" "+totalRequestedMips+" "+getTotalAvailableMips());
+//            System.out.println(getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips);
+//        }
+
+
         //（更改），这里真的有必要吗？好像已经考虑过了
         //请求的vm额外10%mips开销
         if(vm.isSearchForHost()){
             vm.setSearchForHost(false);
             //（更改），把0.1的代价取消了
 //            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips + totalRequestedMips * getVmMigrationCpuOverhead();
-            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips ;
+            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips ;
         }
         // This scheduler does not allow over-subscription of PEs' MIPS
-        return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips;
+        return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips;
+
+//        final double totalRequestedMips = requestedMips.totalMips();
+//        //（更改），这里真的有必要吗？好像已经考虑过了
+//        //请求的vm额外10%mips开销
+//        if(vm.isSearchForHost()){
+//            vm.setSearchForHost(false);
+//            //（更改），把0.1的代价取消了
+////            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips + totalRequestedMips * getVmMigrationCpuOverhead();
+//            return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips ;
+//        }
+//        // This scheduler does not allow over-subscription of PEs' MIPS
+//        return getHost().getWorkingPesNumber() >= requestedMips.pes() && getTotalAvailableMips() >= totalRequestedMips;
     }
 
     /**
@@ -345,8 +348,9 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
         if(scalingFactor == 1){
             return requestedMips;
         }
-
-        return new MipsShare(requestedMips.pes(), requestedMips.mips()*scalingFactor);
+        double beforeMips = requestedMips.mips() * scalingFactor;
+        double afterMips = new BigDecimal(String.valueOf(beforeMips)).setScale(1, RoundingMode.DOWN).doubleValue();
+        return new MipsShare(requestedMips.pes(), afterMips);
     }
 
     @Override

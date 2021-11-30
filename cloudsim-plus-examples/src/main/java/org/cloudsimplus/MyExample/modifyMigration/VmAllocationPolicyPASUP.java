@@ -3,6 +3,7 @@ package org.cloudsimplus.MyExample.modifyMigration;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationStaticThreshold;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.hosts.HostSuitability;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
@@ -155,13 +156,16 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
 //            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time() + + Constant.SCHEDULING_INTERVAL);
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
+            if(host.isInFindMigrateVm()){
+                return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
+            }else{
+                final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
 //            System.out.println("cpu:"+(1-hostPredict[0]));
 //            System.out.println("ram:"+(1-hostPredict[1]));
 //            System.out.println(host.getId());
 //            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1],hostCpuUtilization,hostRamUtilization);
-            return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
-//            return isHostOverloaded(host, host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+                return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
+            }
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
         }
@@ -187,18 +191,30 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
 
         final Vm tempVm = new VmSimple(vm,true);
-
-        //初始放置的时候，假装放置，vm请求的mips是0，所以利用率是0，但是ram是真的扣了整个vm的ram
-        if (!host.createTemporaryVm(tempVm).fully()) {
-            System.out.println(vm+"放不进去，因为放进去会过载");
+//        System.out.println("mark2: "+host+" "+host.getCpuPercentUtilization()+" "+getHostCpuPercentUtilization(host)+" "+host.getTotalAllocatedMips()+" "+host.getRam().getAllocatedResource()+ " "+tempVm.getRam().getCapacity()+" "+host.getRamProvisioner().getAllocatedResourceForVm(tempVm));
+//        System.out.println("mark2: ram"+getHostRamPercentRequested(host));
+        HostSuitability suitability = host.createTemporaryVm(tempVm);
+        if (!suitability.fully()) {
+            System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
+            System.out.println("mark:"+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
+            System.out.println("mark:"+tempVm+" "+tempVm.getCurrentRequestedMips()+" "+tempVm.getRam().getCapacity());
+            System.out.println("mark:"+host+" TotalAvailableMips()"+host.getTotalAvailableMips()+" allocatemips:"+host.getVmScheduler().getAllocatedMips(vm));
+            System.out.println("mark:"+host+" AllocatedResourceForVm:"+host.getRamProvisioner().getAllocatedResourceForVm(vm)+" AvailableResource:"+host.getRam().getAvailableResource()+" "+host.getRamProvisioner().getAvailableResource());
+            for(Vm tvm:host.getVmList()){
+                System.out.println("mark2: "+host+" "+host.getRamProvisioner().getAvailableResource()+" "+tvm+" "+host.getRamProvisioner().getAllocatedResourceForVm(tvm)+" "+tvm.getCurrentRequestedRam());
+            }
+            System.out.println("---------------------------------");
+            for(Vm tvm:host.getVmsMigratingIn()){
+                System.out.println("mark2: "+host+" "+host.getRamProvisioner().getAvailableResource()+" "+tvm+" "+host.getRamProvisioner().getAllocatedResourceForVm(tvm)+" "+tvm.getCurrentRequestedRam());
+            }
             return false;
         }
 
         //用预测值和当前值之间的最大值来进行放置预测
         //只用预测值是不是也可以呢？
         //注释下面这一段就是只用预测值
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        final double hostRamUtilization = host.getRamPercentUtilization();
+        final double hostCpuUtilization = getHostCpuPercentUtilization(host);
+        final double hostRamUtilization = getHostRamPercentRequested(host);
         final double vmCpuUtilization = vm.getCpuPercentUtilization();
         final double vmRamUtilization = vm.getRam().getPercentUtilization();
         final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);

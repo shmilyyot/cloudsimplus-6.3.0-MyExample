@@ -72,7 +72,8 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
         and it is a Pe, it's OK (as it is expected)
         */
 
-        if(!getResource().isSubClassOf(Pe.class) && !vm.getResource(getResourceClass()).setCapacity(vm.getResource(getResourceClass()).getCapacity())){
+        if(!getResource().isSubClassOf(Pe.class) && false){
+            System.out.println("这里执行了！！！"+vm+" "+newTotalVmResourceCapacity);
             return false;
         }
 

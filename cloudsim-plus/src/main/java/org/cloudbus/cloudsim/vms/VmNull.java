@@ -54,6 +54,7 @@ class VmNull implements Vm {
     @Override public double getCurrentRequestedTotalMips() {
         return 0.0;
     }
+    @Override public double getCurrentUtilizationTotalMips() {return 0;}
     @Override public Host getHost() {
         return Host.NULL;
     }

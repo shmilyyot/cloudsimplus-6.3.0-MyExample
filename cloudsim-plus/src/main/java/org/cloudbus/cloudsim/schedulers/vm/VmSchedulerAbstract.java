@@ -12,6 +12,8 @@ import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.vms.Vm;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -331,8 +333,11 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
                             .stream()
                             .mapToDouble(this::actualVmTotalRequestedMips)
                             .sum();
-
-        return host.getTotalMipsCapacity() - allocatedMips;
+        BigDecimal p1 = new BigDecimal(Double.toString(host.getTotalMipsCapacity()));
+        BigDecimal p2 = new BigDecimal(Double.toString(allocatedMips));
+        double availableMips = p1.subtract(p2).doubleValue();
+        return availableMips;
+//        return host.getTotalMipsCapacity() - afterMips;
     }
 
     /**
@@ -364,7 +369,9 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         The line below computes the original
         requested MIPS (which correspond to 100%)
         */
-        return totalVmRequestedMips / percentOfMipsToRequest(entry.getKey());
+        double beformips = totalVmRequestedMips / percentOfMipsToRequest(entry.getKey());
+        double afterMips = new BigDecimal(String.valueOf(beformips)).setScale(1, RoundingMode.DOWN).doubleValue();
+        return afterMips;
     }
 
     /**

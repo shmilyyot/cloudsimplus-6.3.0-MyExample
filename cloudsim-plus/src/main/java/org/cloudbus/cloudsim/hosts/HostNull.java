@@ -62,6 +62,8 @@ final class HostNull implements Host, Serializable {
     @Override public Host setBwProvisioner(ResourceProvisioner bwProvisioner) {
         return Host.NULL;
     }
+    @Override public boolean isInFindMigrateVm() {return false;}
+    @Override public void setInFindMigrateVm(boolean inFindMigrateVm) {}
     @Override public int getTotalOver100Time() {return 0;}
     @Override public void setTotalOver100Time(int i) {}
     @Override public double getResourceWastage() {return 0;}

@@ -47,11 +47,18 @@ public class PowerModelHostSimple extends PowerModelHost implements Serializable
      */
     @Override
     public double getPower(final double utilizationFraction) throws IllegalArgumentException {
-        if (utilizationFraction < 0 || utilizationFraction > 1) {
+        if (utilizationFraction < 0) {
             throw new IllegalArgumentException("utilizationFraction has to be between [0 and 1]");
         }
+        if(utilizationFraction == 0.0){
+            if(this.getHost().isActive()){
+                return this.getHost().getIdlePower();
+            }else{
+                return 0.0;
+            }
+        }
 
-        return staticPower + (maxPower - staticPower) * utilizationFraction;
+        return staticPower + (maxPower - staticPower) * Math.min(1,utilizationFraction);
     }
 
     /**
