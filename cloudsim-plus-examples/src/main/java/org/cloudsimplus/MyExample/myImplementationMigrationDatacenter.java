@@ -984,8 +984,9 @@ public class myImplementationMigrationDatacenter {
         double xita = 0.0001;
         double hostCpuCapacity = host.getTotalMipsCapacity();
         double hostRamCapacity = host.getRam().getCapacity();
-        double hostCpuUtilization = Math.min(host.getCpuPercentUtilization(),1);
-        double hostRamUtilization = Math.min(host.getRamPercentUtilization(),1);
+        double hostCpuUtilization = Math.min(host.getCpuPercentUtilization(),1.0);
+        double hostRamUtilization = Math.min(host.getRamPercentUtilization(),1.0);
+        if(hostCpuUtilization == 0.0 || hostRamUtilization == 0.0) return 1.0;
         double hostRemindingCpuUtilization = (hostCpuCapacity - hostCpuUtilization * hostCpuCapacity ) / hostCpuCapacity;
         double hostRemindingRamUtilization = (hostRamCapacity - hostRamUtilization * hostRamCapacity ) / hostRamCapacity;
         double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);

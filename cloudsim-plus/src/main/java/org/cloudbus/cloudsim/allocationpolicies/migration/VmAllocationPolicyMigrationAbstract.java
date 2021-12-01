@@ -575,6 +575,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             return  new HashMap<>();
         }
 
+
         //所有过载主机中拿出来的host都放在这里
         final List<Vm> vmsToMigrate = getVmsToMigrateFromOverloadedHosts(overloadedHosts);
         //(更改)这里sort了个寂寞，没有用的
