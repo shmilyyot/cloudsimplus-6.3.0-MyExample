@@ -109,7 +109,7 @@ public class MathHandler {
         return sum;
     }
 
-    public void ARIMRPrediction(List<Double> dataHistory){
+    public void ARIMRPrediction(List<Double> dataHistory,int n){
 
     }
 
