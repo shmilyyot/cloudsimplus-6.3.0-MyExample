@@ -427,21 +427,23 @@ public final class GoogleTaskUsageTraceReader extends GoogleTraceReaderAbstract<
         final Runnable resourceUsageUpdateRunnable = () -> {
 //            System.out.println("更新前：cpu:"+cloudlet.getVm().getHost().getCpuPercentUtilization()+" ram:"+cloudlet.getVm().getHost().getRamPercentUtilization());
             final StringBuilder builder = new StringBuilder();
-            if (cloudlet.getUtilizationOfCpu() != taskUsage.getMeanCpuUsageRate()) {
+            double meanCpuUsageRate = Math.max(taskUsage.getMeanCpuUsageRate(), cloudlet.getVm().getMinCpuUtilization());
+            if (cloudlet.getUtilizationOfCpu() != meanCpuUsageRate) {
                 builder.append("CPU Utilization: ")
                     .append(formatPercentValue(cloudlet.getUtilizationOfCpu())).append(VAL_SEPARATOR)
-                    .append(formatPercentValue(taskUsage.getMeanCpuUsageRate())).append('%').append(COL_SEPARATOR);
+                    .append(formatPercentValue(meanCpuUsageRate)).append('%').append(COL_SEPARATOR);
 
-                cloudlet.setUtilizationModelCpu(createUtilizationModel(cloudlet.getUtilizationModelCpu(), taskUsage.getMeanCpuUsageRate()));
+                cloudlet.setUtilizationModelCpu(createUtilizationModel(cloudlet.getUtilizationModelCpu(), meanCpuUsageRate));
             }
 
-            if (cloudlet.getUtilizationOfRam() != taskUsage.getCanonicalMemoryUsage()) {
+            double canonicalMemoryUsage = Math.max(taskUsage.getCanonicalMemoryUsage(),cloudlet.getVm().getMinRamUtilization());
+            if (cloudlet.getUtilizationOfRam() != canonicalMemoryUsage) {
                 builder.append("RAM Utilization: ")
                     .append(formatPercentValue(cloudlet.getUtilizationOfRam())).append(VAL_SEPARATOR)
-                    .append(formatPercentValue(taskUsage.getCanonicalMemoryUsage()))
+                    .append(formatPercentValue(canonicalMemoryUsage))
                     .append('%')
                     .append(COL_SEPARATOR);
-                cloudlet.setUtilizationModelRam(createUtilizationModel(cloudlet.getUtilizationModelRam(), taskUsage.getCanonicalMemoryUsage()));
+                cloudlet.setUtilizationModelRam(createUtilizationModel(cloudlet.getUtilizationModelRam(), canonicalMemoryUsage));
             }
 
             /* We don't need to check if some resource was changed because
