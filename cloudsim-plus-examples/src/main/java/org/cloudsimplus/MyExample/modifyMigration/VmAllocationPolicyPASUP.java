@@ -226,8 +226,10 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //            }
 //            return false;
 //        }
-
-//        System.out.println("mark11: "+hostCpuPredictUtilization+" "+hostRamPredictUtilization+" true: "+host.getCpuPercentUtilization()+" "+host.getRamPercentUtilization());
+        if((host.getId() == 238 || host.getId() == 162) && host.getSimulation().clock() > 80000.0){
+            System.out.println("sourcehost: "+vm.getHost()+" "+vm.getHost().getCpuPercentUtilization()+" "+vm.getHost().getRamPercentUtilization());
+            System.out.println("targethostAfter: "+hostCpuPredictUtilization+" "+hostRamPredictUtilization+" targethostBefore: "+host.getCpuPercentUtilization()+" "+host.getRamPercentUtilization());
+        }
         final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
 
 //        //只用当前值来进行判断过载

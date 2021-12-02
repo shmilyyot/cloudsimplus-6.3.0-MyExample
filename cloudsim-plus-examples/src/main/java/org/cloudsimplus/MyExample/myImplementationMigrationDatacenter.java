@@ -639,6 +639,8 @@ public class myImplementationMigrationDatacenter {
         vm
             .setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type])
             .setSize(0);
+        vm.setMinCpuUtilization(10/(double)Constant.VM_MIPS[type]);
+        vm.setMinRamUtilization(10/(double)Constant.VM_RAM[type]);
 //        vm.enableUtilizationStats();
         return vm;
     }

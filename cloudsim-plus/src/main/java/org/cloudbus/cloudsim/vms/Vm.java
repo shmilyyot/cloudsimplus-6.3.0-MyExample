@@ -54,6 +54,14 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     Vm setRam(final long ramCapacity,boolean forceChange);
 
+    double getMinCpuUtilization();
+
+    void setMinCpuUtilization(double minCpuUtilization);
+
+    double getMinRamUtilization();
+
+    void setMinRamUtilization(double minRamUtilization);
+
     double getRequestUtilization();
 
     void setRequestUtilization(double requestUtilization);

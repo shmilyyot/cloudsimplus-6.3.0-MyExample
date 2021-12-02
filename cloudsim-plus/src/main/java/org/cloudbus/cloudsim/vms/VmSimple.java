@@ -112,6 +112,25 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     private VmGroup group;
     private double timeZone;
 
+    public double getMinCpuUtilization() {
+        return minCpuUtilization;
+    }
+
+    public void setMinCpuUtilization(double minCpuUtilization) {
+        this.minCpuUtilization = minCpuUtilization;
+    }
+
+    public double getMinRamUtilization() {
+        return minRamUtilization;
+    }
+
+    public void setMinRamUtilization(double minRamUtilization) {
+        this.minRamUtilization = minRamUtilization;
+    }
+
+    private double minCpuUtilization = 0.0;
+    private double minRamUtilization = 0.0;
+
     public boolean isRestorePlace() {
         return restorePlace;
     }

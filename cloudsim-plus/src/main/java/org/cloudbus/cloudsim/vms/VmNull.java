@@ -187,6 +187,10 @@ class VmNull implements Vm {
     @Override public VerticalVmScaling getPeVerticalScaling() { return VerticalVmScaling.NULL; }
     @Override public Processor getProcessor() { return Processor.NULL; }
     @Override public Vm setRam(long ramCapacity, boolean forceChange) {return null;}
+    @Override public double getMinCpuUtilization() {return 0;}
+    @Override public void setMinCpuUtilization(double minCpuUtilization) {}
+    @Override public double getMinRamUtilization() {return 0;}
+    @Override public void setMinRamUtilization(double minRamUtilization) {}
     @Override public double getRequestUtilization() {return 0;}
     @Override public void setRequestUtilization(double requestUtilization) {}
     @Override public double getMipsUtilizationBeforeMigration() {return 0;}
