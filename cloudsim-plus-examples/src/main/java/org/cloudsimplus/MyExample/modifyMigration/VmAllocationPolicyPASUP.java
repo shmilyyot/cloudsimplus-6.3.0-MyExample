@@ -143,9 +143,16 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
 //        final double requestedTotalMips = vm.getCurrentUtilizationTotalMips();
-        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
         final double requestedTotalMips = vmCpuUtilization * vm.getTotalMipsCapacity();
-//        final double hostUtilizationMips = hostCpuUtilization * host.getTotalMipsCapacity();
+//        double hostUtilizationMips = Math.floor((hostCpuUtilization) * host.getTotalMipsCapacity());
+//        if(host.getSimulation().clock()<0.2){
+//            hostUtilizationMips = 0.0;
+//            for(Vm nvm:host.getVmList()){
+//                hostUtilizationMips += nvm.getTotalMipsCapacity();
+//            }
+//        }
+        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
+//        System.out.println("mark13: "+vm.getSimulation().clockStr()+" "+vm+" "+host+" "+hostUtilizationMips + " "+getUtilizationOfCpuMips(host));
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
         final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();
         return utilization;
@@ -199,7 +206,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double hostCpuUtilization = host.getCpuPercentUtilization();
         final double hostRamUtilization = host.getRamPercentUtilization();
         final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getRam().getPercentUtilization();
+        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+//        System.out.println(vm+" "+vmCpuUtilization+" "+vmRamUtilization);
         final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
         final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
         final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
@@ -207,29 +215,6 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
 
-//        final Vm tempVm = new VmSimple(vm,true);
-////        System.out.println("mark2: "+host+" "+host.getCpuPercentUtilization()+" "+getHostCpuPercentUtilization(host)+" "+host.getTotalAllocatedMips()+" "+host.getRam().getAllocatedResource()+ " "+tempVm.getRam().getCapacity()+" "+host.getRamProvisioner().getAllocatedResourceForVm(tempVm));
-////        System.out.println("mark2: ram"+getHostRamPercentRequested(host));
-//        HostSuitability suitability = host.createTemporaryVm(tempVm);
-//        if (!suitability.fully()) {
-//            System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
-//            System.out.println("mark:"+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
-//            System.out.println("mark:"+tempVm+" "+tempVm.getCurrentRequestedMips()+" "+tempVm.getRam().getCapacity());
-//            System.out.println("mark:"+host+" TotalAvailableMips()"+host.getTotalAvailableMips()+" allocatemips:"+host.getVmScheduler().getAllocatedMips(vm));
-//            System.out.println("mark:"+host+" AllocatedResourceForVm:"+host.getRamProvisioner().getAllocatedResourceForVm(vm)+" AvailableResource:"+host.getRam().getAvailableResource()+" "+host.getRamProvisioner().getAvailableResource());
-//            for(Vm tvm:host.getVmList()){
-//                System.out.println("mark2: "+host+" "+host.getRamProvisioner().getAvailableResource()+" "+tvm+" "+host.getRamProvisioner().getAllocatedResourceForVm(tvm)+" "+tvm.getCurrentRequestedRam());
-//            }
-//            System.out.println("---------------------------------");
-//            for(Vm tvm:host.getVmsMigratingIn()){
-//                System.out.println("mark2: "+host+" "+host.getRamProvisioner().getAvailableResource()+" "+tvm+" "+host.getRamProvisioner().getAllocatedResourceForVm(tvm)+" "+tvm.getCurrentRequestedRam());
-//            }
-//            return false;
-//        }
-        if((host.getId() == 238 || host.getId() == 162) && host.getSimulation().clock() > 80000.0){
-            System.out.println("sourcehost: "+vm.getHost()+" "+vm.getHost().getCpuPercentUtilization()+" "+vm.getHost().getRamPercentUtilization());
-            System.out.println("targethostAfter: "+hostCpuPredictUtilization+" "+hostRamPredictUtilization+" targethostBefore: "+host.getCpuPercentUtilization()+" "+host.getRamPercentUtilization());
-        }
         final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
 
 //        //只用当前值来进行判断过载
@@ -286,9 +271,9 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             .filter(this::isHostUnderloaded)
             .filter(host -> host.getVmsMigratingIn().isEmpty() && !host.getVmList().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
-            .min(comparingDouble(Host::getCpuPercentUtilization))
+//            .min(comparingDouble(Host::getCpuPercentUtilization))
 
-//            .max(comparingDouble(Host::getResourceWastage))
+            .max(comparingDouble(Host::getResourceWastage))
 
             .orElse(Host.NULL);
     }

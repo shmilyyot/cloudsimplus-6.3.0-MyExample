@@ -26,7 +26,7 @@ public class Constant {
     /**
      * 预测函数相关设置
      */
-    public static final boolean USING_PREDICT = false;
+    public static final boolean USING_PREDICT = true;
     public static final int KSTEP = 6;  //预测往后K个时间段的利用率
 
     /**
@@ -47,16 +47,16 @@ public class Constant {
     /**
      * google真实任务数据源地址
      * */
-//    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
-//    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
-//    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
-//    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-//    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
-    public static final String TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
-    public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
+    public static final String TASK_EVENTS_PATH = "D:/paperWork/clusterdata2011/task_event_process_firstDay";
+    public static final String TASK_USAGE_PATH = "D:/paperWork/clusterdata2011/task_usage_process_firstDay";
     public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
     public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+    public static final String MACHINE_FILENAME = "D:/paperWork/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+//    public static final String TASK_EVENTS_PATH = "F:\\paperData\\clusterdata2011\\task_event_process_firstDay";
+//    public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
+//    public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
+//    public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
+//    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
     public static final boolean TEST_TRACE = false;
 
     /**

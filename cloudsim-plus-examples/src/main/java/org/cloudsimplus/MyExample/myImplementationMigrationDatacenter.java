@@ -344,6 +344,7 @@ public class myImplementationMigrationDatacenter {
             System.out.printf(
                 "%n# %.2f: Intentionally destroying %s due to cloudlet finished.",
                 info.getTime(), vm);
+            System.out.println();
             if(!vm.isInMigration()){
                 vm.getHost().destroyVm(vm);
             }
@@ -464,7 +465,7 @@ public class myImplementationMigrationDatacenter {
 
             this.allocationPolicy =
                 new VmAllocationPolicyPASUP(
-                    new VmSelectionPolicyMinimumUtilization(),
+                    new VmSelectionPolicyUnbalanceUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
                     Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
                     mathHandler,
