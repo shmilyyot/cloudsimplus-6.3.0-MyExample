@@ -77,8 +77,12 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     @Override
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
 
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getRam().getPercentUtilization();
+        double vmCpuUtilization = 1.0;
+        double vmRamUtilization = 1.0;
+        if(vm.getSimulation().clock() > 0.2){
+            vmCpuUtilization = vm.getCpuPercentUtilization();
+            vmRamUtilization = vm.getRam().getPercentUtilization();
+        }
         final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
@@ -89,7 +93,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             double powerDifference = getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
             double[] vmPredictRecourse = new double[]{vmPredict[0] * vm.getTotalMipsCapacity(),vmPredict[1] * vm.getRam().getCapacity()};
             double[] hostPredictRecourse = new double[]{hostPredict[0] * host.getTotalMipsCapacity(),hostPredict[1] * host.getRam().getCapacity()};
-            return powerDifference;
+//            return powerDifference;
+            return mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
 //            return powerDifference * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
         }));
 //        return hostStream.max(Comparator.comparingDouble(Host::getCpuMipsUtilization));
@@ -134,7 +139,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 
     protected double getPowerAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
         try {
-            return host.getPowerModel(). getPower(getMaxUtilizationAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization));
+            return host.getPowerModel().getPower(getMaxUtilizationAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization));
         } catch (IllegalArgumentException e) {
             LOGGER.error("Power consumption for {} could not be determined: {}", host, e.getMessage());
         }
@@ -150,11 +155,17 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //            for(Vm nvm:host.getVmList()){
 //                hostUtilizationMips += nvm.getTotalMipsCapacity();
 //            }
+//            for(Vm nvm:host.getVmsMigratingIn()){
+//                if(!host.getVmList().contains(nvm)){
+//                    hostUtilizationMips += nvm.getTotalMipsCapacity();
+//                }
+//            }
 //        }
         final double hostUtilizationMips = getUtilizationOfCpuMips(host);
 //        System.out.println("mark13: "+vm.getSimulation().clockStr()+" "+vm+" "+host+" "+hostUtilizationMips + " "+getUtilizationOfCpuMips(host));
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
         final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();
+//        System.out.println("mark14: "+(hostPotentialMipsUse / host.getTotalMipsCapacity()) +" "+((getUtilizationOfCpuMips(host))+ requestedTotalMips)/ host.getTotalMipsCapacity());
         return utilization;
     }
 
@@ -269,11 +280,11 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             .filter(host -> !excludedHosts.contains(host))
             .filter(Host::isActive)
             .filter(this::isHostUnderloaded)
-            .filter(host -> host.getVmsMigratingIn().isEmpty() && !host.getVmList().isEmpty())
+            .filter(host -> host.getVmsMigratingIn().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
-//            .min(comparingDouble(Host::getCpuPercentUtilization))
+            .min(comparingDouble(Host::getCpuPercentUtilization))
 
-            .max(comparingDouble(Host::getResourceWastage))
+//            .max(comparingDouble(Host::getResourceWastage))
 
             .orElse(Host.NULL);
     }
