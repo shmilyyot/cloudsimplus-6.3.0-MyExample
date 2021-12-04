@@ -61,6 +61,8 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
      */
     Host NULL = new HostNull();
 
+    double resourceWastage();
+
     boolean isInFindMigrateVm();
 
     void setInFindMigrateVm(boolean inFindMigrateVm);

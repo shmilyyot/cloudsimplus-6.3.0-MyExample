@@ -66,6 +66,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     private boolean hostRamThreshold = false;
 
+    private boolean canUnbalanceWastageMigrate = true;
+
     public boolean isEnableMigrateOneUnderLoadHost() {
         return enableMigrateOneUnderLoadHost;
     }
@@ -73,6 +75,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     public void setEnableMigrateOneUnderLoadHost(boolean enableMigrateOneUnderLoadHost) {
         this.enableMigrateOneUnderLoadHost = enableMigrateOneUnderLoadHost;
     }
+
+    public boolean isEnableMigrateMostUnbalanceWastageLoadHost() {
+        return enableMigrateMostUnbalanceWastageLoadHost;
+    }
+
+    public void setEnableMigrateMostUnbalanceWastageLoadHost(boolean enableMigrateMostUnbalanceWastageLoadHost) {
+        this.enableMigrateMostUnbalanceWastageLoadHost = enableMigrateMostUnbalanceWastageLoadHost;
+    }
+
+    public boolean enableMigrateMostUnbalanceWastageLoadHost = false;
 
     private boolean enableMigrateOneUnderLoadHost = false;
     public static final double DEF_UNDER_UTILIZATION_THRESHOLD = 0.35;
@@ -190,31 +202,39 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         final int numberOfHosts = getHostList().size();
 
         this.hostsUnderloaded = false;
-        if(isEnableMigrateOneUnderLoadHost()){
-            final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
-            if (underloadedHost == Host.NULL) {
-                return;
-            }
-            this.hostsUnderloaded = true;
+        this.canUnbalanceWastageMigrate = true;
+        if(isEnableMigrateMostUnbalanceWastageLoadHost()){
+            while(this.canUnbalanceWastageMigrate){
+                //当所有低于值host都被遍历，ignoredhost的数目等于系统中host的数目
+                if (numberOfHosts == ignoredSourceHosts.size()) {
+                    break;
+                }
+                final Host unbalanceHost = getUnbalanceWastegeHost(ignoredSourceHosts);
+//                final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
+                if (unbalanceHost == Host.NULL) {
+                    return;
+                }
+//                this.hostsUnderloaded = true;
 
-            //或许可以不打印，太多了
+                //或许可以不打印，太多了
 //            printUnderUtilizedHosts(underloadedHost);
 
-            LOGGER.info("{}: VmAllocationPolicy: Underloaded hosts: {}", getDatacenter().getSimulation().clockStr(), underloadedHost);
+                LOGGER.info("{}: VmAllocationPolicy: UnbalanceWastege hosts: {}", getDatacenter().getSimulation().clockStr(), unbalanceHost);
 
-            ignoredSourceHosts.add(underloadedHost);
-            ignoredTargetHosts.add(underloadedHost);
+                ignoredSourceHosts.add(unbalanceHost);
+                ignoredTargetHosts.add(unbalanceHost);
 
-            final List<? extends Vm> vmsToMigrateFromHost = getVmsToMigrateFromUnderUtilizedHost(underloadedHost);
-            if (!vmsToMigrateFromHost.isEmpty()) {
-                logVmsToBeReallocated(underloadedHost, vmsToMigrateFromHost);
-                final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
-                    vmsToMigrateFromHost,
-                    ignoredTargetHosts,
-                    underloadedHost);
+                final List<? extends Vm> vmsToMigrateFromHost = getVmsToMigrateFromUnderUtilizedHost(unbalanceHost);
+                if (!vmsToMigrateFromHost.isEmpty()) {
+                    logVmsToBeReallocated(unbalanceHost, vmsToMigrateFromHost);
+                    final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
+                        vmsToMigrateFromHost,
+                        ignoredTargetHosts,
+                        unbalanceHost);
 
-                ignoredSourceHosts.addAll(extractHostListFromMigrationMap(newVmPlacement));
-                migrationMap.putAll(newVmPlacement);
+                    ignoredSourceHosts.addAll(extractHostListFromMigrationMap(newVmPlacement));
+                    migrationMap.putAll(newVmPlacement);
+                }
             }
         }else{
             while (true) {
@@ -262,8 +282,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     private void logVmsToBeReallocated(final Host underloadedHost, final List<? extends Vm> migratingOutVms) {
         if(LOGGER.isInfoEnabled()) {
-            LOGGER.info("{}: VmAllocationPolicy: VMs to be reallocated from the underloaded {}: {}",
-                getDatacenter().getSimulation().clockStr(), underloadedHost, getVmIds(migratingOutVms));
+            if(isEnableMigrateMostUnbalanceWastageLoadHost()){
+                LOGGER.info("{}: VmAllocationPolicy: VMs to be reallocated from the unbalanceWastege {}: {}",
+                    getDatacenter().getSimulation().clockStr(), underloadedHost, getVmIds(migratingOutVms));
+            }else{
+                LOGGER.info("{}: VmAllocationPolicy: VMs to be reallocated from the underloaded {}: {}",
+                    getDatacenter().getSimulation().clockStr(), underloadedHost, getVmIds(migratingOutVms));
+            }
         }
     }
 
@@ -670,10 +695,18 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             final Optional<Host> optional = findHostForVm(vm, excludedHosts, host -> true);
             //只要有一个vm找不到host，直接返回空map，之前找到host的也不算了
             if (!optional.isPresent()) {
-                for(Map.Entry<Vm,Host> entry:migrationMap.entrySet()){
-                    entry.getValue().destroyTemporaryVm(entry.getKey());
+                if(isEnableMigrateMostUnbalanceWastageLoadHost()){
+                    for(Map.Entry<Vm,Host> entry:migrationMap.entrySet()){
+                        entry.getValue().destroyTemporaryVm(entry.getKey());
+                    }
+                    System.out.println("无法放置该不平衡host的所有vms,停止当前循环");
+                    this.canUnbalanceWastageMigrate = false;
+                }else{
+                    for(Map.Entry<Vm,Host> entry:migrationMap.entrySet()){
+                        entry.getValue().destroyTemporaryVm(entry.getKey());
+                    }
+                    System.out.println("无法放置所有低负载vms");
                 }
-                System.out.println("无法放置所有低负载vms");
                 //不打印
 //                LOGGER.warn(
 //                    "{}: VmAllocationPolicy: A new Host, which isn't also underloaded or won't be overloaded, couldn't be found to migrate {}. Migration of VMs from the underloaded {} cancelled.",
@@ -686,7 +719,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 //                System.out.println("mark: "+host+" "+host.getVmScheduler().getTotalAvailableMips()+" "+host.getRam().getAvailableResource()+" "+vm+" "+vm.getCurrentUtilizationMips()+" "+vm.getCurrentRequestedRam());
 //            }
         }
-        System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 因为低负载，vms全部被迁移出去，因此闲置关闭，过段时间系统自动关闭" );
+        System.out.println(getDatacenter().getSimulation().clockStr()+" host "+underloadedHost.getId()+" 的vms全部被迁移出去，因此闲置关闭，过段时间系统自动关闭" );
 //        underloadedHost.setActive(false);
         return migrationMap;
     }
@@ -828,6 +861,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             .filter(host -> host.getVmsMigratingIn().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
             .min(comparingDouble(Host::getCpuPercentUtilization))
+            .orElse(Host.NULL);
+    }
+
+    protected Host getUnbalanceWastegeHost(final Set<? extends Host> excludedHosts) {
+        return this.getHostList().stream()
+            .filter(host -> !excludedHosts.contains(host))
+            .filter(Host::isActive)
+            .filter(host -> host.getVmsMigratingIn().isEmpty())
+            .filter(this::notAllVmsAreMigratingOut)
+            .max(comparingDouble(Host::getResourceWastage))
             .orElse(Host.NULL);
     }
 
@@ -1191,8 +1234,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm) {
         //（更改），默认取虚拟机请求容量，这是不对的
-        final double requestedTotalMips = vm.getCurrentUtilizationTotalMips();
-        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
+        final double requestedTotalMips = host.getSimulation().clock() < 0.2? vm.getTotalMipsCapacity(): vm.getCurrentUtilizationTotalMips();
+//        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
+        final double hostUtilizationMips = Math.floor(host.getCpuMipsUtilization() * host.getTotalMipsCapacity());
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
         return hostPotentialMipsUse / host.getTotalMipsCapacity();
     }

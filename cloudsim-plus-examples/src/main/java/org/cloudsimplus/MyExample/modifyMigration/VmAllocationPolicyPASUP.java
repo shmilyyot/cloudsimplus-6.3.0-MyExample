@@ -94,8 +94,8 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             double[] vmPredictRecourse = new double[]{vmPredict[0] * vm.getTotalMipsCapacity(),vmPredict[1] * vm.getRam().getCapacity()};
             double[] hostPredictRecourse = new double[]{hostPredict[0] * host.getTotalMipsCapacity(),hostPredict[1] * host.getRam().getCapacity()};
 //            return powerDifference;
-            return mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
-//            return powerDifference * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
+//            return mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
+            return powerDifference * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
         }));
 //        return hostStream.max(Comparator.comparingDouble(Host::getCpuMipsUtilization));
 //        return Optional.ofNullable(targetHost.get());
@@ -149,19 +149,14 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
 //        final double requestedTotalMips = vm.getCurrentUtilizationTotalMips();
         final double requestedTotalMips = vmCpuUtilization * vm.getTotalMipsCapacity();
-//        double hostUtilizationMips = Math.floor((hostCpuUtilization) * host.getTotalMipsCapacity());
-//        if(host.getSimulation().clock()<0.2){
-//            hostUtilizationMips = 0.0;
-//            for(Vm nvm:host.getVmList()){
-//                hostUtilizationMips += nvm.getTotalMipsCapacity();
-//            }
-//            for(Vm nvm:host.getVmsMigratingIn()){
-//                if(!host.getVmList().contains(nvm)){
-//                    hostUtilizationMips += nvm.getTotalMipsCapacity();
-//                }
-//            }
-//        }
-        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
+        double hostUtilizationMips = Math.floor((hostCpuUtilization) * host.getTotalMipsCapacity());
+        if(host.getSimulation().clock()<0.2){
+            hostUtilizationMips = 0.0;
+            for(Vm nvm:host.getVmList()){
+                hostUtilizationMips += nvm.getTotalMipsCapacity();
+            }
+        }
+//        final double hostUtilizationMips = getUtilizationOfCpuMips(host);
 //        System.out.println("mark13: "+vm.getSimulation().clockStr()+" "+vm+" "+host+" "+hostUtilizationMips + " "+getUtilizationOfCpuMips(host));
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
         final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();

@@ -32,8 +32,9 @@ public class VmSelectionPolicyUnbalanceUtilization implements VmSelectionPolicy 
         double xita = 0.0001;
         double hostCpuCapacity = host.getTotalMipsCapacity();
         double hostRamCapacity = host.getRam().getCapacity();
-        double hostCpuUtilization = host.getCpuPercentUtilization();
-        double hostRamUtilization = host.getRamPercentUtilization();
+        double hostCpuUtilization = Math.min(host.getCpuPercentUtilization(),1.0);
+        double hostRamUtilization = Math.min(host.getRamPercentUtilization(),1.0);
+        if(hostCpuUtilization == 0.0 || hostRamUtilization == 0.0) return 1.0;
         double vmCpuUsage = vm.getCurrentUtilizationTotalMips();
         double vmRamUsage = vm.getCurrentRequestedRam();
         double newhostCpuUtilization = (hostCpuUtilization * hostCpuCapacity - vmCpuUsage) / hostCpuCapacity;

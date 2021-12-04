@@ -1507,4 +1507,18 @@ public class HostSimple implements Host, Serializable {
         this.lazySuitabilityEvaluation = lazySuitabilityEvaluation;
         return this;
     }
+
+    public double resourceWastage(){
+        double xita = 0.0001;
+        double hostCpuCapacity = this.getTotalMipsCapacity();
+        double hostRamCapacity = this.getRam().getCapacity();
+        double hostCpuUtilization = Math.min(this.getCpuPercentUtilization(),1.0);
+        double hostRamUtilization = Math.min(this.getRamPercentUtilization(),1.0);
+        if(hostCpuUtilization == 0.0 || hostRamUtilization == 0.0) return 1.0;
+        double hostRemindingCpuUtilization = (hostCpuCapacity - hostCpuUtilization * hostCpuCapacity ) / hostCpuCapacity;
+        double hostRemindingRamUtilization = (hostRamCapacity - hostRamUtilization * hostRamCapacity ) / hostRamCapacity;
+        double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
+        return wastage;
+    }
+
 }
