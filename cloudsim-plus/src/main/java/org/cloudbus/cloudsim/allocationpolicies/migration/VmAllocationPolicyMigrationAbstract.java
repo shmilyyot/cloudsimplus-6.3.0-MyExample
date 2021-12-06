@@ -870,7 +870,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             .filter(Host::isActive)
             .filter(host -> host.getVmsMigratingIn().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
-            .max(comparingDouble(Host::getResourceWastage))
+            .max(comparingDouble(Host::avgResourceWastage))
             .orElse(Host.NULL);
     }
 

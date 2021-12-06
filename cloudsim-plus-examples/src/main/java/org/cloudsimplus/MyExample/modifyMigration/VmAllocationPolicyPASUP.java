@@ -96,6 +96,7 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
 //            return powerDifference;
 //            return mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
             return powerDifference * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
+//            return powerDifference / host.getVmList().size() * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
         }));
 //        return hostStream.max(Comparator.comparingDouble(Host::getCpuMipsUtilization));
 //        return Optional.ofNullable(targetHost.get());
@@ -277,9 +278,9 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
             .filter(this::isHostUnderloaded)
             .filter(host -> host.getVmsMigratingIn().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
-            .min(comparingDouble(Host::getCpuPercentUtilization))
+//            .min(comparingDouble(Host::getCpuPercentUtilization))
 
-//            .max(comparingDouble(Host::getResourceWastage))
+            .max(comparingDouble(Host::avgResourceWastage))
 
             .orElse(Host.NULL);
     }

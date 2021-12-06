@@ -109,7 +109,7 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
      * @param overUtilizationThreshold the overUtilizationThreshold to set
      */
     public final void setOverUtilizationThreshold(final double overUtilizationThreshold) {
-        if(overUtilizationThreshold <= 0 || overUtilizationThreshold >= 1){
+        if(overUtilizationThreshold <= 0 || overUtilizationThreshold > 1){
             throw new IllegalArgumentException("Over utilization threshold must be greater than 0 and lower than 1.");
         }
 
@@ -117,7 +117,7 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
     }
 
     public final void setRamOverUtilizationThreshold(final double overRamUtilizationThreshold) {
-        if(overRamUtilizationThreshold <= 0 || overRamUtilizationThreshold >= 1){
+        if(overRamUtilizationThreshold <= 0 || overRamUtilizationThreshold > 1){
             throw new IllegalArgumentException("Over utilization threshold must be greater than 0 and lower than 1.");
         }
 

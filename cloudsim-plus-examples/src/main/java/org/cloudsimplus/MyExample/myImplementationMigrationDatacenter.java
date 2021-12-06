@@ -23,6 +23,7 @@ import org.cloudbus.cloudsim.resources.*;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeSharedOverSubscription;
+import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumMigrationTime;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.util.Conversion;
 import org.cloudbus.cloudsim.util.TimeUtil;
@@ -451,17 +452,17 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-//            this.allocationPolicy =
-//                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
-//                    new VmSelectionPolicyMinimumUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
-
             this.allocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
+                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
                     new VmSelectionPolicyUnbalanceUtilization(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
                     Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
+
+//            this.allocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
+//                    new VmSelectionPolicyUnbalanceUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPASUP(
@@ -481,7 +482,9 @@ public class myImplementationMigrationDatacenter {
 
             //低阈值迁移只迁移一个
 //            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
-
+            if(!Constant.USING_UNDERLOAD_THRESHOLD){
+                this.allocationPolicy.setEnableMigrateMostUnbalanceWastageLoadHost(true);
+            }
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             Datacenter datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
             datacenter

@@ -68,6 +68,7 @@ final class HostNull implements Host, Serializable {
     @Override public int getTotalOver100Time() {return 0;}
     @Override public void setTotalOver100Time(int i) {}
     @Override public double getResourceWastage() {return 0;}
+    @Override public double avgResourceWastage() {return 0;}
     @Override public boolean isCantShutdown() {return false;}
     @Override public void setCantShutdown(boolean cantShutdown) {}
     @Override public Map<Vm, MipsShare> getVmMipsReAllocations() {return null;}

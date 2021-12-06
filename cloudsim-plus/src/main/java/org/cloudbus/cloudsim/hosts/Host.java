@@ -73,6 +73,8 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
 
     double getResourceWastage();
 
+    double avgResourceWastage();
+
     boolean isCantShutdown();
 
     void setCantShutdown(boolean cantShutdown);

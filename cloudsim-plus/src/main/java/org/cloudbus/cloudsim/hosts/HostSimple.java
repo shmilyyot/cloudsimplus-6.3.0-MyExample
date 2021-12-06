@@ -1521,4 +1521,8 @@ public class HostSimple implements Host, Serializable {
         return wastage;
     }
 
+    public double avgResourceWastage(){
+        return resourceWastage()/getVmList().size();
+    }
+
 }

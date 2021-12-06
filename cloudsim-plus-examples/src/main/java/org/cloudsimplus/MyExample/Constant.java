@@ -18,7 +18,7 @@ public class Constant {
      */
     public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
-    public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
+    public static int HOST_LogLength = 6;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
     public static int HOST_Log_INTERVAL = SCHEDULING_INTERVAL; //    记录日志的时间间隔，默认和系统调度时间一致
     public static int VM_LOG_INTERVAL = HOST_Log_INTERVAL;  //记录虚拟机日志的时间间隔，和主机日志数目一直
@@ -27,17 +27,18 @@ public class Constant {
      * 预测函数相关设置
      */
     public static final boolean USING_PREDICT = false;
-    public static final int KSTEP = 6;  //预测往后K个时间段的利用率
+    public static final int KSTEP = 1;  //预测往后K个时间段的利用率
 
     /**
      * 数据中心迁移相关设置
      */
     public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;    //低阈值
-    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;     //高阈值
+    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;     //高阈值
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
     public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;
-    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;
+    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;
+    public static final boolean USING_UNDERLOAD_THRESHOLD = false;
 
     /**
      * 数据中心代理相关参数设置
@@ -116,7 +117,7 @@ public class Constant {
     public static final long VM_PES = 1;
     public static final int[] VM_NUMBER = {300,280,466,523};
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3750,1750,613};
+    public static final long[] VM_RAM = {850,3750,1700,613};
     public static final long[] VM_BW = {1,1,1,1};
     public static final long[] VM_SIZE_MB = {10000,10000,10000,10000};
 
