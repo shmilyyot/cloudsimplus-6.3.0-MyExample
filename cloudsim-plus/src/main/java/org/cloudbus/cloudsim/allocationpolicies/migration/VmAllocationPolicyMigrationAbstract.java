@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparingDouble;
+import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -497,8 +498,21 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 //        return getHostCpuPercentRequested(host) < getUnderUtilizationThreshold();
     }
 
+    public boolean isHostUnderloadedOr(final Host host) {
+        if(hostRamThreshold){
+            return isHostUnderloadedOr(host.getCpuPercentUtilization(),host.getRamPercentUtilization());
+        }else{
+            return isHostUnderloaded(host.getCpuPercentUtilization());
+        }
+//        return getHostCpuPercentRequested(host) < getUnderUtilizationThreshold();
+    }
+
     public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
         return cpuUsagePercent < getUnderUtilizationThreshold() && ramUsagePercent < getUnderRamUtilizationThreshold();
+    }
+
+    public boolean isHostUnderloadedOr(final double cpuUsagePercent,final double ramUsagePercent) {
+        return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
     }
 
     public boolean isHostUnderloaded(final double cpuUsagePercent) {
@@ -732,6 +746,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
         final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration());
+        vmList.sort(comparator.reversed());
+    }
+
+    protected void sortByMemoryDes(final List<? extends Vm> vmList, final double simulationTime) {
+        final Comparator<Vm> comparator = comparingLong(Vm::getCurrentRequestedRam);
+        vmList.sort(comparator.reversed());
+    }
+
+    protected  void sortByVmCombineCpuAndRam(final List<? extends Vm> vmList, final double simulationTime){
+        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() * vm.getCurrentRequestedRam());
         vmList.sort(comparator.reversed());
     }
 

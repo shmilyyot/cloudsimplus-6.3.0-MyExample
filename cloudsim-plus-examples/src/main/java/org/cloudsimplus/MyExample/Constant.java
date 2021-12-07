@@ -39,6 +39,7 @@ public class Constant {
     public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;
     public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;
     public static final boolean USING_UNDERLOAD_THRESHOLD = false;
+    public static final boolean USING_SINGLE_OVERLOAD = false;
 
     /**
      * 数据中心代理相关参数设置
@@ -115,7 +116,8 @@ public class Constant {
     public static final int VMS = 1569;   //虚拟机数目
     public static final int[] VM_TYPE = {0,1,2,3};
     public static final long VM_PES = 1;
-    public static final int[] VM_NUMBER = {300,280,466,523};
+//    public static final int[] VM_NUMBER = {300,280,466,523};
+public static final int[] VM_NUMBER = {300,280,466,523};
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
     public static final long[] VM_RAM = {850,3750,1700,613};
     public static final long[] VM_BW = {1,1,1,1};

@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class VmAllocationPolicyMigrationFirstFitStaticThreshold extends VmAllocationPolicyMigrationStaticThreshold {
-
     public VmAllocationPolicyMigrationFirstFitStaticThreshold(final VmSelectionPolicy vmSelectionPolicy) {
         this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD);
     }
