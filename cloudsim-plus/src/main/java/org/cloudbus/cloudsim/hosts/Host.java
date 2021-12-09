@@ -87,6 +87,10 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
 
     void setVmsRamReAllocations(Map<Vm, Long> vmsRamReAllocations);
 
+    int getShutdownNumber();
+
+    void setShutdownNumber(int shutdownNumber);
+
     /**
      * Gets the Datacenter where the host is placed.
      *

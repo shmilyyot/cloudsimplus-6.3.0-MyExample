@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingLong;
 
@@ -138,15 +139,24 @@ public class DataCenterPrinter {
         System.out.println();
     }
 
-    public double printDataCenterTotalEnergyComsumption(PowerMeter powerMeter){
-        double totalDataCenterPowerConsumption = 0.0;
-        for(PowerMeasurement powerMeasurement:powerMeter.getPowerMeasurements()){
-            totalDataCenterPowerConsumption += powerMeasurement.getTotalPower();
+    public double printDataCenterTotalEnergyComsumption(PowerMeter powerMeter,boolean npa){
+        double totalDataCenterEnergyConsumption = 0.0;
+        int recordSize = powerMeter.getPowerMeasurements().size();
+        if(!npa){
+            double totalDataCenterPowerConsumption = 0.0;
+            for(PowerMeasurement powerMeasurement:powerMeter.getPowerMeasurements()){
+                totalDataCenterPowerConsumption += powerMeasurement.getTotalPower();
 //            System.out.println(powerMeasurement.getTotalPower());
-        }
+            }
 //        System.out.println("能耗统计的数量："+powerMeter.getPowerMeasurements().size());
-        double totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600.0/Constant.COLLECTTIME * 1000);
-        System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
+            totalDataCenterEnergyConsumption = totalDataCenterPowerConsumption / ( 3600.0/Constant.COLLECTTIME * 1000);
+            System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
+        }else{
+            double G5power = Constant.HOST_G5_SPEC_POWER[Constant.HOST_G5_SPEC_POWER.length-1];
+            double G4power = Constant.HOST_G4_SPEC_POWER[Constant.HOST_G4_SPEC_POWER.length-1];
+            totalDataCenterEnergyConsumption += 400 * (G4power+G5power) * recordSize / ( 3600.0/Constant.COLLECTTIME * 1000);
+            System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
+        }
         return totalDataCenterEnergyConsumption;
     }
 
@@ -269,6 +279,11 @@ public class DataCenterPrinter {
         double percentage = activeHostAverageNumber/(double)hostsize;
         System.out.println("当前系统平均活跃host数目是："+activeHostAverageNumber);
         System.out.println("当前系统平均活跃host的比例是："+ percentage);
+    }
+
+    public void printTtoalShutdownHostNumber(List<Host> hostList){
+        int totalShutdownNumber = hostList.stream().mapToInt(Host::getShutdownNumber).sum() + 1;
+        System.out.println("当前系统关闭的host总数是： "+totalShutdownNumber);
     }
 
 }

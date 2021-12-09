@@ -209,6 +209,16 @@ public class HostSimple implements Host, Serializable {
     private boolean lazySuitabilityEvaluation;
     protected HostResourceStats cpuUtilizationStats;
 
+    public int getShutdownNumber() {
+        return shutdownNumber;
+    }
+
+    public void setShutdownNumber(int shutdownNumber) {
+        this.shutdownNumber = shutdownNumber;
+    }
+
+    private int shutdownNumber;
+
     /**
      * Creates and powers on a Host without a pre-defined ID,
      * 10GB of RAM, 1000Mbps of Bandwidth and 500GB of Storage.
@@ -411,6 +421,7 @@ public class HostSimple implements Host, Serializable {
     @Override
     public double updateProcessing(final double currentTime) {
         if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !isCantShutdown()){
+            if(this.active) shutdownNumber++;
             setActive(false);
         }
 

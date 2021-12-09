@@ -82,6 +82,8 @@ public class myImplementationMigrationDatacenter {
     List<Double> resourceWastageList = new ArrayList<>();
     private double preClockTime = -1.0;
     private double preLogClockTime = -1.0;
+    private boolean dvfs = false;
+    private boolean npa = false;
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -169,7 +171,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-        readTaskUsageTraceFile();
+//        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -201,7 +203,7 @@ public class myImplementationMigrationDatacenter {
 //        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
-        totalEnergyCumsumption = dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
+        totalEnergyCumsumption = dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter,npa);
 
         //打印迁移次数
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
@@ -219,6 +221,7 @@ public class myImplementationMigrationDatacenter {
         dataCenterPrinter.calculateSLAV(hostList,vmList,totalEnergyCumsumption,migrationsNumber);
         dataCenterPrinter.calculateAverageActiveHost(activeHostNumber,hostList.size());
         dataCenterPrinter.printSystemAverageResourceWastage(resourceWastageList);
+        dataCenterPrinter.printTtoalShutdownHostNumber(hostList);
 
         //打印当前系统活跃的主机数目
 //        dataCenterPrinter.activeHostCount(hostList);
@@ -432,7 +435,6 @@ public class myImplementationMigrationDatacenter {
         hostIds = new HashSet<>();
         hostList = new ArrayList<>();
         int halfNumOfHost = Constant.HOSTS/2;
-        boolean dvfs = false;
         for(int i=0;i<halfNumOfHost;++i){
             Host host1 = createHost(0);
             Host host2 = createHost(1);
@@ -445,8 +447,11 @@ public class myImplementationMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
 
-//            dvfs = true;
-//            this.noMigrationAllocationPolicy = new VmAllocationPolicyDVFS();
+//            npa = true;
+//            this.noMigrationAllocationPolicy = new VmAllocationPolicyNPA();
+
+            dvfs = true;
+            this.noMigrationAllocationPolicy = new VmAllocationPolicyDVFS();
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
@@ -454,16 +459,16 @@ public class myImplementationMigrationDatacenter {
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-            this.allocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyUnbalanceUtilization(),
-                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            this.allocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
+//                    new VmSelectionPolicyUnbalanceUtilization(),
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPASUP(
@@ -479,7 +484,7 @@ public class myImplementationMigrationDatacenter {
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
 
             Datacenter datacenter;
-            if(!dvfs){
+            if(!dvfs && !npa){
                 //把ram判断阈值
                 this.allocationPolicy.setHostRamThreshold(true);
 
@@ -833,8 +838,10 @@ public class myImplementationMigrationDatacenter {
      * even if new VMs are submitted and created latter on.
      */
     private void onVmsCreatedListener(final DatacenterBrokerEventInfo info) {
-        allocationPolicy.setOverUtilizationThreshold(Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
-        allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+        if(!dvfs && !npa){
+            allocationPolicy.setOverUtilizationThreshold(Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+        }
         broker.removeOnVmsCreatedListener(info.getListener());
         vmList.forEach(vm -> dataCenterPrinter.showVmAllocatedMips(vm, vm.getHost(), info.getTime()));
         System.out.println();

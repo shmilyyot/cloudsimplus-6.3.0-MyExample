@@ -70,6 +70,7 @@ public class standardMigrationDatacenter {
     private double lastClockTime;   //上一个时钟时间
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
     private int migrationsNumber = 0;   //迁移次数
+    private boolean npa = false;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
 
@@ -157,7 +158,7 @@ public class standardMigrationDatacenter {
 //        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
-        dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter);
+        dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter,npa);
 
         //打印迁移次数
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);

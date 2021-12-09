@@ -1,63 +1,34 @@
 package org.cloudsimplus.MyExample.modifyMigration;
 
-import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
-import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationStaticThreshold;
+import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
-
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Stream;
 
-import static java.util.Comparator.comparingDouble;
-
-public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends VmAllocationPolicyMigrationStaticThreshold {
+public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit {
     private MathHandler mathHandler;
     private Map<Host, LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
     private Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue;
     private Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue;
     private Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue;
 
-    public VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(final VmSelectionPolicy vmSelectionPolicy) {
-        this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD);
-    }
-
-    public VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
+    public VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
         final VmSelectionPolicy vmSelectionPolicy,
-        final double overUtilizationThreshold)
-    {
-        this(vmSelectionPolicy, overUtilizationThreshold, null);
-    }
-    public VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-        final VmSelectionPolicy vmSelectionPolicy,
-        final double overUtilizationThreshold,
         final MathHandler mathHandler,
-        final Map<Host,LinkedList<Double>> allHostsRamUtilizationHistoryQueue,
+        final Map<Host, LinkedList<Double>> allHostsRamUtilizationHistoryQueue,
         final Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue,
         final Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue,
-        final Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue)
-    {
-        this(vmSelectionPolicy, overUtilizationThreshold, null);
+        final Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue) {
+        super(vmSelectionPolicy);
         this.mathHandler = mathHandler;
         this.allHostsRamUtilizationHistoryQueue = allHostsRamUtilizationHistoryQueue;
         this.allHostsCpuUtilizationHistoryQueue = allHostsCpuUtilizationHistoryQueue;
         this.allVmsRamUtilizationHistoryQueue = allVmsRamUtilizationHistoryQueue;
         this.allVmsCpuUtilizationHistoryQueue = allVmsCpuUtilizationHistoryQueue;
-    }
-
-    public VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-        final VmSelectionPolicy vmSelectionPolicy,
-        final double overUtilizationThreshold,
-        final BiFunction<VmAllocationPolicy, Vm, Optional<Host>> findHostForVmFunction)
-    {
-        super(vmSelectionPolicy, overUtilizationThreshold, findHostForVmFunction);
     }
 
     @Override
@@ -126,4 +97,19 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
         return new double[]{1-mathHandler.GM11Predicting(allHostsCpuUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(allHostsRamUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostRamUtilization,max)};
     }
 
+    protected double[] getHostUtilizationMad(Host host) throws IllegalArgumentException {
+        List<Double> cpuUsages = allHostsCpuUtilizationHistoryQueue.get(host);
+        List<Double> ramUsages = allHostsRamUtilizationHistoryQueue.get(host);
+        return new double[]{mathHandler.mad(cpuUsages),mathHandler.mad(ramUsages)};
+    }
+
+    @Override
+    public double getRamOverUtilizationThreshold(Host host) {
+        return 0;
+    }
+
+    @Override
+    public double computeHostUtilizationMeasure(Host host) throws IllegalStateException {
+        return 0;
+    }
 }

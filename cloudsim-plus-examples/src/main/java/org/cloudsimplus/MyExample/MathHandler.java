@@ -5,6 +5,7 @@ import java.util.*;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class MathHandler {
 
@@ -446,6 +447,41 @@ public class MathHandler {
             System.out.println("DGM(1，1)的第"+i+"个预测结果："+predicts[i]);
         }
         return predicts[0];
+    }
+
+    public double mad(List<Double> usages){
+        double mad = 0.0;
+        if(usages.size() > 0){
+            double[] data = convertListToArray(usages);
+            double median = getMedian(data);
+            double[] deviationSum = new double[data.length];
+            for (int i = 0; i < data.length; i++) {
+                deviationSum[i] = Math.abs(median - data[i]);
+            }
+            mad = getMedian(deviationSum);
+        }
+        return mad;
+    }
+
+    public double[] convertListToArray(List<Double> list){
+        double[] data = new double[list.size()];
+        int i=0;
+        for(double num:list){
+            data[i++] = num;
+        }
+        return data;
+    }
+
+    public double getMedian(double[] data){
+        return getStatistics(data).getPercentile(50);
+    }
+
+    public static DescriptiveStatistics getStatistics(final double[] list) {
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+        for (double v : list) {
+            stats.addValue(v);
+        }
+        return stats;
     }
 
 
