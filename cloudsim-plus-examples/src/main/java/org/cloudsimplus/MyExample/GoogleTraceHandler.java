@@ -62,11 +62,12 @@ public class GoogleTraceHandler {
     public void buildTraceFileNames(){
         TRACE_FILENAMES = new ArrayList<>(500);
         Usage_FILENAMES = new ArrayList<>(500);
-        TRACE_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_event_process_firstDay\\newevent3.csv");
-        Usage_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
-//        TRACE_FILENAMES.add("D:\\paperWork\\clusterdata2011\\task_event_process_firstDay\\newevent3.csv");
-//        Usage_FILENAMES.add("D:\\paperWork\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
-//        for(int i=0;i<=Constant.GOOGLE_EVENT_DAYS_FILE;++i){
+//        TRACE_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_event_process_firstDay\\newevent3.csv");
+//        Usage_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
+        TRACE_FILENAMES.add("D:\\paperWork\\clusterdata2011\\task_event_process_firstDay\\newevent3.csv");
+        Usage_FILENAMES.add("D:\\paperWork\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
+//        for(int i=0;i<=Constant.GOOGLE_EV
+//        ENT_DAYS_FILE;++i){
 //            String filename;
 //            if(i<10){
 //                filename = Constant.TASK_EVENTS_PATH+"/part-0000"+i+"-of-00500.csv";

@@ -856,12 +856,12 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
 
         //大于一定时间停止迁移
-//        if(getSimulation().clock()< 600.0 || getSimulation().clock() > 85392.0){
-//            return;
-//        }
-        if(getSimulation().clock() > 85392.0){
+        if(getSimulation().clock() < 600.0 || getSimulation().clock() > 85392.0){
             return;
         }
+//        if(getSimulation().clock() > 85392.0){
+//            return;
+//        }
 
         lastMigrationMap = getVmAllocationPolicy().getOptimizedAllocationMap(getVmList());
         for (final Map.Entry<Vm, Host> entry : lastMigrationMap.entrySet()) {

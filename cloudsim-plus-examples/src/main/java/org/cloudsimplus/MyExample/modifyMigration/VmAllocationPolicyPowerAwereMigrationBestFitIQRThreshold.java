@@ -1,25 +1,26 @@
 package org.cloudsimplus.MyExample.modifyMigration;
 
-import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigration;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationDynamicUpperThreshold;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
+import org.cloudbus.cloudsim.util.MathUtil;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
+
 import java.util.*;
 import java.util.stream.Stream;
 
-public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit {
+public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit {
     private final MathHandler mathHandler;
     private final Map<Host, LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
     private final Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue;
     private final Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue;
     private final Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue;
 
-    public VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+    public VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold(
         final VmSelectionPolicy vmSelectionPolicy,
         final double parameter,
         final VmAllocationPolicyMigration fallbackVmAllocationPolicy,
@@ -98,9 +99,9 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
         return new double[]{1-mathHandler.GM11Predicting(allHostsCpuUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(allHostsRamUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostRamUtilization,max)};
     }
 
-    protected double getHostUtilizationMad(Host host,List<Double> usages) throws IllegalArgumentException {
+    protected double getHostUtilizationIqr(Host host,List<Double> usages) throws IllegalArgumentException {
         if(usages.size() < Constant.HOST_LogLength){
-            return mathHandler.mad(usages);
+            return mathHandler.iqr(usages);
         }
         throw new IllegalArgumentException();
     }
@@ -117,7 +118,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     @Override
     public double getOverUtilizationThreshold(final Host host) {
         try {
-            return 1 - getSafetyParameter() * getHostUtilizationMad(host,allHostsCpuUtilizationHistoryQueue.get(host));
+            return 1 - getSafetyParameter() * getHostUtilizationIqr(host,allHostsCpuUtilizationHistoryQueue.get(host));
         } catch (IllegalStateException e) {
             return Double.MAX_VALUE;
         }
@@ -126,7 +127,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     @Override
     public double getRamOverUtilizationThreshold(final Host host) {
         try {
-            return 1 - getSafetyParameter() * getHostUtilizationMad(host,allHostsRamUtilizationHistoryQueue.get(host));
+            return 1 - getSafetyParameter() * getHostUtilizationIqr(host,allHostsRamUtilizationHistoryQueue.get(host));
         } catch (IllegalStateException e) {
             return Double.MAX_VALUE;
         }

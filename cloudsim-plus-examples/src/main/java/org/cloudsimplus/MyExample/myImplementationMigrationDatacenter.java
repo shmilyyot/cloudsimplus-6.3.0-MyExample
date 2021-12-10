@@ -3,6 +3,7 @@ package org.cloudsimplus.MyExample;
 import ch.qos.logback.classic.Level;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationBestFitStaticThreshold;
+import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationStaticThreshold;
 import org.cloudbus.cloudsim.brokers.DatacenterBroker;
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple;
@@ -73,6 +74,7 @@ public class myImplementationMigrationDatacenter {
     public static MathHandler mathHandler;      //处理科学计算
     private double lastClockTime;   //上一个时钟时间
     private VmAllocationPolicyMigrationStaticThreshold allocationPolicy;    //迁移策略
+    private VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit dynamicUpperAllocationPolicy;
     private VmAllocationPolicy noMigrationAllocationPolicy;
     private int migrationsNumber = 0;   //迁移次数
     private double totalEnergyCumsumption = 0.0;
@@ -84,6 +86,7 @@ public class myImplementationMigrationDatacenter {
     private double preLogClockTime = -1.0;
     private boolean dvfs = false;
     private boolean npa = false;
+    private boolean dynamicUpperThreshold = false;
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -171,7 +174,7 @@ public class myImplementationMigrationDatacenter {
         simulation.addOnClockTickListener(this::clockTickListener);
 
         //从GoogleUsageTrace读取系统中Cloudlet的利用率
-//        readTaskUsageTraceFile();
+        readTaskUsageTraceFile();
 
         //打印brokers和cloudlets的信息
         System.out.println("Brokers:");
@@ -447,29 +450,73 @@ public class myImplementationMigrationDatacenter {
         System.out.printf("# Created %d Hosts from modified setting%n", hostList.size());
         for(int i=0;i<Constant.DATACENTERS_NUMBER;++i){
 
+//            //NPA算法
 //            npa = true;
 //            this.noMigrationAllocationPolicy = new VmAllocationPolicyNPA();
 
-            dvfs = true;
-            this.noMigrationAllocationPolicy = new VmAllocationPolicyDVFS();
+//            //DVFS算法
+//            dvfs = true;
+//            this.noMigrationAllocationPolicy = new VmAllocationPolicyDVFS();
 
+//            //FFD放置算法 + static算法
 //            this.allocationPolicy =
 //                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
 //                    new VmSelectionPolicyUnbalanceUtilization(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-//                    new VmSelectionPolicyUnbalanceUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//            //PABFD + static算法 默认算法
+            this.allocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
+
+//            //PABFD + MAD算法
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    2.5,
+//                    allocationPolicy,
 //                    mathHandler,
 //                    allHostsRamUtilizationHistoryQueue,
 //                    allHostsCpuUtilizationHistoryQueue,
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
+//            //PABFD + IQR算法
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    1.5,
+//                    allocationPolicy,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
+
+            //PABFD + LR算法
+            dynamicUpperThreshold = true;
+            this.dynamicUpperAllocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    1.5,
+                    allocationPolicy,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
+
+//            //PASUP + static算法
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPASUP(
 //                    new VmSelectionPolicyUnbalanceUtilization(),
@@ -488,13 +535,15 @@ public class myImplementationMigrationDatacenter {
                 //把ram判断阈值
                 this.allocationPolicy.setHostRamThreshold(true);
 
-                //低阈值迁移只迁移一个
-//            this.allocationPolicy.setEnableMigrateOneUnderLoadHost(true);
                 if(!Constant.USING_UNDERLOAD_THRESHOLD){
                     this.allocationPolicy.setEnableMigrateMostUnbalanceWastageLoadHost(true);
                 }
                 this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
-                datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
+                if(dynamicUpperThreshold){
+                    datacenter = new DatacenterSimple(simulation,hostList,dynamicUpperAllocationPolicy);
+                }else{
+                    datacenter = new DatacenterSimple(simulation,hostList,allocationPolicy);
+                }
             }else{
                 datacenter = new DatacenterSimple(simulation,hostList,noMigrationAllocationPolicy);
             }

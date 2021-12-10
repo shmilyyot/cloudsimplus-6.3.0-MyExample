@@ -6,6 +6,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class MathHandler {
 
@@ -463,6 +464,14 @@ public class MathHandler {
         return mad;
     }
 
+    public double iqr(List<Double> usages){
+        double[] data = convertListToArray(usages);
+        Arrays.sort(data);
+        int q1 = (int) Math.round(0.25 * (data.length + 1)) - 1;
+        int q3 = (int) Math.round(0.75 * (data.length + 1)) - 1;
+        return data[q3] - data[q1];
+    }
+
     public double[] convertListToArray(List<Double> list){
         double[] data = new double[list.size()];
         int i=0;
@@ -476,7 +485,7 @@ public class MathHandler {
         return getStatistics(data).getPercentile(50);
     }
 
-    public static DescriptiveStatistics getStatistics(final double[] list) {
+    public DescriptiveStatistics getStatistics(final double[] list) {
         DescriptiveStatistics stats = new DescriptiveStatistics();
         for (double v : list) {
             stats.addValue(v);
@@ -484,5 +493,63 @@ public class MathHandler {
         return stats;
     }
 
+    public double[] getLoessParameterEstimates(final double[] y) {
+        int n = y.length;
+        double[] x = new double[n];
+        for (int i = 0; i < n; i++) {
+            x[i] = i + 1;
+        }
+        return createWeigthedLinearRegression(x, y, getTricubeWeigts(n)).regress().getParameterEstimates();
+    }
+
+    public double[] getTricubeWeigts(final int n) {
+        double[] weights = new double[n];
+        double top = n - 1;
+        double spread = top;
+        for (int i = 2; i < n; i++) {
+            double k = Math.pow(1 - Math.pow((top - i) / spread, 3), 3);
+            if (k > 0) {
+                weights[i] = 1 / k;
+            } else {
+                weights[i] = Double.MAX_VALUE;
+            }
+        }
+        weights[0] = weights[1] = weights[2];
+        return weights;
+    }
+
+    public SimpleRegression createWeigthedLinearRegression(
+        final double[] x, final double[] y, final double[] weigths) {
+        double[] xW = new double[x.length];
+        double[] yW = new double[y.length];
+
+        int numZeroWeigths = 0;
+        for (double weigth : weigths) {
+            if (weigth <= 0) {
+                numZeroWeigths++;
+            }
+        }
+
+        for (int i = 0; i < x.length; i++) {
+            if (numZeroWeigths >= 0.4 * weigths.length) {
+                // See: http://www.ncsu.edu/crsc/events/ugw07/Presentations/Crooks_Qiao/Crooks_Qiao_Alt_Presentation.pdf
+                xW[i] = Math.sqrt(weigths[i]) * x[i];
+                yW[i] = Math.sqrt(weigths[i]) * y[i];
+            } else {
+                xW[i] = x[i];
+                yW[i] = y[i];
+            }
+        }
+
+        return createLinearRegression(xW, yW);
+    }
+
+    public SimpleRegression createLinearRegression(final double[] x, final double[] y) {
+        SimpleRegression regression = new SimpleRegression();
+        for (int i = 0; i < x.length; i++) {
+            regression.addData(x[i], y[i]);
+        }
+        return regression;
+    }
 
 }
