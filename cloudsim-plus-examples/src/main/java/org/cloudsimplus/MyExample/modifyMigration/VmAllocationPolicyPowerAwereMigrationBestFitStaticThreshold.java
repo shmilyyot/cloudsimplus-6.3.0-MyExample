@@ -73,8 +73,6 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
             final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-//            System.out.println("host:"+(1-hostPredict[0]));
-//            System.out.println("vm:"+vmPredict[0]);
             return getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
         }));
 //        final Comparator<Host> hostPowerConsumptionComparator =
@@ -111,19 +109,49 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
             }
         }
         final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
-        final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();
-        return utilization;
+        return hostPotentialMipsUse / host.getTotalMipsCapacity();
     }
 
     public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
-//        processCurrentVmUtilization(vm,vmCpuUtilization,vmRamUtilization);
         return new double[]{mathHandler.GM11Predicting(allVmsCpuUtilizationHistoryQueue.get(vm), Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(allVmsRamUtilizationHistoryQueue.get(vm),Constant.VM_LogLength,vmRamUtilization,max)};
     }
 
     //获取host最小剩余资源利用率，用1减过了
     public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
-//        processCurrentHostUtilization(host,hostCpuUtilization,hostRamUtilization);
         return new double[]{1-mathHandler.GM11Predicting(allHostsCpuUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(allHostsRamUtilizationHistoryQueue.get(host),Constant.HOST_LogLength,hostRamUtilization,max)};
+    }
+
+    //重写判断host本身是否过载，用未来利用率预测
+    @Override
+    public boolean isHostOverloaded(final Host host) {
+        if(isHostRamThreshold()){
+            final double hostCpuUtilization = host.getCpuPercentUtilization();
+            final double hostRamUtilization = host.getRamPercentUtilization();
+            if(host.isInFindMigrateVm()){
+                return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
+            }else{
+                final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
+                return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
+            }
+        }else{
+            return isHostOverloaded(host, host.getCpuPercentUtilization());
+        }
+    }
+
+    //重写判断一个vm放进去host的话会不会过载
+    @Override
+    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
+        final double hostCpuUtilization = host.getCpuPercentUtilization();
+        final double hostRamUtilization = host.getRamPercentUtilization();
+        final double vmCpuUtilization = vm.getCpuPercentUtilization();
+        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
+        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
+        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
+        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
+        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
     }
 
 }

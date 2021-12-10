@@ -142,6 +142,8 @@ public class VmAllocationPolicyMigrationStaticThreshold extends VmAllocationPoli
     }
 
     @Override
-    public double getRamOverUtilizationThreshold(final Host host) {return overRamUtilizationThreshold;}
+    public double getRamOverUtilizationThreshold(final Host host) {
+        return overRamUtilizationThreshold;
+    }
 
 }
