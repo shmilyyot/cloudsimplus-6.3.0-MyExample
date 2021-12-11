@@ -182,4 +182,15 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent,final double cpuThreshold,final double ramThreshold){
         return cpuUsagePercent > cpuThreshold && ramUsagePercent > ramThreshold;
     }
+
+    protected double[] getUtilizationHistory(Host host) {
+        double[] utilizationHistory = new double[Constant.HOST_LogLength];
+        double hostMips = host.getTotalMipsCapacity();
+        for (Vm vm : host.getVmList()) {
+            for (int i = 0; i < Constant.VM_LogLength; i++) {
+                utilizationHistory[i] += allVmsRamUtilizationHistoryQueue.get(vm).get(i) * vm.getTotalMipsCapacity() / hostMips;
+            }
+        }
+        return utilizationHistory;
+    }
 }

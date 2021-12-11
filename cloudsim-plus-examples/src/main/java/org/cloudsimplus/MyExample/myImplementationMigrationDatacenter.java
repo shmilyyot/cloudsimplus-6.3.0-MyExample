@@ -748,7 +748,6 @@ public class myImplementationMigrationDatacenter {
             });
         }
         if(currentTime % Constant.SCHEDULING_INTERVAL == 0){
-
             //每一定时间间隔计算一次资源浪费
             calculateResourceWastage(hostList,resourceWastageList);
 
