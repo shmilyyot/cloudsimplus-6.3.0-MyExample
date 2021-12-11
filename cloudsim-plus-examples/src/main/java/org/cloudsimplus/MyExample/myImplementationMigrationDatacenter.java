@@ -477,6 +477,8 @@ public class myImplementationMigrationDatacenter {
                     allVmsRamUtilizationHistoryQueue,
                     allVmsCpuUtilizationHistoryQueue);
 
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+
             //PABFD + MAD算法
             dynamicUpperThreshold = true;
             this.dynamicUpperAllocationPolicy =
@@ -503,18 +505,18 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
-            //PABFD + LR算法
-            dynamicUpperThreshold = true;
-            this.dynamicUpperAllocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold(
-                    new VmSelectionPolicyMinimumMigrationTime(),
-                    1.2,
-                    allocationPolicy,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            //PABFD + LR算法
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    1.2,
+//                    allocationPolicy,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
 //            //PASUP + static算法
 //            this.allocationPolicy =
@@ -530,15 +532,20 @@ public class myImplementationMigrationDatacenter {
 
             Log.setLevel(VmAllocationPolicy.LOGGER, Level.WARN);
 
+            //使用低负载阈值
+            if(!Constant.USING_UNDERLOAD_THRESHOLD){
+                this.allocationPolicy.setEnableMigrateMostUnbalanceWastageLoadHost(true);
+                this.dynamicUpperAllocationPolicy.setEnableMigrateMostUnbalanceWastageLoadHost(true);
+            }
+
+            //把ram判断阈值
+            if(Constant.USING_RAM){
+                this.allocationPolicy.setHostRamThreshold(true);
+                this.dynamicUpperAllocationPolicy.setHostRamThreshold(true);
+            }
+
             Datacenter datacenter;
             if(!dvfs && !npa){
-                //把ram判断阈值
-                this.allocationPolicy.setHostRamThreshold(true);
-
-                if(!Constant.USING_UNDERLOAD_THRESHOLD){
-                    this.allocationPolicy.setEnableMigrateMostUnbalanceWastageLoadHost(true);
-                }
-                this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
                 if(dynamicUpperThreshold){
                     datacenter = new DatacenterSimple(simulation,hostList,dynamicUpperAllocationPolicy);
                 }else{
@@ -598,7 +605,7 @@ public class myImplementationMigrationDatacenter {
             .setVmScheduler(new VmSchedulerTimeShared())
             .setPowerModel(powerModel);
         host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
-        host.addOnUpdateProcessingListener(this::updateHostResource);
+//        host.addOnUpdateProcessingListener(this::updateHostResource);
 //        host.setLazySuitabilityEvaluation(true);
         //host创建之后的活跃状态
 //        final boolean activateHost = true;
@@ -748,18 +755,65 @@ public class myImplementationMigrationDatacenter {
             });
         }
         if(currentTime % Constant.SCHEDULING_INTERVAL == 0){
+
+//            System.out.println(currentTime+" 发生了收集");
             //每一定时间间隔计算一次资源浪费
             calculateResourceWastage(hostList,resourceWastageList);
 
-            hostList.forEach(host->{
+//            //统计host和vm的利用率
+//            collectHostResourceUtilization();
+            double systemWastage = 0.0;
+
+            for(Host host:hostList){
+
+                LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
+                LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
+
                 if(host.isActive()){
+
+                    //计算host资源浪费
+                    systemWastage += host.resourceWastage();
+
+                    //获取SLATH
                     double hostRamUtilization = host.getRamPercentUtilization();
                     double hostCpuUtilization = host.getCpuPercentUtilization();
                     if(hostRamUtilization >= 0.9999 || hostCpuUtilization > 0.9999){
                         host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
                     }
+
+                    //记录host和vm利用率
+                    hostRamhistory.addLast(hostRamUtilization);
+                    hostCpuhistory.addLast(hostCpuUtilization);
+                    host.getVmList().forEach(vm -> {
+                        if(vm.getHost().getId() == host.getId()){
+                            LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
+                            LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
+                            double vmCpuUtilization = vm.getCpuPercentUtilization();
+                            double vmRamUtilization = vm.getRam().getPercentUtilization();
+                            vmCpuHistory.addLast(vmCpuUtilization);
+                            vmRamHistory.addLast(vmRamUtilization);
+                            while(vmCpuHistory.size() > Constant.VM_LogLength){
+                                vmCpuHistory.removeFirst();
+                            }
+                            while(vmRamHistory.size() > Constant.VM_LogLength){
+                                vmRamHistory.removeFirst();
+                            }
+                        }
+                    });
+                    while(hostRamhistory.size() > Constant.HOST_LogLength){
+                        hostRamhistory.removeFirst();
+                    }
+                    while(hostCpuhistory.size() > Constant.HOST_LogLength){
+                        hostCpuhistory.removeFirst();
+                    }
+                }else{
+                    hostRamhistory.clear();
+                    hostCpuhistory.clear();
                 }
-            });
+            }
+
+            resourceWastageList.add(systemWastage);
+
         }
         preClockTime = currentTime;
     }
@@ -919,125 +973,45 @@ public class myImplementationMigrationDatacenter {
         allVmsCpuUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
     }
 
-//    private void collectVmResourceUtilization(final Map<Vm, Map<Double, Double>> allVmsUtilizationHistory, double systemTime ,Class<? extends ResourceManageable> resourceClass) {
-//        vmList.forEach(vm -> allVmsUtilizationHistory.get(vm).put(systemTime, vm.getResource(resourceClass).getPercentUtilization()));
-//    }
-//
-//    private void collectHostRamResourceUtilization(double systemTime){
-//        hostList.forEach(host -> allHostsRamUtilizationHistory.get(host).put(systemTime,host.getRamPercentUtilization()));
-//    }
-
-    private void collectHostRamResourceUtilization(){
-        hostList.forEach(host -> {
-            LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
-            if(hostRamhistory.size()<Constant.HOST_LogLength){
-                hostRamhistory.addLast(host.getRamPercentUtilization());
-            }else{
-                hostRamhistory.removeFirst();
-                hostRamhistory.addLast(host.getRamPercentUtilization());
-            }
-        });
-    }
-
     private void collectHostResourceUtilization(){
         hostList.forEach(host -> {
             LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
             LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
 
-
             if(host.isActive()){
-//                System.out.println("打印开机时间："+host.getTotalUpTime());
-//            if(hostRamhistory.size() >= Constant.HOST_LogLength * 2){
-                while(hostRamhistory.size() > Constant.HOST_LogLength-1){
-                    hostRamhistory.removeFirst();
-                    hostCpuhistory.removeFirst();
-                }
-//            }
                 double hostRamUtilization = host.getRamPercentUtilization();
                 double hostCpuUtilization = host.getCpuPercentUtilization();
-//                System.out.println(simulation.clockStr() + ": host" + host.getId() + " "+hostCpuUtilization + "   "+hostRamUtilization);
-//                if(hostCpuUtilization == 1.0 || hostRamUtilization == 1.0) host.setTotalOver100Time(host.getTotalOver100Time()+Constant.SCHEDULING_INTERVAL);
                 hostRamhistory.addLast(hostRamUtilization);
                 hostCpuhistory.addLast(hostCpuUtilization);
-//                System.out.println("当前时间是："+simulation.clockStr()+"  host id: " +host.getId());
                 host.getVmList().forEach(vm -> {
-                    LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-                    LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-//                if(vmCpuHistory.size() >= Constant.VM_LogLength * 2){
-                    while(vmCpuHistory.size() > Constant.VM_LogLength-1){
-                        vmCpuHistory.removeFirst();
-                        vmRamHistory.removeFirst();
+                    if(vm.getHost().getId() == host.getId()){
+                        LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
+                        LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
+                        double vmCpuUtilization = vm.getCpuPercentUtilization();
+                        double vmRamUtilization = vm.getRam().getPercentUtilization();
+                        vmCpuHistory.addLast(vmCpuUtilization);
+                        vmRamHistory.addLast(vmRamUtilization);
+                        while(vmCpuHistory.size() > Constant.VM_LogLength){
+                            vmCpuHistory.removeFirst();
+                        }
+                        while(vmRamHistory.size() > Constant.VM_LogLength){
+                            vmRamHistory.removeFirst();
+                        }
                     }
-//                }
-
-
-                    //更新vm总共请求的mips数目
-                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + vm.getTotalCpuMipsUtilization()* Constant.SCHEDULING_INTERVAL);
-
-                    vmCpuHistory.addLast(vm.getCpuPercentUtilization());
-                    vmRamHistory.addLast(vm.getRam().getPercentUtilization());
                 });
-            }else{
-                while(hostRamhistory.size() > Constant.HOST_LogLength-1){
+                while(hostRamhistory.size() > Constant.HOST_LogLength){
                     hostRamhistory.removeFirst();
+                }
+                while(hostCpuhistory.size() > Constant.HOST_LogLength){
                     hostCpuhistory.removeFirst();
                 }
-                hostRamhistory.addLast(0.0);
-                hostCpuhistory.addLast(0.0);
+            }else{
+                hostRamhistory.clear();
+                hostCpuhistory.clear();
             }
         });
     }
 
-//    private void collectHostResourceUtilization(){
-//        hostList.forEach(host -> {
-//            ArrayList<Double> hostRamhistory = allHostsRamUtilizationHistoryAL.get(host);
-//            ArrayList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryAL.get(host);
-//            if(hostRamhistory.size()<Constant.LogLength){
-//                hostRamhistory.add(host.getRamPercentUtilization());
-//                hostCpuhistory.add(host.getCpuPercentUtilization());
-//            }else{
-//                hostRamhistory.remove(0);
-//                hostRamhistory.add(host.getRamPercentUtilization());
-//                hostCpuhistory.remove(0);
-//                hostCpuhistory.add(host.getCpuPercentUtilization());
-//            }
-//        });
-//    }
-
-    private void collectHostCpuResourceUtilization(){
-        hostList.forEach(host -> {
-            LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-            double utilization = host.getCpuPercentUtilization();
-            if (hostCpuhistory.size() >= Constant.HOST_LogLength) {
-                hostCpuhistory.removeFirst();
-            }
-            hostCpuhistory.addLast(utilization);
-        });
-    }
-
-//    //直接移除不对齐的cpu和ram利用率，不建议开启
-//    private void processHostUsage(){
-//        for(Host host:hostList){
-//            List<HostStateHistoryEntry> hostStateHistoryEntries = host.getStateHistory();
-//            Map<Double,Double> hostRamUtilizationHistory = allHostsRamUtilizationHistory.get(host);
-//            Iterator<HostStateHistoryEntry> itHistory = hostStateHistoryEntries.iterator();
-//            while(itHistory.hasNext()){
-//                var history = itHistory.next();
-//                double time = history.getTime();
-//                double ramUsage = hostRamUtilizationHistory.get(time);
-//                double cpuUsage = history.getAllocatedMips()/host.getTotalMipsCapacity()*100;
-//                if(ramUsage == 0.0 && cpuUsage != 0.0){
-//                    itHistory.remove();
-//                    hostRamUtilizationHistory.remove(time);
-//                    continue;
-//                }
-//                if(ramUsage != 0.0 && cpuUsage == 0.0){
-//                    itHistory.remove();
-//                    hostRamUtilizationHistory.remove(time);
-//                }
-//            }
-//        }
-//    }
     public void calculateResourceWastage(List<Host> hostList,List<Double> resourceWastageList){
         double systemWastage = 0.0;
         for(Host host:hostList){

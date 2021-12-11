@@ -220,7 +220,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 //或许可以不打印，太多了
 //            printUnderUtilizedHosts(underloadedHost);
 
-                LOGGER.info("{}: VmAllocationPolicy: UnbalanceWastege hosts: {}", getDatacenter().getSimulation().clockStr(), unbalanceHost);
+                LOGGER.warn("{}: VmAllocationPolicy: UnbalanceWastege hosts: {}", getDatacenter().getSimulation().clockStr(), unbalanceHost);
 
                 ignoredSourceHosts.add(unbalanceHost);
                 ignoredTargetHosts.add(unbalanceHost);
@@ -331,13 +331,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     private String overloadedHostToString(final Host host) {
         return String.format(
             "      Host %d (upper CPU threshold %f, current CPU utilization: %f,upper RAM threshold %f, current RAM utilization: %f)",
-            host.getId(), getOverUtilizationThreshold(host), host.getCpuPercentUtilization(),getRamOverUtilizationThreshold(host),host.getRamPercentUtilization());
+            host.getId(), this.getOverUtilizationThreshold(host), host.getCpuPercentUtilization(),this.getRamOverUtilizationThreshold(host),host.getRamPercentUtilization());
     }
 
     private String underloadedHostToString(final Host host) {
         return String.format(
             "      Host %d (lower CPU threshold %.2f, current CPU utilization: %.2f,lower RAM threshold %.2f, current RAM utilization: %.2f) ,current holding vm size: %d",
-            host.getId(), getUnderUtilizationThreshold(), host.getCpuPercentUtilization(),getUnderRamUtilizationThreshold(),host.getRamPercentUtilization(),host.getVmList().size());
+            host.getId(), this.getUnderUtilizationThreshold(), host.getCpuPercentUtilization(),this.getUnderRamUtilizationThreshold(),host.getRamPercentUtilization(),host.getVmList().size());
     }
 
 
