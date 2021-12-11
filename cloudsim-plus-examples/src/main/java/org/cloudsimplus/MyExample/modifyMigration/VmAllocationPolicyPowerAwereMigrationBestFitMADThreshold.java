@@ -99,7 +99,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     }
 
     protected double getHostUtilizationMad(Host host,List<Double> usages) throws IllegalArgumentException {
-        if(usages.size() < Constant.HOST_LogLength){
+        if(usages.size() >= Constant.HOST_LogLength){
             return mathHandler.mad(usages);
         }
         throw new IllegalArgumentException();
@@ -117,8 +117,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     @Override
     public double getOverUtilizationThreshold(final Host host) {
         try {
-            return 1 - getSafetyParameter() * getHostUtilizationMad(host,allHostsCpuUtilizationHistoryQueue.get(host));
-        } catch (IllegalStateException e) {
+            return Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,allHostsCpuUtilizationHistoryQueue.get(host)),0);
+        } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
     }
@@ -126,8 +126,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     @Override
     public double getRamOverUtilizationThreshold(final Host host) {
         try {
-            return 1 - getSafetyParameter() * getHostUtilizationMad(host,allHostsRamUtilizationHistoryQueue.get(host));
-        } catch (IllegalStateException e) {
+            return Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,allHostsRamUtilizationHistoryQueue.get(host)),0);
+        } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
     }
@@ -140,7 +140,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     //重写判断host本身是否过载，用未来利用率预测
     @Override
     public boolean isHostOverloaded(final Host host) {
-        if(getOverUtilizationThreshold(host) == Double.MAX_VALUE || getRamOverUtilizationThreshold(host) == Double.MAX_VALUE) {
+        double cpuThreshold = getOverUtilizationThreshold(host), ramThreshold = getRamOverUtilizationThreshold(host);
+        if(cpuThreshold == Double.MAX_VALUE || ramThreshold == Double.MAX_VALUE) {
             return getFallbackVmAllocationPolicy().isHostOverloaded(host);
         }
         if(isHostRamThreshold()){
@@ -150,7 +151,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
                 return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
             }else{
                 final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
-                return isHostOverloaded(host, 1-hostPredict[0],1-hostPredict[1]);
+                return isHostOverloaded(host,1-hostPredict[0],1-hostPredict[1],cpuThreshold,ramThreshold);
             }
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
@@ -170,6 +171,14 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
         final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+        double cpuThreshold = getOverUtilizationThreshold(host), ramThreshold = getRamOverUtilizationThreshold(host);
+        if(cpuThreshold == Double.MAX_VALUE || ramThreshold == Double.MAX_VALUE){
+            return !getFallbackVmAllocationPolicy().isHostOverloaded(host);
+        }
+        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization,cpuThreshold,ramThreshold);
+    }
+
+    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent,final double cpuThreshold,final double ramThreshold){
+        return cpuUsagePercent > cpuThreshold && ramUsagePercent > ramThreshold;
     }
 }

@@ -477,18 +477,18 @@ public class myImplementationMigrationDatacenter {
                     allVmsRamUtilizationHistoryQueue,
                     allVmsCpuUtilizationHistoryQueue);
 
-//            //PABFD + MAD算法
-//            dynamicUpperThreshold = true;
-//            this.dynamicUpperAllocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    2.5,
-//                    allocationPolicy,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+            //PABFD + MAD算法
+            dynamicUpperThreshold = true;
+            this.dynamicUpperAllocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    2.5,
+                    allocationPolicy,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
 
 //            //PABFD + IQR算法
 //            dynamicUpperThreshold = true;
@@ -508,7 +508,7 @@ public class myImplementationMigrationDatacenter {
             this.dynamicUpperAllocationPolicy =
                 new VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold(
                     new VmSelectionPolicyMinimumMigrationTime(),
-                    1.5,
+                    1.2,
                     allocationPolicy,
                     mathHandler,
                     allHostsRamUtilizationHistoryQueue,

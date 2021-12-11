@@ -130,7 +130,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     }
 
     protected double getMaximumVmMigrationTime(Host host) {
-        long maxRam = Integer.MIN_VALUE;
+        long maxRam = Long.MIN_VALUE;
         for (Vm vm : host.getVmList()) {
             long ram = vm.getCurrentRequestedRam();
             if (ram > maxRam) {
@@ -191,16 +191,33 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     //重写判断一个vm放进去host的话会不会过载
     @Override
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
-        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
-        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
-        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+        List<Double> cpuUsages = allHostsCpuUtilizationHistoryQueue.get(host);
+        List<Double> ramUsages = allHostsRamUtilizationHistoryQueue.get(host);
+        List<Double> cpuVmUsages = allVmsCpuUtilizationHistoryQueue.get(vm);
+        List<Double> ramVmUsages = allVmsRamUtilizationHistoryQueue.get(vm);
+        if(cpuUsages.size() < Constant.HOST_LogLength || ramUsages.size() < Constant.HOST_LogLength || cpuVmUsages.size() < Constant.HOST_LogLength || ramVmUsages.size() < Constant.HOST_LogLength){
+            return !getFallbackVmAllocationPolicy().isHostOverloaded(host);
+        }
+        for(int i=0;i < Constant.HOST_LogLength;++i){
+            cpuUsages.set(i,cpuUsages.get(i) + cpuVmUsages.get(i) * vm.getTotalMipsCapacity() / host.getTotalMipsCapacity());
+            ramUsages.set(i,ramUsages.get(i) + ramVmUsages.get(i) * vm.getRam().getCapacity() / host.getRam().getCapacity());
+        }
+        double cpuLrPredict = getPredictedUtilization(host,cpuUsages);
+        double ramLrPredict = getPredictedUtilization(host,ramUsages);
+        if(cpuLrPredict == Double.MAX_VALUE || ramLrPredict == Double.MAX_VALUE){
+            return !getFallbackVmAllocationPolicy().isHostOverloaded(host);
+        }
+        return !isHostOverloaded(host,cpuLrPredict,ramLrPredict);
+    }
+
+    protected double[] getUtilizationHistory(Host host) {
+        double[] utilizationHistory = new double[Constant.HOST_LogLength];
+        double hostMips = host.getTotalMipsCapacity();
+        for (Vm vm : host.getVmList()) {
+            for (int i = 0; i < Constant.VM_LogLength; i++) {
+                utilizationHistory[i] += allVmsRamUtilizationHistoryQueue.get(vm).get(i) * vm.getTotalMipsCapacity() / hostMips;
+            }
+        }
+        return utilizationHistory;
     }
 }
