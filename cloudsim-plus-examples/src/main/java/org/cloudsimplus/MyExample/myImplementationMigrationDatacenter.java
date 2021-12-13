@@ -479,18 +479,18 @@ public class myImplementationMigrationDatacenter {
 
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
-            //PABFD + MAD算法
-            dynamicUpperThreshold = true;
-            this.dynamicUpperAllocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
-                    new VmSelectionPolicyMinimumMigrationTime(),
-                    2.5,
-                    allocationPolicy,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            //PABFD + MAD算法
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    2.5,
+//                    allocationPolicy,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
 //            //PABFD + IQR算法
 //            dynamicUpperThreshold = true;
@@ -505,18 +505,18 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
-//            //PABFD + LR算法
-//            dynamicUpperThreshold = true;
-//            this.dynamicUpperAllocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    1.2,
-//                    allocationPolicy,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+            //PABFD + LR算法
+            dynamicUpperThreshold = true;
+            this.dynamicUpperAllocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    1.2,
+                    allocationPolicy,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
 
 //            //PASUP + static算法
 //            this.allocationPolicy =
