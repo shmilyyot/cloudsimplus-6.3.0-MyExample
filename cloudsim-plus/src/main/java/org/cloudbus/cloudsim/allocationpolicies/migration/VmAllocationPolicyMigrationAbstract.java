@@ -227,6 +227,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
                 final List<? extends Vm> vmsToMigrateFromHost = getVmsToMigrateFromUnderUtilizedHost(unbalanceHost);
                 if (!vmsToMigrateFromHost.isEmpty()) {
+                    System.out.println("执行了1");
                     logVmsToBeReallocated(unbalanceHost, vmsToMigrateFromHost);
                     final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
                         vmsToMigrateFromHost,
@@ -697,6 +698,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
             //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，会自己销毁
             if (vm.getCloudletScheduler().isEmpty()) {
+                System.out.println("执行了2: "+vm+" "+vm.getHost());
                 return new HashMap<>();
             }
 
@@ -736,7 +738,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     /**
-     * Sort a given list of VMs by descending order of CPU utilization.
+     * Sort a given list of VMs by descending order of CPU utilization. 按cpu利用率递减
      *
      * @param vmList the vm list to be sorted
      * @param simulationTime the simulation time to get the current CPU utilization for each Vm
@@ -746,9 +748,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         vmList.sort(comparator.reversed());
     }
 
+    //按内存递增
     protected void sortByMemoryDes(final List<? extends Vm> vmList, final double simulationTime) {
         final Comparator<Vm> comparator = comparingLong(Vm::getCurrentRequestedRam);
-        vmList.sort(comparator.reversed());
+        vmList.sort(comparator);
     }
 
     protected  void sortByVmCombineCpuAndRam(final List<? extends Vm> vmList, final double simulationTime){

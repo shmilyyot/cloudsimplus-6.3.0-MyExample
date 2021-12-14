@@ -1499,7 +1499,7 @@ public class HostSimple implements Host, Serializable {
     @Override
     public List<Vm> getMigratableVms() {
         return vmList.stream()
-            .filter(vm -> !vm.isInMigration() && vm.getCpuPercentUtilization() != 0.0)
+            .filter(vm -> !vm.isInMigration())
             .collect(Collectors.toList());
     }
 

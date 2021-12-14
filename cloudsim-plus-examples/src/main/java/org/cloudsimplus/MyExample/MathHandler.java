@@ -43,7 +43,7 @@ public class MathHandler {
 
 
 //        //暂时还是GM(1,1)靠谱，等待更好的
-        mathHandler.GM11PredictingTest(list,11);
+        mathHandler.GM11PredictingTest(list,list.size());
 //        //结论：DGM是个乐色算法
 //        mathHandler.DGM21PredictingTest(list,12);
 //        mathHandler.DGM11PredictingTest(list,12);
@@ -119,8 +119,8 @@ public class MathHandler {
         double[] data = convertListToArray(dataHistory);
         ARIMAModel arima = new ARIMAModel(data);
         ArrayList<double []> list = new ArrayList<>();
-        int period = 7;
-        int modelCnt = 1, cnt = 0;			//通过多次预测的平均值作为预测值
+        int period = 1;
+        int modelCnt = 5, cnt = 0;			//通过多次预测的平均值作为预测值
         double[] tmpPredict = new double[modelCnt];
         for (int k = 0; k < modelCnt; ++k)			//控制通过多少组参数进行计算最终的结果
         {
@@ -143,6 +143,7 @@ public class MathHandler {
         double sumPredict = 0.0;
         for (int k = 0; k < cnt; ++k)
         {
+//            System.out.println(tmpPredict[k]);
             sumPredict += tmpPredict[k] / (double)cnt;
         }
         //        System.out.println("Predict value="+predict);
@@ -221,7 +222,7 @@ public class MathHandler {
     }
 
     public double[] listToArray(List<Double> dataHistory,int n){
-        double[] originalSequence = new double[n];
+        double[] originalSequence = new double[dataHistory.size()];
         int i=0;
         for(double utilization:dataHistory){
             originalSequence[i++] = utilization;
@@ -253,17 +254,10 @@ public class MathHandler {
 //        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
         double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
         if(max){
-//            System.out.println("预测值是："+cutTo0To1(findPredictMax(predicts)));
             return cutTo0To1(findPredictMax(predicts));
         }else{
-//            System.out.println("预测值是："+cutTo0To1(findPredictMin(predicts)));
             return cutTo0To1(findPredictMin(predicts));
         }
-//        if(max){
-//            return findMaxValue(predict,originalSequence);
-//        }else{
-//            return findMinValue(predict,originalSequence);
-//        }
     }
 
     public void initialB(double[][] B,double[] meanSequence,int tn){

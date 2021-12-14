@@ -179,7 +179,7 @@ public class ARIMAModel
 				{
 					tmpMA += maCoe[i] * errData[i];
 				}
-				//��������ʱ�̵�����
+                //产生各个时刻的噪声
 				for(int j = q; j > 0; --j)
 				{
 					errData[j] = errData[j - 1];
@@ -201,7 +201,7 @@ public class ARIMAModel
 					tmpAR += arCoe[i] * data[k - i - 1];
 				}
 			}
-			predict = (int)(tmpAR);
+			predict = (tmpAR);
 		}
 		else
 		{
@@ -230,7 +230,7 @@ public class ARIMAModel
 				errData[0] = random.nextGaussian() * Math.sqrt(maCoe[0]);
 			}
 
-			predict = (int)(tmpAR + tmpMA);
+			predict = (tmpAR + tmpMA);
 		}
 
 		return predict;
