@@ -7,6 +7,7 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.cloudsimplus.MyExample.ARIMA.ARIMAModel;
 
 public class MathHandler {
 
@@ -40,11 +41,14 @@ public class MathHandler {
 //        list.add(11.0);
 //        list.add(12.3);
 
-        //暂时还是GM(1,1)靠谱，等待更好的
-        mathHandler.GM11PredictingTest(list,12);
-        //结论：DGM是个乐色算法
-        mathHandler.DGM21PredictingTest(list,12);
-        mathHandler.DGM11PredictingTest(list,12);
+
+//        //暂时还是GM(1,1)靠谱，等待更好的
+        mathHandler.GM11PredictingTest(list,11);
+//        //结论：DGM是个乐色算法
+//        mathHandler.DGM21PredictingTest(list,12);
+//        mathHandler.DGM11PredictingTest(list,12);
+        //ARIMA预测效果更好
+        System.out.println("Predict value="+mathHandler.ARIMRPrediction(list,Constant.HOST_LogLength));
     }
 
     //余弦相似度（暂时只考虑cpu和mem，所以只有二维）
@@ -111,8 +115,38 @@ public class MathHandler {
         return sum;
     }
 
-    public void ARIMRPrediction(List<Double> dataHistory,int n){
-
+    public double ARIMRPrediction(List<Double> dataHistory,int n){
+        double[] data = convertListToArray(dataHistory);
+        ARIMAModel arima = new ARIMAModel(data);
+        ArrayList<double []> list = new ArrayList<>();
+        int period = 7;
+        int modelCnt = 1, cnt = 0;			//通过多次预测的平均值作为预测值
+        double[] tmpPredict = new double[modelCnt];
+        for (int k = 0; k < modelCnt; ++k)			//控制通过多少组参数进行计算最终的结果
+        {
+            double [] bestModel = arima.getARIMAModel(period, list, k != 0);
+            if (bestModel.length == 0)
+            {
+                tmpPredict[k] = data[data.length - period];
+                cnt++;
+                break;
+            }
+            else
+            {
+                double predictDiff = arima.predictValue((int)bestModel[0], (int)bestModel[1], period);
+                tmpPredict[k] = arima.aftDeal(predictDiff, period);
+                cnt++;
+            }
+//            System.out.println("BestModel is " + bestModel[0] + " " + bestModel[1]);
+            list.add(bestModel);
+        }
+        double sumPredict = 0.0;
+        for (int k = 0; k < cnt; ++k)
+        {
+            sumPredict += tmpPredict[k] / (double)cnt;
+        }
+        //        System.out.println("Predict value="+predict);
+        return sumPredict;
     }
 
     public double DGM21Predicting(List<Double> dataHistory,int n,double utilization,boolean max){

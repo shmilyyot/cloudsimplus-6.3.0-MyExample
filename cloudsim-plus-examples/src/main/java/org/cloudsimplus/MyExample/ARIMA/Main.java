@@ -34,13 +34,13 @@ public class Main
 
 			ARIMAModel arima = new ARIMAModel(data);
 
-			ArrayList<int []> list = new ArrayList<>();
+			ArrayList<double []> list = new ArrayList<>();
 			int period = 7;
 			int modelCnt = 5, cnt = 0;			//通过多次预测的平均值作为预测值
-			int [] tmpPredict = new int [modelCnt];
+			double [] tmpPredict = new double [modelCnt];
 			for (int k = 0; k < modelCnt; ++k)			//控制通过多少组参数进行计算最终的结果
 			{
-				int [] bestModel = arima.getARIMAModel(period, list, (k == 0) ? false : true);
+				double [] bestModel = arima.getARIMAModel(period, list, k != 0);
 				if (bestModel.length == 0)
 				{
 					tmpPredict[k] = (int)data[data.length - period];
@@ -49,7 +49,7 @@ public class Main
 				}
 				else
 				{
-					int predictDiff = arima.predictValue(bestModel[0], bestModel[1], period);
+					double predictDiff = arima.predictValue((int)bestModel[0], (int)bestModel[1], period);
 					tmpPredict[k] = arima.aftDeal(predictDiff, period);
 					cnt++;
 				}

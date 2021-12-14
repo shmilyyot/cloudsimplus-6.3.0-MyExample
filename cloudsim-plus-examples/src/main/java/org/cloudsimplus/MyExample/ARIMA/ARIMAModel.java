@@ -59,12 +59,12 @@ public class ARIMAModel
 		}
 	}
 
-	public int [] getARIMAModel(int period, ArrayList<int []>notModel, boolean needNot)
+	public double [] getARIMAModel(int period, ArrayList<double []>notModel, boolean needNot)
 	{
 		double [] data = this.preDealDiff(period);
 
 		double minAIC = Double.MAX_VALUE;
-		int [] bestModel = new int[3];
+		double [] bestModel = new double[3];
 		int type = 0;
 		Vector<double []>coe = new Vector<>();
 
@@ -140,7 +140,7 @@ public class ARIMAModel
 		return bestModel;
 	}
 
-	public int aftDeal(int predictValue, int period)
+	public double aftDeal(double predictValue, int period)
 	{
 		if (period >= originalData.length)
 		{
@@ -150,20 +150,20 @@ public class ARIMAModel
 		switch (period)
 		{
 		case 0:
-			return (int)predictValue;
+			return predictValue;
 		case 1:
-			return (int)(predictValue + originalData[originalData.length - 1]);
+			return (predictValue + originalData[originalData.length - 1]);
 		case 2:
 		default:
-			return (int)(predictValue + originalData[originalData.length - 7]);
+			return (predictValue + originalData[originalData.length - 7]);
 		}
 	}
 
-	public int predictValue(int p, int q, int period)
+	public double predictValue(int p, int q, int period)
 	{
 		double [] data = this.preDealDiff(period);
 		int n = data.length;
-		int predict = 0;
+		double predict = 0;
 		double tmpAR = 0.0, tmpMA = 0.0;
 		double [] errData = new double[q + 1];
 
@@ -187,7 +187,7 @@ public class ARIMAModel
 				errData[0] = random.nextGaussian()*Math.sqrt(maCoe[0]);
 			}
 
-			predict = (int)(tmpMA); //����Ԥ��
+			predict = tmpMA; //����Ԥ��
 		}
 		else if (q == 0)
 		{
