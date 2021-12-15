@@ -227,7 +227,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
                 final List<? extends Vm> vmsToMigrateFromHost = getVmsToMigrateFromUnderUtilizedHost(unbalanceHost);
                 if (!vmsToMigrateFromHost.isEmpty()) {
-                    System.out.println("执行了1");
+//                    System.out.println("执行了1");
                     logVmsToBeReallocated(unbalanceHost, vmsToMigrateFromHost);
                     final Map<Vm, Host> newVmPlacement = getNewVmPlacementFromUnderloadedHost(
                         vmsToMigrateFromHost,
@@ -464,11 +464,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @return true if the Host is overloaded, false otherwise
      */
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent){
-//        if(cpuUsagePercent > getOverUtilizationThreshold(host)){
-//            System.out.printf(
-//                "      Host %d (upper CPU threshold %.2f, current CPU utilization: %.2f,upper RAM threshold %.2f, current RAM utilization: %.2f)%n",
-//                host.getId(), getOverUtilizationThreshold(host), cpuUsagePercent,getRamOverUtilizationThreshold(host),host.getRamPercentUtilization());
-//        }
         return cpuUsagePercent > getOverUtilizationThreshold(host);
     }
 
