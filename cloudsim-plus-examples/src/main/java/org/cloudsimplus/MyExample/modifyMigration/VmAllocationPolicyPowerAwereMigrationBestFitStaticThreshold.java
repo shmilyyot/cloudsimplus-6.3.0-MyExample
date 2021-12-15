@@ -136,7 +136,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent >= getOverUtilizationThreshold(host) && ramUsagePercent >= getRamOverUtilizationThreshold(host);
     }
 
     //重写判断一个vm放进去host的话会不会过载

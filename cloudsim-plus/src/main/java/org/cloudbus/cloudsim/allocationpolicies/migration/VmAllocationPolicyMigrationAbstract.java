@@ -468,11 +468,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent >= getOverUtilizationThreshold(host) && ramUsagePercent >= getRamOverUtilizationThreshold(host);
     }
 
     protected boolean isHostOverloadedOr(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent >= getOverUtilizationThreshold(host) || ramUsagePercent >= getRamOverUtilizationThreshold(host);
     }
 
     /**
@@ -611,7 +611,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         //所有过载主机中拿出来的host都放在这里
         final List<Vm> vmsToMigrate = getVmsToMigrateFromOverloadedHosts(overloadedHosts);
         //(更改)这里sort了个寂寞，没有用的
-        sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
+        sortByUnbanlance(vmsToMigrate, getDatacenter().getSimulation().clock());
         final Map<Vm, Host> migrationMap = new HashMap<>();
 
         final StringBuilder builder = new StringBuilder();
@@ -688,7 +688,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     {
         final Map<Vm, Host> migrationMap = new HashMap<>();
         //低负载vm和高负载vm是分开迁移的，但是都是按bfd进行迁移
-        sortByCpuUtilization(vmsToMigrate, getDatacenter().getSimulation().clock());
+        sortByUnbanlance(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
 
             //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，会自己销毁
@@ -746,6 +746,13 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     //按内存递增
     protected void sortByMemoryDes(final List<? extends Vm> vmList, final double simulationTime) {
         final Comparator<Vm> comparator = comparingLong(Vm::getCurrentRequestedRam);
+        vmList.sort(comparator);
+    }
+
+    protected void sortByUnbanlance(final List<? extends Vm> vmList, final double simulationTime){
+        final Comparator<Vm> comparator = comparingDouble(vm->
+            Math.abs(vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() - vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity())
+        );
         vmList.sort(comparator);
     }
 

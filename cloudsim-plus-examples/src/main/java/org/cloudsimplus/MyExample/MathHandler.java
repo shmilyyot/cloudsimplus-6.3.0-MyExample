@@ -115,6 +115,18 @@ public class MathHandler {
         return sum;
     }
 
+    public double ARIMRPredicting(List<Double> dataHistory,int n,double utilization,boolean max){
+        if(!Constant.USING_PREDICT){
+            return utilization;
+        }
+        double predict = ARIMRPrediction(dataHistory,n);
+        if(max){
+            return cutTo0To1(Math.max(predict,utilization));
+        }else{
+            return cutTo0To1(Math.min(predict,utilization));
+        }
+    }
+
     public double ARIMRPrediction(List<Double> dataHistory,int n){
         double[] data = convertListToArray(dataHistory);
         ARIMAModel arima = new ARIMAModel(data);
