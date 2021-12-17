@@ -214,7 +214,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
             List<Double> cpuHistory = getCpuUtilizationHistory(host);
             List<Double> ramHistory = getRamUtilizationHistory(host);
             //如果利用率历史小于12，直接迁移最不平衡的
-            if(cpuHistory.size() < Constant.HOST_LogLength){
+            if(cpuHistory.size() < Constant.HOST_LogLength || ramHistory.size() < Constant.HOST_LogLength){
                 return true;
             }
             double pHostCpuUtilization = Constant.USING_GM ? mathHandler.GM11Predicting(getCpuUtilizationHistory(host), Constant.HOST_LogLength,hostCpuUtilization,true): mathHandler.ARIMRPredicting(getCpuUtilizationHistory(host), Constant.HOST_LogLength,hostCpuUtilization,true);

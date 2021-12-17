@@ -148,11 +148,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     public Map<Vm, Host> getOptimizedAllocationMap(final List<? extends Vm> vmList) {
         //@TODO See https://github.com/manoelcampos/cloudsim-plus/issues/94
         final Set<Host> overloadedHosts = getOverloadedHosts();
-//        System.out.println("开始");
-//        for (Host host:overloadedHosts){
-//            System.out.println(host);
-//        }
-//        System.out.println("结束");
         final Set<Host> switchedOffHosts = getSwitchedOffHosts();
         this.hostsOverloaded = !overloadedHosts.isEmpty();
         printOverUtilizedHosts(overloadedHosts);
@@ -925,6 +920,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             .filter(Host::isActive)
             .filter(host -> host.getVmsMigratingIn().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
+            .filter(this::isHostUnderloaded)
             .max(comparingDouble(Host::avgResourceWastage))
             .orElse(Host.NULL);
     }
@@ -995,6 +991,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 host.setCpuMemLoad(0);
             }else{
                 host.setCpuMemLoad(1);
+            }
+
+            if(hostCpuPercentage >= 1.0 || hostRamPercentage >= 1.0){
+                host.setTotalOver100Time(host.getTotalOver100Time() + 15);
             }
 
             //记录当前要重新放置的mips和ram资源

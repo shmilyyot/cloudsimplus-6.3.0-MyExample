@@ -517,18 +517,18 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
-//            //PABFD + LR算法
-//            dynamicUpperThreshold = true;
-//            this.dynamicUpperAllocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    1.2,
-//                    allocationPolicy,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
+            //PABFD + LR算法
+            dynamicUpperThreshold = true;
+            this.dynamicUpperAllocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    1.2,
+                    allocationPolicy,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
 
 //            //PASUP + static算法
 //            this.allocationPolicy =
@@ -791,9 +791,6 @@ public class myImplementationMigrationDatacenter {
                     //获取SLATH
                     double hostRamUtilization = host.getRamPercentUtilization();
                     double hostCpuUtilization = host.getCpuPercentUtilization();
-                    if(hostRamUtilization >= 0.9999 || hostCpuUtilization >= 0.9999){
-                        host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
-                    }
 
                     //记录host和vm利用率
                     hostRamhistory.addLast(hostRamUtilization);

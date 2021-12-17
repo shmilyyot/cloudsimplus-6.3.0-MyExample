@@ -119,6 +119,11 @@ public class MathHandler {
         if(!Constant.USING_PREDICT){
             return utilization;
         }
+        //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
+        if(dataHistory.size() < n || checkUtilizationZero(convertListToArray(dataHistory))){
+            return utilization;
+        }
+
         double predict = ARIMRPrediction(dataHistory,n);
         if(max){
             return cutTo0To1(Math.max(predict,utilization));
