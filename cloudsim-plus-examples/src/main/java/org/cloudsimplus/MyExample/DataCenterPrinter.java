@@ -275,7 +275,7 @@ public class DataCenterPrinter {
     }
 
     public void calculateAverageActiveHost(List<Long> activeHostNumber,int hostsize){
-        double activeHostAverageNumber = activeHostNumber.stream().mapToLong(Long::longValue).average().orElse(0D);
+        double activeHostAverageNumber = activeHostNumber.stream().filter(num -> num != 0).mapToLong(Long::longValue).average().orElse(0D);
         double percentage = activeHostAverageNumber/(double)hostsize;
         System.out.println("当前系统平均活跃host数目是："+activeHostAverageNumber);
         System.out.println("当前系统平均活跃host的比例是："+ percentage);

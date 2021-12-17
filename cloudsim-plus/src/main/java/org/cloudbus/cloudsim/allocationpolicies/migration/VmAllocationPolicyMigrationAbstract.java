@@ -205,22 +205,29 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         this.hostsUnderloaded = false;
         this.canUnbalanceWastageMigrate = true;
         if(isEnableMigrateMostUnbalanceWastageLoadHost()){
-            while(this.canUnbalanceWastageMigrate){
+            if(this.canUnbalanceWastageMigrate){
                 //当所有低于值host都被遍历，ignoredhost的数目等于系统中host的数目
                 if (numberOfHosts == ignoredSourceHosts.size()) {
-                    break;
+                    return;
+//                    break;
                 }
                 final Host unbalanceHost = getUnbalanceWastegeHost(ignoredSourceHosts);
 //                final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
                 if (unbalanceHost == Host.NULL) {
                     return;
                 }
+
+//                //选了一个浪费最大的host之后，还要判断未来利用率会不会降低
+//                if(!isHostUnderloaded(unbalanceHost)){
+//                    return;
+//                }
+
 //                this.hostsUnderloaded = true;
 
                 //或许可以不打印，太多了
 //            printUnderUtilizedHosts(underloadedHost);
 
-                LOGGER.warn("{}: VmAllocationPolicy: UnbalanceWastege hosts: {}", getDatacenter().getSimulation().clockStr(), unbalanceHost);
+                LOGGER.warn("{}: VmAllocationPolicy: UnbalanceWastege and underload hosts: {}", getDatacenter().getSimulation().clockStr(), unbalanceHost);
 
                 ignoredSourceHosts.add(unbalanceHost);
                 ignoredTargetHosts.add(unbalanceHost);
@@ -244,14 +251,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 if (numberOfHosts == ignoredSourceHosts.size()) {
                     break;
                 }
-//                for(Host host:getHostList()){
-//                    if(host.getId() == 250){
-//                        System.out.println("大小："+host.getVmList().size());
-//                        for(Vm vm:host.getVmList()){
-//                            System.out.println("here:"+vm+"  "+vm.getCurrentRequestedMips()+"  "+host.getVmScheduler().getAllocatedMips(vm)+ " "+vm.getCpuUtilizationBeforeMigration());
-//                        }
-//                    }
-//                }
                 //每次循环选择一个低负载的host出来
                 final Host underloadedHost = getUnderloadedHost(ignoredSourceHosts);
                 if (underloadedHost == Host.NULL) {
@@ -611,7 +610,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         //所有过载主机中拿出来的host都放在这里
         final List<Vm> vmsToMigrate = getVmsToMigrateFromOverloadedHosts(overloadedHosts);
         //(更改)这里sort了个寂寞，没有用的
-        sortByUnbanlance(vmsToMigrate, getDatacenter().getSimulation().clock());
+        sortByLoad(vmsToMigrate, getDatacenter().getSimulation().clock());
         final Map<Vm, Host> migrationMap = new HashMap<>();
 
         final StringBuilder builder = new StringBuilder();
@@ -688,7 +687,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     {
         final Map<Vm, Host> migrationMap = new HashMap<>();
         //低负载vm和高负载vm是分开迁移的，但是都是按bfd进行迁移
-        sortByUnbanlance(vmsToMigrate, getDatacenter().getSimulation().clock());
+        sortByLoad(vmsToMigrate, getDatacenter().getSimulation().clock());
         for (final Vm vm : vmsToMigrate) {
 
             //如果这个vm的cloudlet已经完成了，但是还没有销毁，禁止迁移一个空虚拟机，会自己销毁
@@ -756,9 +755,39 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         vmList.sort(comparator);
     }
 
+    protected void sortByUnbanlanceSystemLoadReverse(final List<? extends Vm> vmList, final double simulationTime){
+        boolean systemLoad = systemLoad();
+        final Comparator<Vm> comparator = comparingDouble(vm->
+            systemLoad ?
+                vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity() - vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() :
+                vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() - vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity()
+        );
+        vmList.sort(comparator.reversed());
+    }
+
     protected  void sortByVmCombineCpuAndRam(final List<? extends Vm> vmList, final double simulationTime){
         final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() * vm.getCurrentRequestedRam());
         vmList.sort(comparator.reversed());
+    }
+
+    protected  void sortByLoad(final List<? extends Vm> vmList, final double simulationTime){
+        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() + vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity());
+        vmList.sort(comparator.reversed());
+    }
+
+    protected boolean systemLoad(){
+        int cpu = 0,ram = 0;
+        List<Host> hostList = getHostList();
+        for(Host host:hostList){
+            if(host.isActive()){
+                if(host.getCpuMemLoad() == 0){
+                    cpu++;
+                }else if(host.getCpuMemLoad() == 1){
+                    ram++;
+                }
+            }
+        }
+        return cpu > ram;
     }
 
     private <T extends Host> void addVmToMigrationMap(final Map<Vm, T> migrationMap, final Vm vm, final T targetHost) {
@@ -959,10 +988,18 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     private void saveAllocation() {
         savedAllocation.clear();
         for (final Host host : getHostList()) {
+            //设置当前host是cpu还是ram负载重
+            double hostCpuPercentage = host.getCpuPercentUtilization();
+            double hostRamPercentage = host.getRamPercentUtilization();
+            if(hostCpuPercentage > hostRamPercentage){
+                host.setCpuMemLoad(0);
+            }else{
+                host.setCpuMemLoad(1);
+            }
 
             //记录当前要重新放置的mips和ram资源
-            final Map<Vm, MipsShare> vmMipsShareMap = buildVmMipsReAllocations(host);
-            final Map<Vm, Long> vmLongMap = buildVmRamReAllocations(host);
+            final Map<Vm, MipsShare> vmMipsShareMap = buildVmMipsReAllocations(host,hostCpuPercentage);
+            final Map<Vm, Long> vmLongMap = buildVmRamReAllocations(host,hostRamPercentage);
             host.setVmMipsReAllocations(vmMipsShareMap);
             host.setVmsRamReAllocations(vmLongMap);
 
@@ -1034,9 +1071,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         }
     }
 
-    private Map<Vm,MipsShare> buildVmMipsReAllocations(Host host){
+    private Map<Vm,MipsShare> buildVmMipsReAllocations(Host host,double hostCpuPercentage){
         Map<Vm,MipsShare> VmMipsReAllocations = new HashMap<>();
-        double hostCpuPercentage = host.getCpuPercentUtilization();
         double vmsRequestMipsTotal = 0.0;
         double vmsMigratingRequestMipsTotal = 0.0;
         if(hostCpuPercentage > 0.9999){
@@ -1073,9 +1109,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         return VmMipsReAllocations;
     }
 
-    private Map<Vm,Long> buildVmRamReAllocations(Host host){
+    private Map<Vm,Long> buildVmRamReAllocations(Host host,double hostRamPercentage){
         Map<Vm,Long> VmsRamReAllocations = new HashMap<>();
-        double hostRamPercentage = host.getRamPercentUtilization();
         long vmsRequestRamTotal = 0;
         long hostRamCapacity = host.getRam().getCapacity();
         if(hostRamPercentage > 0.9999){

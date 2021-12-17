@@ -803,7 +803,7 @@ public class myImplementationMigrationDatacenter {
                             LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
                             LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
                             double vmCpuUtilization = vm.getCpuPercentUtilization();
-                            double vmRamUtilization = vm.getRam().getPercentUtilization();
+                            double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
                             vmCpuHistory.addLast(vmCpuUtilization);
                             vmRamHistory.addLast(vmRamUtilization);
                             while(vmCpuHistory.size() > Constant.VM_LogLength){

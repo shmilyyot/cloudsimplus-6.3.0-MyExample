@@ -7,13 +7,9 @@ import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
-
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static java.util.Comparator.comparingDouble;
 
 public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
@@ -111,12 +107,18 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold exte
     }
 
     public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
-        return new double[]{mathHandler.GM11Predicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max)};
+        return new double[]{
+            Constant.USING_GM ? mathHandler.GM11Predicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max): mathHandler.ARIMRPredicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max),
+            Constant.USING_GM ? mathHandler.GM11Predicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max) : mathHandler.ARIMRPredicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max)
+        };
     }
 
     //获取host最小剩余资源利用率，用1减过了
     public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
-        return new double[]{1-mathHandler.GM11Predicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max)};
+        return new double[]{
+            Constant.USING_GM ? 1-mathHandler.GM11Predicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max) : 1 - mathHandler.ARIMRPredicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max),
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max) : 1- mathHandler.ARIMRPredicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max)
+        };
     }
 
     //重写判断host本身是否过载，用未来利用率预测

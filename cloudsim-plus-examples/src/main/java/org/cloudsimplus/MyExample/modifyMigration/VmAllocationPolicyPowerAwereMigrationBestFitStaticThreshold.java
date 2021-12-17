@@ -206,5 +206,28 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
         return ramVmUsages;
     }
 
+    @Override
+    public boolean isHostUnderloaded(final Host host) {
+        if(isHostRamThreshold()){
+            final double hostCpuUtilization = host.getCpuPercentUtilization();
+            final double hostRamUtilization = host.getRamPercentUtilization();
+            List<Double> cpuHistory = getCpuUtilizationHistory(host);
+            List<Double> ramHistory = getRamUtilizationHistory(host);
+            //如果利用率历史小于12，直接迁移最不平衡的
+            if(cpuHistory.size() < Constant.HOST_LogLength){
+                return true;
+            }
+            double pHostCpuUtilization = Constant.USING_GM ? mathHandler.GM11Predicting(getCpuUtilizationHistory(host), Constant.HOST_LogLength,hostCpuUtilization,true): mathHandler.ARIMRPredicting(getCpuUtilizationHistory(host), Constant.HOST_LogLength,hostCpuUtilization,true);
+            double pHostRamUtilization = Constant.USING_GM ? mathHandler.GM11Predicting(getRamUtilizationHistory(host), Constant.HOST_LogLength,hostRamUtilization,true): mathHandler.ARIMRPredicting(getRamUtilizationHistory(host), Constant.HOST_LogLength,hostRamUtilization,true);
+            return isHostUnderloaded(host.getCpuPercentUtilization(),host.getRamPercentUtilization(),pHostCpuUtilization,pHostRamUtilization);
+        }else{
+            return isHostUnderloaded(host.getCpuPercentUtilization());
+        }
+    }
+
+    public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent,final double pHostCpuUtilization,final double pHostRamUtilization) {
+        return pHostCpuUtilization <= cpuUsagePercent && pHostRamUtilization <= ramUsagePercent;
+    }
+
 
 }

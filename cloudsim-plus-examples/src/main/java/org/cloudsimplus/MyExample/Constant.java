@@ -18,7 +18,7 @@ public class Constant {
      */
     public static final boolean PRINT_LOCAL_LOG = true;    //本地打印日志
     public static final boolean PRINT_UNDERLOAD_WARN = false;   //打印低负载迁移提示
-    public static int HOST_LogLength = 24;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
+    public static int HOST_LogLength = 12;   //保留cpu和ram多长的日志信息，全部保留会内存溢出,留一个给当前时刻的利用率
     public static int VM_LogLength = HOST_LogLength;   //保留cpu和ram多长的日志信息，全部保留会内存溢出
     public static int HOST_Log_INTERVAL = SCHEDULING_INTERVAL; //    记录日志的时间间隔，默认和系统调度时间一致
     public static int VM_LOG_INTERVAL = HOST_Log_INTERVAL;  //记录虚拟机日志的时间间隔，和主机日志数目一直
@@ -28,6 +28,7 @@ public class Constant {
      */
     public static boolean USING_PREDICT = false;
     public static final int KSTEP = 1;  //预测往后K个时间段的利用率
+    public static final boolean USING_GM = true; //true = GM || false = ARIMA (arima暂时只预测一步，gm可以预测多步)
 
     /**
      * 数据中心迁移相关设置

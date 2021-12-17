@@ -77,6 +77,8 @@ final class HostNull implements Host, Serializable {
     @Override public void setVmsRamReAllocations(Map<Vm, Long> vmsRamReAllocations) {}
     @Override public int getShutdownNumber() {return 0;}
     @Override public void setShutdownNumber(int shutdownNumber) {}
+    @Override public int getCpuMemLoad() {return 0;}
+    @Override public void setCpuMemLoad(int cpuMemLoad) {}
     @Override public Datacenter getDatacenter() {
         return Datacenter.NULL;
     }

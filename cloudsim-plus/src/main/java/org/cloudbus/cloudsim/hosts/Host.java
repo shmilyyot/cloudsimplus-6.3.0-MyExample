@@ -91,6 +91,10 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
 
     void setShutdownNumber(int shutdownNumber);
 
+    int getCpuMemLoad();
+
+    void setCpuMemLoad(int cpuMemLoad);
+
     /**
      * Gets the Datacenter where the host is placed.
      *

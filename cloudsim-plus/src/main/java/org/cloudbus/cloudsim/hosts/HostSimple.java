@@ -85,6 +85,16 @@ public class HostSimple implements Host, Serializable {
     private boolean active;
     private boolean stateHistoryEnabled;
 
+    public int getCpuMemLoad() {
+        return cpuMemLoad;
+    }
+
+    public void setCpuMemLoad(int cpuMemLoad) {
+        this.cpuMemLoad = cpuMemLoad;
+    }
+
+    private int cpuMemLoad = -1; //-1代表未初始化，0代表cpu重负载，1代表ram重负载
+
     public Map<Vm, MipsShare> getVmMipsReAllocations() {
         return VmMipsReAllocations;
     }
@@ -421,7 +431,7 @@ public class HostSimple implements Host, Serializable {
     @Override
     public double updateProcessing(final double currentTime) {
         if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !isCantShutdown()){
-            if(this.active) shutdownNumber++;
+            if(this.active && this.getSimulation().clock() < 85596.0) shutdownNumber++;
             setActive(false);
         }
 
