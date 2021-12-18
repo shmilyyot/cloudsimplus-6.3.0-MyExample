@@ -46,11 +46,13 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
             vmCpuUtilization = vm.getCpuPercentUtilization();
             vmRamUtilization = vm.getRam().getPercentUtilization();
         }
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+//            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+            final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
             return getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
         }));
 //        final Comparator<Host> hostPowerConsumptionComparator =

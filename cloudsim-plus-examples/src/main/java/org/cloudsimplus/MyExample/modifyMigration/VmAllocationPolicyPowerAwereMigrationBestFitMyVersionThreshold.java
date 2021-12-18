@@ -43,7 +43,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold exte
         this.allHostsCpuUtilizationHistoryQueue = allHostsCpuUtilizationHistoryQueue;
         this.allVmsRamUtilizationHistoryQueue = allVmsRamUtilizationHistoryQueue;
         this.allVmsCpuUtilizationHistoryQueue = allVmsCpuUtilizationHistoryQueue;
-        Constant.USING_PREDICT = true;
+//        Constant.USING_PREDICT = true;
     }
 
     public VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold(

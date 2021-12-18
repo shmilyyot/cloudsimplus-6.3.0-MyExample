@@ -45,11 +45,13 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
             vmCpuUtilization = vm.getCpuPercentUtilization();
             vmRamUtilization = vm.getRam().getPercentUtilization();
         }
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+//            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+            final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
             return getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
         }));
 //        final Comparator<Host> hostPowerConsumptionComparator =
@@ -151,7 +153,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
             if(host.isInFindMigrateVm()){
                 return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
             }else{
-                final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
+                final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
+//                final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
                 return isHostOverloaded(host,1-hostPredict[0],1-hostPredict[1],cpuThreshold,ramThreshold);
             }
         }else{
@@ -166,8 +169,10 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
         final double hostRamUtilization = host.getRamPercentUtilization();
         final double vmCpuUtilization = vm.getCpuPercentUtilization();
         final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
+        final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
+//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+//        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
         final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
         final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();

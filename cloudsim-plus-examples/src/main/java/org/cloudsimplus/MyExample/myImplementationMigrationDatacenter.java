@@ -476,19 +476,19 @@ public class myImplementationMigrationDatacenter {
             this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
-//            myVersion = true;
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
-//            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
-//            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            myVersion = true;
+            this.allocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
+            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
 //            //必须保证有一个static和一个dynamic开着
 //            //PABFD + MAD算法
@@ -517,18 +517,18 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
-            //PABFD + LR算法
-            dynamicUpperThreshold = true;
-            this.dynamicUpperAllocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
-                    new VmSelectionPolicyMinimumMigrationTime(),
-                    1.2,
-                    allocationPolicy,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            //PABFD + LR算法
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    1.2,
+//                    allocationPolicy,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
 //            //PASUP + static算法
 //            this.allocationPolicy =
@@ -951,7 +951,7 @@ public class myImplementationMigrationDatacenter {
      * even if new VMs are submitted and created latter on.
      */
     private void onVmsCreatedListener(final DatacenterBrokerEventInfo info) {
-        if(!dvfs && !npa && !myVersion){
+        if(!dvfs && !npa){
             allocationPolicy.setOverUtilizationThreshold(Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
         }
