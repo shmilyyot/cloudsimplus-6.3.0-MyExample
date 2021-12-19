@@ -26,19 +26,19 @@ public class Constant {
     /**
      * 预测函数相关设置
      */
-    public static boolean USING_PREDICT = false;
+    public static boolean USING_PREDICT = true;
     public static final int KSTEP = 1;  //预测往后K个时间段的利用率
-    public static final boolean USING_GM = true; //true = GM || false = ARIMA (arima暂时只预测一步，gm可以预测多步)
+    public static final boolean USING_GM = false; //true = GM || false = ARIMA (arima暂时只预测一步，gm可以预测多步)
 
     /**
      * 数据中心迁移相关设置
      */
-    public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.15;    //低阈值
-    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;     //高阈值，一开始加了0.2，其实是1
+    public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;    //低阈值
+    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;     //高阈值，一开始加了0.2，其实是1
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
-    public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.15;
-    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;  //高阈值，一开始加了0.2，其实是1
+    public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;
+    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;  //高阈值，一开始加了0.2，其实是1
     public static final boolean USING_UNDERLOAD_THRESHOLD = false;
     public static final boolean USING_SINGLE_OVERLOAD = false;
     public static final boolean USING_RAM = true;

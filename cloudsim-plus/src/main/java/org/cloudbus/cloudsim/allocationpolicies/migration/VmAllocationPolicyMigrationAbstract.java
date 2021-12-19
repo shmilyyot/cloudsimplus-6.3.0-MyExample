@@ -88,8 +88,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     public boolean enableMigrateMostUnbalanceWastageLoadHost = false;
 
     private boolean enableMigrateOneUnderLoadHost = false;
-    public static final double DEF_UNDER_UTILIZATION_THRESHOLD = 0.35;
-    public static final double DEF_RAM_UNDER_UTILIZATION_THRESHOLD = 0.35;
+    public static final double DEF_UNDER_UTILIZATION_THRESHOLD = 0.3;
+    public static final double DEF_RAM_UNDER_UTILIZATION_THRESHOLD = 0.3;
     /** @see #getUnderUtilizationThreshold() */
     private double underUtilizationThreshold;
 
@@ -200,7 +200,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         this.hostsUnderloaded = false;
         this.canUnbalanceWastageMigrate = true;
         if(isEnableMigrateMostUnbalanceWastageLoadHost()){
-            if(this.canUnbalanceWastageMigrate){
+            while(this.canUnbalanceWastageMigrate){
                 //当所有低于值host都被遍历，ignoredhost的数目等于系统中host的数目
                 if (numberOfHosts == ignoredSourceHosts.size()) {
                     return;
@@ -458,7 +458,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @return true if the Host is overloaded, false otherwise
      */
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host);
+        return cpuUsagePercent >= getOverUtilizationThreshold(host);
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){

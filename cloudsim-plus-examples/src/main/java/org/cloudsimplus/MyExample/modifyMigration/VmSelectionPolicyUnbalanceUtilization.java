@@ -32,8 +32,8 @@ public class VmSelectionPolicyUnbalanceUtilization implements VmSelectionPolicy 
         double xita = 0.0001;
         double hostCpuCapacity = host.getTotalMipsCapacity();
         double hostRamCapacity = host.getRam().getCapacity();
-        double hostCpuUtilization = Math.min(host.getCpuPercentUtilization(),1.0);
-        double hostRamUtilization = Math.min(host.getRamPercentUtilization(),1.0);
+        double hostCpuUtilization = host.getCpuPercentUtilization();
+        double hostRamUtilization = host.getRamPercentUtilization();
         if(hostCpuUtilization == 0.0 || hostRamUtilization == 0.0) return 1.0;
         double vmCpuUsage = vm.getCurrentUtilizationTotalMips();
         double vmRamUsage = vm.getCurrentRequestedRam();
@@ -42,7 +42,6 @@ public class VmSelectionPolicyUnbalanceUtilization implements VmSelectionPolicy 
         double hostRemindingCpuUtilization = (hostCpuCapacity - (hostCpuUtilization * hostCpuCapacity - vmCpuUsage)) / hostCpuCapacity;
         double hostRemindingRamUtilization = (hostRamCapacity - (hostRamUtilization * hostRamCapacity - vmRamUsage)) / hostRamCapacity;
         double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (newhostCpuUtilization + newhostRamUtilization);
-//        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
         return wastage * vm.getCurrentRequestedRam();
 //        return wastage;
     }
