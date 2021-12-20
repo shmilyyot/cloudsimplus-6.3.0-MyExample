@@ -5,6 +5,7 @@ import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigr
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.vms.Vm;
+import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
 
@@ -142,23 +143,37 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold extends
         return cpuUsagePercent >= getOverUtilizationThreshold(host) || ramUsagePercent >= getRamOverUtilizationThreshold(host);
     }
 
-    //重写判断一个vm放进去host的话会不会过载
-    @Override
-    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
-        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
-        final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
-//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-//        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
-        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
-        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
-        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
-    }
+//    //重写判断一个vm放进去host的话会不会过载
+//    @Override
+//    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
+//
+//        //要预测的话，预测未来利用率，直接创建新的vm资源来放置
+//        final var tempVm = new VmSimple(vm,true);
+//
+//        if (!host.createTemporaryVm(tempVm).fully()) {
+//            return false;
+//        }
+//
+//        final double usagePercent = getHostCpuPercentRequested(host);
+//        final double ramusagePercent = getHostRamPercentRequested(host);
+//        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent,ramusagePercent);
+//        host.destroyTemporaryVm(tempVm);
+//        return notOverloadedAfterAllocation;
+//
+////        final double hostCpuUtilization = host.getCpuPercentUtilization();
+////        final double hostRamUtilization = host.getRamPercentUtilization();
+////        final double vmCpuUtilization = vm.getCpuPercentUtilization();
+////        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+////        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
+////        final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
+//////        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+//////        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
+////        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
+////        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
+////        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
+////        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
+////        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+//    }
 
     protected List<Double> getCpuUtilizationHistory(Host host) {
         final double hostCpuUtilization = host.getCpuPercentUtilization();

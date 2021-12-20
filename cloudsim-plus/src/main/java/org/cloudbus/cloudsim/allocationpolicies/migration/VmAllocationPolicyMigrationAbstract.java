@@ -366,8 +366,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final Vm tempVm = new VmSimple(vm,true);
-//        System.out.println("mark2: "+host+" "+host.getCpuPercentUtilization()+" "+getHostCpuPercentUtilization(host)+" "+host.getTotalAllocatedMips()+" "+host.getRam().getAllocatedResource()+ " "+tempVm.getRam().getCapacity()+" "+host.getRamProvisioner().getAllocatedResourceForVm(tempVm));
-//        System.out.println("mark2: ram"+getHostRamPercentRequested(host));
         HostSuitability suitability = host.createTemporaryVm(tempVm);
         if (!suitability.fully()) {
             System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
@@ -386,25 +384,14 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         }
 
         final double usagePercent = getHostCpuPercentUtilization(host);
-//        System.out.println("mark2: "+host+" "+host.getCpuPercentUtilization()+" "+getHostCpuPercentUtilization(host)+" "+host.getTotalAllocatedMips()+" "+host.getRam().getAllocatedResource()+ " "+tempVm.getRam().getCapacity()+" "+host.getRamProvisioner().getAllocatedResourceForVm(tempVm));
         final boolean notOverloadedAfterAllocation;
         if(isHostRamThreshold()){
             final double usageRamPercent = getHostRamPercentRequested(host);
-//            System.out.println("mark2: ram"+usageRamPercent);
             notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent,usageRamPercent);
         }else{
             notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent);
         }
-        //这里出现了问题
-//        if(host.getId() == 250 && host.getSimulation().clock() > 0.2){
-//            Vm nvm = host.getVmList().get(0);
-//            System.out.println("before: "+host.getVmScheduler().getAllocatedMips(nvm) +" ram:"+ host.getRam().getAvailableResource()+" mips:"+host.getVmScheduler().getTotalAvailableMips());
-//        }
         host.destroyTemporaryVm(tempVm);
-//        if(host.getId() == 250 && host.getSimulation().clock() > 0.2){
-//            Vm nvm = host.getVmList().get(0);
-//            System.out.println("after: "+host.getVmScheduler().getAllocatedMips(nvm) +" ram:"+ host.getRam().getAvailableResource()+" mips:"+host.getVmScheduler().getTotalAvailableMips());
-//        }
         return notOverloadedAfterAllocation;
     }
 

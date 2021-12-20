@@ -119,7 +119,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     @Override
     public double getOverUtilizationThreshold(final Host host) {
         try {
-            return Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getCpuUtilizationHistory(host)),0);
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getCpuUtilizationHistory(host)),0),1);
         } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
@@ -128,7 +128,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
     @Override
     public double getRamOverUtilizationThreshold(final Host host) {
         try {
-            return Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getRamUtilizationHistory(host)),0);
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getRamUtilizationHistory(host)),0),1);
         } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
