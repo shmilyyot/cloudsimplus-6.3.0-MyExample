@@ -490,11 +490,25 @@ public class myImplementationMigrationDatacenter {
 //            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.1);
 //            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
+            //必须保证有一个static和一个dynamic开着
+            //PABFD + MAD算法
+            dynamicUpperThreshold = true;
+            this.dynamicUpperAllocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    2.5,
+                    allocationPolicy,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
+
 //            //必须保证有一个static和一个dynamic开着
 //            //PABFD + MAD算法
 //            dynamicUpperThreshold = true;
 //            this.dynamicUpperAllocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+//                new VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold(
 //                    new VmSelectionPolicyMinimumMigrationTime(),
 //                    2.5,
 //                    allocationPolicy,
@@ -804,7 +818,7 @@ public class myImplementationMigrationDatacenter {
                             LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
                             LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
                             double vmCpuUtilization = vm.getCpuPercentUtilization();
-                            double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+                            double vmRamUtilization = vm.getCurrentRequestedRam()/(double)vm.getRam().getCapacity();
                             vmCpuHistory.addLast(vmCpuUtilization);
                             vmRamHistory.addLast(vmRamUtilization);
                             while(vmCpuHistory.size() > Constant.VM_LogLength){

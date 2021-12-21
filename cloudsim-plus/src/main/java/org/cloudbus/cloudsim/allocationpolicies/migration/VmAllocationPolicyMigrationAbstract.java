@@ -383,14 +383,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             return false;
         }
 
-        final double usagePercent = getHostCpuPercentUtilization(host);
-        final boolean notOverloadedAfterAllocation;
-        if(isHostRamThreshold()){
-            final double usageRamPercent = getHostRamPercentRequested(host);
-            notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent,usageRamPercent);
-        }else{
-            notOverloadedAfterAllocation = !isHostOverloaded(host, usagePercent);
-        }
+        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
+
         host.destroyTemporaryVm(tempVm);
         return notOverloadedAfterAllocation;
     }
@@ -449,11 +443,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent >= getOverUtilizationThreshold(host) && ramUsagePercent >= getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
     protected boolean isHostOverloadedOr(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent >= getOverUtilizationThreshold(host) || ramUsagePercent >= getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
     /**
@@ -907,7 +901,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             .filter(Host::isActive)
             .filter(host -> host.getVmsMigratingIn().isEmpty())
             .filter(this::notAllVmsAreMigratingOut)
-            .filter(this::isHostUnderloaded)
+//            .filter(this::isHostUnderloaded)
             .max(comparingDouble(Host::avgResourceWastage))
             .orElse(Host.NULL);
     }
@@ -980,7 +974,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                 host.setCpuMemLoad(1);
             }
 
-            if(hostCpuPercentage >= 1.0 || hostRamPercentage >= 1.0){
+            if(hostCpuPercentage > 1.0 || hostRamPercentage > 1.0){
                 host.setTotalOver100Time(host.getTotalOver100Time() + 15);
             }
 
@@ -1062,7 +1056,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         Map<Vm,MipsShare> VmMipsReAllocations = new HashMap<>();
         double vmsRequestMipsTotal = 0.0;
         double vmsMigratingRequestMipsTotal = 0.0;
-        if(hostCpuPercentage > 0.9999){
+        if(hostCpuPercentage >= 1.0){
             System.out.println("mark5: "+host.getSimulation().clock()+" "+host+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated    and currentRamPercentage is:" + host.getRamPercentUtilization());
             for(Vm vm:host.getVmList()){
                 vmsRequestMipsTotal += vm.getCurrentUtilizationMips().totalMips();
@@ -1100,7 +1094,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         Map<Vm,Long> VmsRamReAllocations = new HashMap<>();
         long vmsRequestRamTotal = 0;
         long hostRamCapacity = host.getRam().getCapacity();
-        if(hostRamPercentage > 0.9999){
+        if(hostRamPercentage >= 1.0){
             System.out.println("mark6: "+host.getSimulation().clock()+" "+host+" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated    and currentCpuPercentage is:" + host.getCpuPercentUtilization());
             for(Vm vm:host.getVmList()){
                 vmsRequestRamTotal += vm.getCurrentRequestedRam();

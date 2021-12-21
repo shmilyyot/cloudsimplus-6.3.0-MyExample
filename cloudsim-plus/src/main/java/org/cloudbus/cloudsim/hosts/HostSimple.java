@@ -431,7 +431,7 @@ public class HostSimple implements Host, Serializable {
     @Override
     public double updateProcessing(final double currentTime) {
         if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !isCantShutdown()){
-            if(this.active && this.getSimulation().clock() < 85596.0) shutdownNumber++;
+            if(this.active) shutdownNumber++;
             setActive(false);
         }
 

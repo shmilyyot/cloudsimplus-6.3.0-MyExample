@@ -120,7 +120,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
     @Override
     public double getOverUtilizationThreshold(final Host host) {
         try {
-            return Math.max(1 - getSafetyParameter() * getHostUtilizationIqr(host,getCpuUtilizationHistory(host)),0);
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationIqr(host,getCpuUtilizationHistory(host)),0),1);
         } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
@@ -162,28 +162,6 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
         }
     }
 
-    //重写判断一个vm放进去host的话会不会过载
-    @Override
-    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
-        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
-        final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
-//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-//        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
-        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
-        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
-        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        double cpuThreshold = getOverUtilizationThreshold(host), ramThreshold = getRamOverUtilizationThreshold(host);
-        if(cpuThreshold == Double.MAX_VALUE || ramThreshold == Double.MAX_VALUE){
-            return !getFallbackVmAllocationPolicy().isHostOverloaded(host);
-        }
-        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization,cpuThreshold,ramThreshold);
-    }
-
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent,final double cpuThreshold,final double ramThreshold){
         return cpuUsagePercent > cpuThreshold || ramUsagePercent > ramThreshold;
     }
@@ -198,6 +176,9 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
         double hostMips = host.getTotalMipsCapacity();
         if(host.getVmList().isEmpty()) return new LinkedList<>();
         for (Vm vm : host.getVmList()) {
+            if(allVmsUtilizationHistoryQueue.get(vm) == null){
+                return new LinkedList<>();
+            }
             List<Double> VmUsages = new ArrayList<>(allVmsUtilizationHistoryQueue.get(vm));
             if(VmUsages.size() < Constant.HOST_LogLength){
                 return new LinkedList<>();

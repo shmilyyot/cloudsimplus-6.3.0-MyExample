@@ -235,6 +235,16 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     private boolean cpuForcePlace = false;
 
+    public Vm getTempVm() {
+        return tempVm;
+    }
+
+    public void setTempVm(Vm tempVm) {
+        this.tempVm = tempVm;
+    }
+
+    private Vm tempVm = null;
+
     /**
      * Creates a Vm with 1024 MEGA of RAM, 100 Megabits/s of Bandwidth and 1024 MEGA of Storage Size.
      * To change these values, use the respective setters. While the Vm {@link #isCreated()
@@ -386,6 +396,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     public VmSimple(final Vm sourceVm,boolean temporary) {
         this(sourceVm.getSimulation().clock() >= 0.2 ? Math.floor(sourceVm.getCpuUtilizationBeforeMigration() * sourceVm.getMips()) : sourceVm.getMips(),sourceVm.getNumberOfPes());
         this.setActualIdForTempVm(sourceVm.getId());
+        this.setTempVm(sourceVm);
 //        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
         this.setBw(sourceVm.getCurrentRequestedBw())
             .setRam(sourceVm.getCurrentRequestedRam())

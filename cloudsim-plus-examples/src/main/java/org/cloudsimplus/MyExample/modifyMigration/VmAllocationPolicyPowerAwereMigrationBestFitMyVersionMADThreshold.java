@@ -5,8 +5,6 @@ import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigr
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
-import org.cloudbus.cloudsim.util.Conversion;
-import org.cloudbus.cloudsim.util.MathUtil;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
@@ -14,14 +12,14 @@ import org.cloudsimplus.MyExample.MathHandler;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit {
+public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold extends VmAllocationPolicyMigrationDynamicUpperThresholdFirstFit {
     private final MathHandler mathHandler;
     private final Map<Host, LinkedList<Double>> allHostsRamUtilizationHistoryQueue;
     private final Map<Host,LinkedList<Double>> allHostsCpuUtilizationHistoryQueue;
     private final Map<Vm,LinkedList<Double>> allVmsRamUtilizationHistoryQueue;
     private final Map<Vm,LinkedList<Double>> allVmsCpuUtilizationHistoryQueue;
 
-    public VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
+    public VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold(
         final VmSelectionPolicy vmSelectionPolicy,
         final double parameter,
         final VmAllocationPolicyMigration fallbackVmAllocationPolicy,
@@ -46,8 +44,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
             vmCpuUtilization = vm.getCpuPercentUtilization();
             vmRamUtilization = vm.getRam().getPercentUtilization();
         }
-//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
+        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
+//        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
         return hostStream.min(Comparator.comparingDouble(host->{
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
@@ -94,16 +92,25 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     }
 
     public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
-        return new double[]{mathHandler.GM11Predicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max)};
+        return new double[]{
+            Constant.USING_GM ? mathHandler.GM11Predicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max): mathHandler.ARIMRPredicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max),
+            Constant.USING_GM ? mathHandler.GM11Predicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max) : mathHandler.ARIMRPredicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max)
+        };
     }
 
     //获取host最小剩余资源利用率，用1减过了
     public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
-        return new double[]{1-mathHandler.GM11Predicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max)};
+        return new double[]{
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max) : 1 - mathHandler.ARIMRPredicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max),
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max) : 1- mathHandler.ARIMRPredicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max)
+        };
     }
 
-    protected double[] getParameterEstimates(double[] usages) {
-        return mathHandler.getLoessParameterEstimates(usages);
+    protected double getHostUtilizationMad(Host host, List<Double> usages) throws IllegalArgumentException {
+        if(usages.size() >= Constant.HOST_LogLength){
+            return mathHandler.mad(usages);
+        }
+        throw new IllegalArgumentException();
     }
 
     /**
@@ -117,13 +124,20 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
      */
     @Override
     public double getOverUtilizationThreshold(final Host host) {
-        return 0;
+        try {
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getCpuUtilizationHistory(host)),0),1);
+        } catch (IllegalArgumentException e) {
+            return Double.MAX_VALUE;
+        }
     }
-
 
     @Override
     public double getRamOverUtilizationThreshold(final Host host) {
-        return 0;
+        try {
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getRamUtilizationHistory(host)),0),1);
+        } catch (IllegalArgumentException e) {
+            return Double.MAX_VALUE;
+        }
     }
 
     @Override
@@ -131,57 +145,26 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
         return 0;
     }
 
-    protected double getMaximumVmMigrationTime(Host host) {
-        long maxRam = Long.MIN_VALUE;
-        for (Vm vm : host.getVmList()) {
-            long ram = vm.getCurrentRequestedRam();
-            if (ram > maxRam) {
-                maxRam = ram;
-            }
-        }
-        return maxRam / (Conversion.bitesToBytes(host.getBw().getCapacity()) * 0.5);
-    }
-
-    public double getPredictedUtilization(Host host,List<Double> usages){
-        double[] utilizationHistory = mathHandler.convertListToArray(usages);
-        double[] utilizationHistoryReversed = new double[Constant.HOST_LogLength];
-        for (int i = 0; i < Constant.HOST_LogLength; i++) {
-            utilizationHistoryReversed[i] = utilizationHistory[Constant.HOST_LogLength - i - 1];
-        }
-        double[] estimates = null;
-        try {
-            estimates = getParameterEstimates(utilizationHistoryReversed);
-        } catch (IllegalArgumentException e) {
-            return Double.MAX_VALUE;
-        }
-        double migrationIntervals = Math.ceil(getMaximumVmMigrationTime(host) / Constant.SCHEDULING_INTERVAL);
-        double predictedUtilization = estimates[0] + estimates[1] * (Constant.HOST_LogLength + migrationIntervals);
-        predictedUtilization *= getSafetyParameter();
-        return predictedUtilization;
-    }
-
     //重写判断host本身是否过载，用未来利用率预测
     @Override
     public boolean isHostOverloaded(final Host host) {
-        List<Double> cpuUsages = getCpuUtilizationHistory(host);
-        List<Double> ramUsages = getRamUtilizationHistory(host);
-        if(cpuUsages.size() < Constant.HOST_LogLength || ramUsages.size() < Constant.HOST_LogLength) {
+        double cpuThreshold = getOverUtilizationThreshold(host), ramThreshold = getRamOverUtilizationThreshold(host);
+        if(cpuThreshold == Double.MAX_VALUE || ramThreshold == Double.MAX_VALUE) {
             return getFallbackVmAllocationPolicy().isHostOverloaded(host);
         }
         if(isHostRamThreshold()){
-            double cpuLrPredict = getPredictedUtilization(host,cpuUsages);
-            double ramLrPredict = getPredictedUtilization(host,ramUsages);
-            if(cpuLrPredict == Double.MAX_VALUE || ramLrPredict == Double.MAX_VALUE){
-                return getFallbackVmAllocationPolicy().isHostOverloaded(host);
+            final double hostCpuUtilization = host.getCpuPercentUtilization();
+            final double hostRamUtilization = host.getRamPercentUtilization();
+            if(host.isInFindMigrateVm()){
+                return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
+            }else{
+//                final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
+                final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
+                return isHostOverloaded(host,1-hostPredict[0],1-hostPredict[1],cpuThreshold,ramThreshold);
             }
-            return isHostOverloaded(host, cpuLrPredict,ramLrPredict);
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
         }
-    }
-
-    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > 1.0 || ramUsagePercent >= 1.0;
     }
 
     //重写判断一个vm放进去host的话会不会过载
@@ -198,6 +181,10 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
         return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
+    }
+
+    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent,final double cpuThreshold,final double ramThreshold){
+        return cpuUsagePercent > cpuThreshold || ramUsagePercent > ramThreshold;
     }
 
     protected List<Double> getCpuUtilizationHistory(Host host) {
@@ -262,7 +249,4 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
         return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
     }
-
-
-
 }
