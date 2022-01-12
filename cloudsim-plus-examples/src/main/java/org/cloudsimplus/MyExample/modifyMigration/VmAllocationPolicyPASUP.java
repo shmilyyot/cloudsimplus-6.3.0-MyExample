@@ -160,8 +160,12 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         //注释下面这一段就是只用预测值
         final double hostCpuUtilization = host.getCpuPercentUtilization();
         final double hostRamUtilization = host.getRamPercentUtilization();
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+        double vmCpuUtilization = 1.0;
+        double vmRamUtilization = 1.0;
+        if(vm.getSimulation().clock() > 0.2){
+            vmCpuUtilization = vm.getCpuPercentUtilization();
+            vmRamUtilization = vm.getRam().getPercentUtilization();
+        }
         final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
         final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
         final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();

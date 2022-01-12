@@ -12,7 +12,6 @@ import org.cloudbus.cloudsim.cloudlets.Cloudlet.Status;
 import org.cloudbus.cloudsim.cloudlets.CloudletExecution;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
-import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.resources.Bandwidth;
 import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.Ram;
@@ -298,7 +297,7 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
      * @param cle the Cloudlet to be added
      */
     protected void addCloudletToExecList(final CloudletExecution cle) {
-        cle.setStatus(Cloudlet.Status.INEXEC);
+        cle.setStatus(Status.INEXEC);
         cle.setLastProcessingTime(getVm().getSimulation().clock());
         cloudletExecList.add(cle);
         addUsedPes(cle.getNumberOfPes());
@@ -507,20 +506,18 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
     @Override
     public double updateProcessing(final double currentTime, final MipsShare mipsShare) {
         setCurrentMipsShare(mipsShare);
-
         if (isEmpty()) {
             setPreviousTime(currentTime);
             return Double.MAX_VALUE;
         }
-
         deallocateVmResources();
-
         double nextSimulationDelay = updateCloudletsProcessing(currentTime);
         nextSimulationDelay = Math.min(nextSimulationDelay, moveNextCloudletsFromWaitingToExecList(currentTime));
         addCloudletsToFinishedList();
 
         setPreviousTime(currentTime);
         vm.getSimulation().setLastCloudletProcessingUpdate(currentTime);
+
         return nextSimulationDelay;
     }
 
@@ -623,6 +620,7 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
                 "{}: {}: {} requested {} {} of {} but {}{} which delays Cloudlet processing.",
                 vm.getSimulation().clockStr(), getClass().getSimpleName(), cloudlet,
                 requested, resource.getUnit(), resource.getClass().getSimpleName(), msg1, msg2);
+
             updateOnResourceAllocationFailListeners(resource, cloudlet, requested, available);
         }
 
@@ -1125,6 +1123,15 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
             .sum() / vm.getTotalMipsCapacity();
     }
 
+    @Override
+    public double getTotalUtilizationOfCpu(final double time) {
+        double totalUtilization = 0;
+        for (CloudletExecution rcl : getCloudletExecList()) {
+            totalUtilization += rcl.getCloudlet().getUtilizationOfCpu(time);
+        }
+        return totalUtilization;
+    }
+
     /**
      * Gets the total CPU utilization in MIPS for a Cloudlet, considering
      * all the PEs in which it is running.
@@ -1137,6 +1144,7 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
         final double cloudletCpuUsageForOnePe =
             getAbsoluteCloudletResourceUtilization(
                 cloudlet.getUtilizationModelCpu(), time, getAvailableMipsByPe());
+
         return cloudletCpuUsageForOnePe * cloudlet.getNumberOfPes();
     }
 
@@ -1159,7 +1167,18 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
      * @return the current allocated mips for cloudlet
      */
     public double getAllocatedMipsForCloudlet(final CloudletExecution cle, final double time) {
-        return getAbsoluteCloudletResourceUtilization(cle.getCloudlet().getUtilizationModelCpu(), time, getAvailableMipsByPe());
+        double totalCurrentRequestedMips = getRequestedMipsForCloudlet(cle, time);
+        double totalCurrentAvailableMips = getTotalCurrentAvailableMipsForCloudlet(cle, getCurrentMipsShare());
+        if (totalCurrentRequestedMips > totalCurrentAvailableMips) {
+            return totalCurrentAvailableMips;
+        }
+        return totalCurrentRequestedMips;
+//        return getAbsoluteCloudletResourceUtilization(cle.getCloudlet().getUtilizationModelCpu(), time, getAvailableMipsByPe());
+    }
+
+    @Override
+    public double getTotalCurrentAvailableMipsForCloudlet(final CloudletExecution cle, MipsShare mipsShare) {
+        return mipsShare.totalMips();
     }
 
     @Override
@@ -1211,6 +1230,7 @@ public abstract class CloudletSchedulerAbstract implements CloudletScheduler {
         if (model.getUnit() == Unit.ABSOLUTE) {
             return Math.min(model.getUtilization(time), maxResourceAllowedToUse);
         }
+
         return model.getUtilization() * maxResourceAllowedToUse;
     }
 

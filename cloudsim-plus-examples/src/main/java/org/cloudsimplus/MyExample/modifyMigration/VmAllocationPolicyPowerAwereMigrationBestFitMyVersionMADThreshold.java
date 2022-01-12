@@ -124,8 +124,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold e
      */
     @Override
     public double getOverUtilizationThreshold(final Host host) {
+        List<Double> usages = getCpuUtilizationHistory(host);
+        if(usages.size() < Constant.HOST_LogLength){
+            return getFallbackVmAllocationPolicy().getOverUtilizationThreshold(host);
+        }
         try {
-            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getCpuUtilizationHistory(host)),0),1);
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,usages),0),1);
         } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
@@ -133,8 +137,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold e
 
     @Override
     public double getRamOverUtilizationThreshold(final Host host) {
+        List<Double> usages = getRamUtilizationHistory(host);
+        if(usages.size() < Constant.HOST_LogLength){
+            return getFallbackVmAllocationPolicy().getOverUtilizationThreshold(host);
+        }
         try {
-            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,getRamUtilizationHistory(host)),0),1);
+            return Math.min(Math.max(1 - getSafetyParameter() * getHostUtilizationMad(host,usages),0),1);
         } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
@@ -172,14 +180,20 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold e
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final double hostCpuUtilization = host.getCpuPercentUtilization();
         final double hostRamUtilization = host.getRamPercentUtilization();
-        final double vmCpuUtilization = vm.getCpuPercentUtilization();
-        final double vmRamUtilization = vm.getCloudletScheduler().getCurrentRequestedRamPercentUtilization();
+//        System.out.println(host+" "+host.getCpuPercentUtilization()+" "+vm);
+        double vmCpuUtilization = 1.0;
+        double vmRamUtilization = 1.0;
+        if(vm.getSimulation().clock() > 0.2){
+            vmCpuUtilization = vm.getCpuPercentUtilization();
+            vmRamUtilization = vm.getRam().getPercentUtilization();
+        }
         final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
         final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
         final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
         final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
         final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
+//        System.out.println(host+" "+host.getCpuPercentUtilization()+" "+vm+" "+!isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization));
         return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
     }
 

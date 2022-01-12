@@ -40,9 +40,11 @@ import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeSharedOverSubscription;
+import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
+import org.cloudsimplus.MyExample.DataCenterPrinter;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
 
@@ -87,7 +89,7 @@ import java.util.List;
  * @see org.cloudsimplus.examples.power.PowerExample
  */
 public class VmSchedulerTimeSharedOverSubscriptionExample1 {
-    private static final int HOSTS     = 2;
+    private static final int HOSTS     = 1;
     private static final int VMS       = 2;
     private static final int CLOUDLETS = VMS;
 
@@ -96,7 +98,7 @@ public class VmSchedulerTimeSharedOverSubscriptionExample1 {
     private static final int CLOUDLET_PES = VM_PES;
 
     private static final int HOST_MIPS = 500;
-    private static final int VM_MIPS   = HOST_MIPS*2;
+    private static final int VM_MIPS   = HOST_MIPS;
 
     private static final int CLOUDLET_LENGTH = VM_MIPS*10;
 
@@ -129,6 +131,7 @@ public class VmSchedulerTimeSharedOverSubscriptionExample1 {
         createVms();
         createCloudlets();
         broker0.submitVmList(vmList);
+        broker0.setVmDestructionDelay(1);
         broker0.submitCloudletList(cloudletList);
 
         simulation.start();
@@ -142,6 +145,7 @@ public class VmSchedulerTimeSharedOverSubscriptionExample1 {
 
         System.out.printf("%n-------------------------------------- Hosts CPU usage History --------------------------------------%n");
         hostList.forEach(this::printHostStateHistory);
+        hostList.forEach(host -> System.out.println(host.getSlaViolationTimePerHost()));
     }
 
     /**
@@ -232,5 +236,7 @@ public class VmSchedulerTimeSharedOverSubscriptionExample1 {
                     .setUtilizationModel(new UtilizationModelFull());
             cloudletList.add(cloudlet);
         }
+        cloudletList.get(0).setUtilizationModelCpu(new UtilizationModelDynamic(0.7));
+        cloudletList.get(1).setUtilizationModelCpu(new UtilizationModelDynamic(0.9));
     }
 }

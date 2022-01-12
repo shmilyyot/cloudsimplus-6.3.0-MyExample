@@ -577,13 +577,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final boolean hostAllocatedForVm = vmAllocationPolicy.allocateHostForVm(vm).fully();
         if (hostAllocatedForVm) {
-            //（更改）
-//            MipsShare mipsShare = vm.getCurrentRequestedMips();
-//            double scalingFactor = vm.getHost().getVmScheduler().percentOfMipsToRequest(vm);
-//            if(scalingFactor != 1){
-//                mipsShare = new MipsShare(mipsShare.pes(),mipsShare.mips()*scalingFactor);
-//            }
-//            vm.updateProcessing(mipsShare);
             vm.updateProcessing(vm.getHost().getVmScheduler().getAllocatedMips(vm));
         }
 
@@ -655,11 +648,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
         final Host targetHost = entry.getValue();
         final Host sourceHost = vm.getHost();
-//        System.out.println("mark3: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHost: "+sourceHost+" targetHost: "+targetHost+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" targetTotalAvailableMips:"+targetHost.getTotalAvailableMips()+" sourceHosttotalAllocated:"+sourceHost.getTotalAllocatedMips()+" targetHosttotalAllocated:"+ targetHost.getTotalAllocatedMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
-//        System.out.println("mark3: sourceramallocated: "+sourceHost.getRam().getAllocatedResource()+" sourceramAvailable: "+sourceHost.getRam().getAvailableResource()+" targetramallocated: "+targetHost.getRam().getAllocatedResource()+" targetramAvailable: "+targetHost.getRam().getAvailableResource());
-
-        //不变是不是因为已经提前放进去分配了内存？
-//        System.out.println("before migration: "+targetHost+" "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
 
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
@@ -707,9 +695,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
                 LOGGER.info("release the resource on targetHost successful!!!");
                 System.out.println("after migration:"+vm+": "+targetHost.getRam().getAvailableResource()+ " "+targetHost.getVmScheduler().getTotalAvailableMips()+" "+targetHost.getVmList().size());
             }else{
-                //这里需要改！！！
-                //万一到点之后发现迁移不进去，需要额外处理这个vm
-//            targetHost.setTotalOver100Time(targetHost.getTotalOver100Time()+1);
                 LOGGER.error(
                     "{}: {}: Allocation of {} to the destination {} failed due to {}!",
                     getSimulation().clockStr(), this, vm, targetHost, suitability);
@@ -726,9 +711,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
 
         onVmMigrationFinishListeners.forEach(listener -> listener.update(DatacenterVmMigrationEventInfo.of(listener, vm, suitability)));
-//        System.out.println("mark4: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHost: "+sourceHost+" targetHost: "+targetHost+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" targetTotalAvailableMips:"+targetHost.getTotalAvailableMips()+" sourceHosttotalAllocated:"+sourceHost.getTotalAllocatedMips()+" targetHosttotalAllocated:"+ targetHost.getTotalAllocatedMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
-//        System.out.println("mark4: sourceramallocated: "+sourceHost.getRam().getAllocatedResource()+" sourceramAvailable: "+sourceHost.getRam().getAvailableResource()+" targetramallocated: "+targetHost.getRam().getAllocatedResource()+" targetramAvailable: "+targetHost.getRam().getAvailableResource());
-//        System.out.println("mark4: CurrentUtilizationMips:"+vm.getCurrentUtilizationMips()+" sourceHostAllocatedMips"+sourceHost.getVmScheduler().getAllocatedMips(vm)+" TotalAvailableMips:"+targetHost.getTotalAvailableMips()+" AllocatedMips:"+targetHost.getVmScheduler().getAllocatedMips(vm)+" cpuutilization:"+vm.getCpuUtilizationBeforeMigration());
     }
 
     /**
@@ -822,9 +804,11 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             return Double.MAX_VALUE;
         }
         double nextSimulationDelay = updateHostsProcessing();
+//        System.out.println("mark21: "+nextSimulationDelay);
 
         if (nextSimulationDelay != Double.MAX_VALUE) {
             nextSimulationDelay = getCloudletProcessingUpdateInterval(nextSimulationDelay);
+//            System.out.println("mark22: "+nextSimulationDelay);
             schedule(nextSimulationDelay, CloudSimTags.VM_UPDATE_CLOUDLET_PROCESSING);
         }
         setLastProcessTime(clock());
@@ -942,7 +926,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             delay, getBandwidthPercentForMigration()*100);
 
 //        //统计迁移产生的额外开销
-        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getTotalCpuMipsUtilization());
+//        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getTotalCpuMipsUtilization());
 
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
         if(targetHost.addMigratingInVm(sourceVm)) {

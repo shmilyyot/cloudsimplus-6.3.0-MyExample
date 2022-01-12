@@ -42,8 +42,8 @@ import org.cloudbus.cloudsim.resources.Pe;
 import org.cloudbus.cloudsim.resources.PeSimple;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.schedulers.cloudlet.CloudletSchedulerTimeShared;
-import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModel;
 import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelDynamic;
@@ -51,10 +51,10 @@ import org.cloudbus.cloudsim.utilizationmodels.UtilizationModelFull;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.Constant;
+import org.cloudsimplus.MyExample.DataCenterPrinter;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.listeners.DatacenterBrokerEventInfo;
-import org.cloudsimplus.listeners.EventInfo;
 import org.cloudsimplus.listeners.EventListener;
 import org.cloudsimplus.listeners.VmHostEventInfo;
 import org.cloudsimplus.util.Log;
@@ -130,7 +130,7 @@ public final class MigrationExample1 {
      * The percentage of host CPU usage that trigger VM migration
      * due to under utilization (in scale from 0 to 1, where 1 is 100%).
      */
-    private static final double HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.35;
+    private static final double HOST_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.1;
 
     /**
      * The percentage of host CPU usage that trigger VM migration
@@ -168,7 +168,7 @@ public final class MigrationExample1 {
      */
     private static final int    HOST_PES[] = {4, 5, 5};
 
-    private static final int    VM_PES[]   = {2, 2, 2, 1,1};
+    private static final int    VM_PES[]   = {2, 2, 2, 1};
     private static final int    VM_MIPS = 1000; //for each PE
     private static final long   VM_SIZE = 1000; //image size (MB)
     private static final int    VM_RAM = 10_000; //VM memory (MB)
@@ -223,21 +223,19 @@ public final class MigrationExample1 {
         if(HOST_PES.length != HOST_RAM.length){
             throw new IllegalStateException("The length of arrays HOST_PES and HOST_RAM must match.");
         }
-        Log.setLevel(Datacenter.LOGGER,Level.TRACE);
+
         System.out.println("Starting " + getClass().getSimpleName());
         simulation = new CloudSim();
         Log.setLevel(CloudSim.LOGGER, Level.WARN);
 
         @SuppressWarnings("unused")
         Datacenter datacenter0 = createDatacenter();
-//        datacenter0.setHostSearchRetryDelay(-1);
         broker = new DatacenterBrokerSimple(simulation);
         Log.setLevel(DatacenterBroker.LOGGER, Level.WARN);
         createAndSubmitVms(broker);
         createAndSubmitCloudlets(broker);
 
         broker.addOnVmsCreatedListener(this::onVmsCreatedListener);
-        simulation.addOnClockTickListener(this::clockTickListener);
 
         simulation.start();
 
@@ -248,11 +246,10 @@ public final class MigrationExample1 {
         new CloudletsTableBuilder(finishedList).build();
         System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
 
-        hostList.stream().filter(h -> h.getId() <= 3).forEach(this::printHostStateHistory);
+        hostList.stream().filter(h -> h.getId() <= 2).forEach(this::printHostStateHistory);
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
         System.out.println(getClass().getSimpleName() + " finished!");
-
-        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
+        new DataCenterPrinter().printNewSLAV(hostList,vmList,0,migrationsNumber);
     }
 
     /**
@@ -352,8 +349,8 @@ public final class MigrationExample1 {
             new CloudletSimple(CLOUDLET_LENGTH, (int)vm.getNumberOfPes())
                 .setFileSize(CLOUDLET_FILESIZE)
                 .setOutputSize(CLOUDLET_OUTPUTSIZE)
-                .setUtilizationModelRam(new UtilizationModelFull())
-                .setUtilizationModelBw(UtilizationModel.NULL)
+                .setUtilizationModelRam(utilizationModelFull)
+                .setUtilizationModelBw(utilizationModelFull)
                 .setUtilizationModelCpu(cpuUtilizationModel);
         broker.bindCloudletToVm(cloudlet, vm);
 
@@ -439,9 +436,6 @@ public final class MigrationExample1 {
             Host host = createHost(pes, HOST_MIPS, ram);
             hostList.add(host);
         }
-        Host sleephost = createHost(HOST_PES[0], HOST_MIPS, HOST_RAM[0]);
-        sleephost.setActive(false);
-        hostList.add(sleephost);
         System.out.println();
 
         /**
@@ -468,8 +462,7 @@ public final class MigrationExample1 {
                 host, host.getMips(), host.getNumberOfPes(), host.getTotalMipsCapacity());
         }
         dc.setSchedulingInterval(SCHEDULING_INTERVAL)
-          .setHostSearchRetryDelay(HOST_SEARCH_RETRY_DELAY)
-        ;
+          .setHostSearchRetryDelay(HOST_SEARCH_RETRY_DELAY);
         return dc;
     }
 
@@ -480,7 +473,7 @@ public final class MigrationExample1 {
         host
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
-            .setVmScheduler(new VmSchedulerTimeShared());
+            .setVmScheduler(new VmSchedulerTimeSharedOverSubscription());
         host.enableStateHistory();
         return host;
     }
@@ -510,10 +503,5 @@ public final class MigrationExample1 {
         System.out.println();
         hostList.forEach(host -> showHostAllocatedMips(info.getTime(), host));
         System.out.println();
-    }
-
-    private void clockTickListener(final EventInfo info) {
-//        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
-        vmList.forEach(vm -> System.out.println(vm+" "+vm.getRam().getCapacity()));
     }
 }

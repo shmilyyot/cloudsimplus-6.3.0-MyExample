@@ -366,6 +366,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      */
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final Vm tempVm = new VmSimple(vm,true);
+//        System.out.println("mark1: "+host+" "+host.getCpuPercentUtilization()+" "+vm+" "+vm.getCurrentRequestedMips());
         HostSuitability suitability = host.createTemporaryVm(tempVm);
         if (!suitability.fully()) {
             System.out.println(vm+" 过滤剩下的"+host+"本应该可以放进去，但是实际因为容量不足放不进去");
@@ -382,10 +383,11 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             }
             return false;
         }
-
+//        System.out.println("mark2: "+host+" "+host.getCpuPercentUtilization()+" "+vm+" "+vm.getCurrentRequestedMips());
         final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
 
         host.destroyTemporaryVm(tempVm);
+//        System.out.println("mark3: "+notOverloadedAfterAllocation);
         return notOverloadedAfterAllocation;
     }
 
@@ -401,9 +403,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         if(hostRamThreshold){
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
-
-//            if(hostCpuUtilization >= 1.0 || hostRamUtilization >= 1.0) host.setTotalOver100Time(host.getTotalOver100Time() + 1);
-//            System.out.println("执行了判断");
             return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
@@ -443,7 +442,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host) && ramUsagePercent > getRamOverUtilizationThreshold(host);
+        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
     }
 
     protected boolean isHostOverloadedOr(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
@@ -476,7 +475,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     }
 
     public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
-        return cpuUsagePercent < getUnderUtilizationThreshold() && ramUsagePercent < getUnderRamUtilizationThreshold();
+        return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
     }
 
     public boolean isHostUnderloadedOr(final double cpuUsagePercent,final double ramUsagePercent) {
@@ -615,16 +614,6 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     System.out.println(getDatacenter().getSimulation().clockStr() + ": 没有找到合适的host给 "+ vm + " 进行过载迁移");
                     System.out.println();
                 }
-//                for(Host host:switchedOffHosts){
-//                    if(host.isSuitableForVm(vm)){
-//                        host.setActive(true);
-//                        addVmToMigrationMap(migrationMap, vm, host);
-//                        appendVmMigrationMsgToStringBuilder(builder, vm, host);
-//                        target = host;
-//                        System.out.println(getDatacenter().getSimulation().clockStr() + ": Host "+ host.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
-//                        break;
-//                    }
-//                }
                 switchedOffHosts.remove(host);
 
             }
@@ -714,7 +703,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
      * @param simulationTime the simulation time to get the current CPU utilization for each Vm
      */
     protected void sortByCpuUtilization(final List<? extends Vm> vmList, final double simulationTime) {
-        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration());
+        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuPercentUtilization());
         vmList.sort(comparator.reversed());
     }
 
@@ -726,7 +715,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
 
     protected void sortByUnbanlance(final List<? extends Vm> vmList, final double simulationTime){
         final Comparator<Vm> comparator = comparingDouble(vm->
-            Math.abs(vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() - vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity())
+            Math.abs(vm.getTotalMipsCapacity() * vm.getCpuPercentUtilization() / vm.getTotalMipsCapacity() - vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity())
         );
         vmList.sort(comparator);
     }
@@ -735,19 +724,19 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         boolean systemLoad = systemLoad();
         final Comparator<Vm> comparator = comparingDouble(vm->
             systemLoad ?
-                vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity() - vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() :
-                vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() - vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity()
+                vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity() - vm.getTotalMipsCapacity() * vm.getCpuPercentUtilization() / vm.getTotalMipsCapacity() :
+                vm.getTotalMipsCapacity() * vm.getCpuPercentUtilization() / vm.getTotalMipsCapacity() - vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity()
         );
         vmList.sort(comparator.reversed());
     }
 
     protected  void sortByVmCombineCpuAndRam(final List<? extends Vm> vmList, final double simulationTime){
-        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() * vm.getCurrentRequestedRam());
+        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuPercentUtilization() * vm.getCurrentRequestedRam());
         vmList.sort(comparator.reversed());
     }
 
     protected  void sortByLoad(final List<? extends Vm> vmList, final double simulationTime){
-        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuUtilizationBeforeMigration() / vm.getTotalMipsCapacity() + vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity());
+        final Comparator<Vm> comparator = comparingDouble(vm -> vm.getTotalMipsCapacity() * vm.getCpuPercentUtilization() / vm.getTotalMipsCapacity() + vm.getCurrentRequestedRam() / (double)vm.getRam().getCapacity());
         vmList.sort(comparator.reversed());
     }
 
@@ -810,7 +799,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     System.out.println(nvm+" "+nvm.getCpuPercentUtilization());
                 }
             }
-            MipsShare mipsShare = new MipsShare(vm.getHost().getVmMipsReAllocations().get(vm));
+//            MipsShare mipsShare = new MipsShare(vm.getHost().getVmMipsReAllocations().get(vm));
             if (Vm.NULL == vm || vm.getCloudletScheduler().isEmpty()) {
                 break;
             }
@@ -818,7 +807,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             /*Temporarily destroys the selected VM into the overloaded Host so that
             the loop gets VMs from such a Host until it is not overloaded anymore.*/
             host.destroyTemporaryVm(vm);
-            vm.getHost().getVmMipsReAllocations().put(vm,mipsShare);
+//            System.out.println("mark24: "+vm.getCurrentUtilizationMips());
+//            vm.getHost().getVmMipsReAllocations().put(vm,mipsShare);
             if (!isHostOverloaded(host)) {
                 host.setInFindMigrateVm(false);
                 break;
@@ -966,39 +956,39 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         savedAllocation.clear();
         for (final Host host : getHostList()) {
             //设置当前host是cpu还是ram负载重
-            double hostCpuPercentage = host.getCpuPercentUtilization();
-            double hostRamPercentage = host.getRamPercentUtilization();
-            if(hostCpuPercentage > hostRamPercentage){
-                host.setCpuMemLoad(0);
-            }else{
-                host.setCpuMemLoad(1);
-            }
-
-            if(hostCpuPercentage > 1.0 || hostRamPercentage > 1.0){
-                host.setTotalOver100Time(host.getTotalOver100Time() + 15);
-            }
-
-            //记录当前要重新放置的mips和ram资源
-            final Map<Vm, MipsShare> vmMipsShareMap = buildVmMipsReAllocations(host,hostCpuPercentage);
-            final Map<Vm, Long> vmLongMap = buildVmRamReAllocations(host,hostRamPercentage);
-            host.setVmMipsReAllocations(vmMipsShareMap);
-            host.setVmsRamReAllocations(vmLongMap);
-
-            final VmScheduler vmScheduler = host.getVmScheduler();
-            final ResourceProvisioner ramProvisioner = host.getRamProvisioner();
-
-//            for(Vm vm:host.getVmList()){
-//                System.out.println("mark10: "+vm+" "+vm.getHost()+" "+vm.getCurrentUtilizationMips());
-//            }
-            //抹除所有host上所有mips分配,迁移中的也释放了
-            vmScheduler.getAllocatedMipsMap().clear();
-//            //恢复迁移中的vm的mips资源，给迁移中的资源让步，就算迁移中涨了资源，优先满足迁移中的，压缩其他vm的资源
-//            for (final Vm vm : host.getVmsMigratingIn()) {
-//                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+//            double hostCpuPercentage = host.getCpuPercentUtilization();
+//            double hostRamPercentage = host.getRamPercentUtilization();
+//            if(hostCpuPercentage > hostRamPercentage){
+//                host.setCpuMemLoad(0);
+//            }else{
+//                host.setCpuMemLoad(1);
 //            }
 
-            //抹除所有host上所有ram分配
-            ramProvisioner.deallocateResourceForAllVms();
+//            if(hostCpuPercentage > 1.0 || hostRamPercentage > 1.0){
+//                host.setTotalOver100Time(host.getTotalOver100Time() + 15);
+//            }
+
+//            //记录当前要重新放置的mips和ram资源
+//            final Map<Vm, MipsShare> vmMipsShareMap = buildVmMipsReAllocations(host,hostCpuPercentage);
+//            final Map<Vm, Long> vmLongMap = buildVmRamReAllocations(host,hostRamPercentage);
+//            host.setVmMipsReAllocations(vmMipsShareMap);
+//            host.setVmsRamReAllocations(vmLongMap);
+//
+//            final VmScheduler vmScheduler = host.getVmScheduler();
+//            final ResourceProvisioner ramProvisioner = host.getRamProvisioner();
+//
+////            for(Vm vm:host.getVmList()){
+////                System.out.println("mark10: "+vm+" "+vm.getHost()+" "+vm.getCurrentUtilizationMips());
+////            }
+//            //抹除所有host上所有mips分配,迁移中的也释放了
+//            vmScheduler.getAllocatedMipsMap().clear();
+////            //恢复迁移中的vm的mips资源，给迁移中的资源让步，就算迁移中涨了资源，优先满足迁移中的，压缩其他vm的资源
+////            for (final Vm vm : host.getVmsMigratingIn()) {
+////                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+////            }
+//
+//            //抹除所有host上所有ram分配
+//            ramProvisioner.deallocateResourceForAllVms();
 
             List<Vm> removeDestroyVms = new ArrayList<>();
             for (final Vm vm : host.getVmList()) {
@@ -1009,20 +999,20 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     continue;
                 }
 
-                //记录下每个vm当前的cpu利用率
-                if(vm.getHost().getId() == host.getId()){
-                    double percentage = vm.getCpuPercentUtilization();
-//                    System.out.println(vm+" "+percentage+" "+vm.getCurrentUtilizationMips()+" "+vm.getCloudletScheduler().getRequestedCpuPercentUtilization(vm.getSimulation().clock()));
-                    vm.setCpuUtilizationBeforeMigration(percentage);
+//                //记录下每个vm当前的cpu利用率
+//                if(vm.getHost().getId() == host.getId()){
+//                    double percentage = vm.getCpuPercentUtilization();
+////                    System.out.println(vm+" "+percentage+" "+vm.getCurrentUtilizationMips()+" "+vm.getCloudletScheduler().getRequestedCpuPercentUtilization(vm.getSimulation().clock()));
+//                    vm.setCpuUtilizationBeforeMigration(percentage);
+//
+////                    forceMipsPlace(host, vmScheduler, vm);
+//                }
 
-//                    forceMipsPlace(host, vmScheduler, vm);
-                }
-
-                placeReallocateVmsMips(host,vmScheduler,vm,vmMipsShareMap);
-
-                //(修改更新的host的ram provisioner),防止溢出
-//                forceRamtoPlace(host, ramProvisioner, vm);
-                placeReallocateVmsRam(host, ramProvisioner, vm, vmLongMap);
+//                placeReallocateVmsMips(host,vmScheduler,vm,vmMipsShareMap);
+//
+//                //(修改更新的host的ram provisioner),防止溢出
+////                forceRamtoPlace(host, ramProvisioner, vm);
+//                placeReallocateVmsRam(host, ramProvisioner, vm, vmLongMap);
 
 //                System.out.println("saveAllocation:"+vm+"  "+vm.getCurrentRequestedMips()+"  "+host.getVmScheduler().getAllocatedMips(vm)+ " "+vm.getCpuUtilizationBeforeMigration());
 
@@ -1038,12 +1028,12 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
                     System.out.println(vm+" 同时在迁入虚拟机列表里也在虚拟机列表里");
                 }
             }
-            for(final Vm vm:host.getVmsMigratingIn()){
-                //(修改更新的host的ram provisioner),防止溢出
-//                forceRamtoPlace(host, ramProvisioner, vm);
-                placeReallocateVmsRam(host, ramProvisioner, vm, vmLongMap);
-                placeReallocateVmsMips(host,vmScheduler,vm,vmMipsShareMap);
-            }
+//            for(final Vm vm:host.getVmsMigratingIn()){
+//                //(修改更新的host的ram provisioner),防止溢出
+////                forceRamtoPlace(host, ramProvisioner, vm);
+//                placeReallocateVmsRam(host, ramProvisioner, vm, vmLongMap);
+//                placeReallocateVmsMips(host,vmScheduler,vm,vmMipsShareMap);
+//            }
             for(Vm vm:removeDestroyVms){
                 vm.setCreated(true);
                 host.destroyVm(vm);
@@ -1217,22 +1207,22 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             //有可能放不回去，因为原本利用率太高
             else{
                 LOGGER.error("VmAllocationPolicy: Couldn't restore {} on {}, now try to force it to restore", vm, host);
-                if(!hostSuitability.forRam()){
-                    vm.setForcePlace(true);
-                }
-                if(!hostSuitability.forPes()){
-                    vm.setCpuForcePlace(true);
-                }
-                if(host.createTemporaryVm(vm).fully()){
-                    vm.setCreated(true);
-                    LOGGER.error("VmAllocationPolicy:force {} to restore on {} successsful!",vm,host);
-                }else{
-                    LOGGER.error("VmAllocationPolicy: force restore {} on {} failed!", vm, host);
-                }
-                vm.setForcePlace(false);
-                vm.setCpuForcePlace(false);
-                vm.setForcePlace(false);
-                System.out.println();
+//                if(!hostSuitability.forRam()){
+//                    vm.setForcePlace(true);
+//                }
+//                if(!hostSuitability.forPes()){
+//                    vm.setCpuForcePlace(true);
+//                }
+//                if(host.createTemporaryVm(vm).fully()){
+//                    vm.setCreated(true);
+//                    LOGGER.error("VmAllocationPolicy:force {} to restore on {} successsful!",vm,host);
+//                }else{
+//                    LOGGER.error("VmAllocationPolicy: force restore {} on {} failed!", vm, host);
+//                }
+//                vm.setForcePlace(false);
+//                vm.setCpuForcePlace(false);
+//                vm.setForcePlace(false);
+//                System.out.println();
             };
             vm.setRestorePlace(false);
         }
@@ -1240,7 +1230,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
         //恢复完之后，这一次的分配可以清空掉了
         for (final Host host : getHostList()) {
             host.getVmsRamReAllocations().clear();
-            host.getVmMipsReAllocations().clear();
+//            host.getVmMipsReAllocations().clear();
         }
 
     }

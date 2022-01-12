@@ -40,6 +40,18 @@ public class MathHandler {
 //        list.add(10.2);
 //        list.add(11.0);
 //        list.add(12.3);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
+//        list.add(0.02);
 
 
 //        //暂时还是GM(1,1)靠谱，等待更好的
@@ -120,10 +132,9 @@ public class MathHandler {
             return utilization;
         }
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
-        if(dataHistory.size() < n || checkUtilizationZero(convertListToArray(dataHistory))){
+        if(dataHistory.size() < n || checkUtilizationNotAllTheSame(convertListToArray(dataHistory))){
             return utilization;
         }
-
         double predict = ARIMRPrediction(dataHistory,n);
         if(max){
             return cutTo0To1(Math.max(predict,utilization));
@@ -170,7 +181,7 @@ public class MathHandler {
     public double DGM21Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
-        if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
+        if(dataHistory.size() < n || checkUtilizationNotAllTheSame(convertListToArray(dataHistory))){
             return utilization;
         }
         int tn = n-1;
@@ -253,11 +264,9 @@ public class MathHandler {
         }
         double[] originalSequence = listToArray(dataHistory,n);
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
-        if(dataHistory.size() < n || checkUtilizationZero(originalSequence)){
+        if(dataHistory.size() < n || checkUtilizationNotAllTheSame(convertListToArray(dataHistory))){
             return utilization;
         }
-
-//        for(double num : originalSequence) System.out.println(num);
 
         int tn = n-1;
         double[] cumulativeSequence = calculateCumulativeSequence(originalSequence,n);
@@ -363,12 +372,11 @@ public class MathHandler {
     }
 
     //参与预测的利用率中不能有0，否则为奇异矩阵（不满秩），无法计算逆矩阵
-    public boolean checkUtilizationZero(double[] originalSequence){
-        Set<Double> set = new HashSet<>();
-        for(double num:originalSequence){
-            if(!set.contains(num)){
-                set.add(num);
-            }else return true;
+    //利用率不能全部相同
+    public boolean checkUtilizationNotAllTheSame(double[] originalSequence){
+        double utilization = originalSequence[0];
+        for(int i=1;i<originalSequence.length;++i){
+            if(originalSequence[i] == utilization) return true;
         }
         return false;
     }
@@ -596,5 +604,11 @@ public class MathHandler {
         }
         return regression;
     }
+
+    public List<Double> reverseList(List<Double> usages){
+        Collections.reverse(usages);
+        return usages;
+    }
+
 
 }

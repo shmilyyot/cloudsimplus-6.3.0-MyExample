@@ -197,8 +197,24 @@ class VmNull implements Vm {
     @Override public void setRequestUtilization(double requestUtilization) {}
     @Override public double getMipsUtilizationBeforeMigration() {return 0;}
     @Override public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration) {}
+    @Override public List<Double> getUtilizationHistory() {return null;}
+    @Override public List<Double> getUtilizationHistoryRam() {return null;}
+    @Override public double getLogLength() {return 0;}
+    @Override public void setLogLength(double logLength) {}
     @Override public double getTotalrequestUtilization() {return 0;}
     @Override public void setTotalrequestUtilization(double totalrequestUtilization) {}
+    @Override public double getVmUnderAllocatedDueToMigration() {return 0;}
+    @Override public void setVmUnderAllocatedDueToMigration(double vmUnderAllocatedDueToMigration) {}
+    @Override public double getVmRamUnderAllocatedDueToMigration() {return 0;}
+    @Override public void setVmRamUnderAllocatedDueToMigration(double vmRamUnderAllocatedDueToMigration) {}
+    @Override public double getPreviousTime() {return 0;}
+    @Override public void setPreviousTime(double previousTime) {}
+    @Override public double getPreviousAllocated() {return 0;}
+    @Override public void setPreviousAllocated(double previousAllocated) {}
+    @Override public double getPreviousRequested() {return 0;}
+    @Override public void setPreviousRequested(double previousRequested) {}
+    @Override public boolean isPreviousIsInMigration() {return false;}
+    @Override public void setPreviousIsInMigration(boolean previousIsInMigration) {}
     @Override public boolean isSearchForHost() {return false;}
     @Override public void setSearchForHost(boolean searchForHost) {}
     @Override public boolean isForcePlace() {return false;}
@@ -219,4 +235,5 @@ class VmNull implements Vm {
     @Override public VmGroup getGroup() { return null; }
     @Override public double getTimeZone() { return Integer.MAX_VALUE; }
     @Override public Vm setTimeZone(double timeZone) { return this; }
+
 }

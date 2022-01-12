@@ -264,6 +264,42 @@ public class DataCenterPrinter {
         System.out.println("当前系统的ESVM是： " + ESVM);
     }
 
+    public void printNewSLAV(List<Host> hostList,List<Vm> vmList,double totalEnergyCumsumption,int migrationsNumber){
+        double SLAV;
+        double SLATAH = 0.0;
+        double PDM = 0.0;
+        double ESV ;
+        double ESVM ;
+        double slaViolationTimePerHost = 0;
+        double totalTime = 0;
+        for(Host host:hostList){
+            slaViolationTimePerHost += host.getSlaViolationTimePerHost();
+            totalTime += host.getTotalUpTime();
+        }
+        BigDecimal b1 = new BigDecimal(Double.toString(slaViolationTimePerHost));
+        BigDecimal b2 = new BigDecimal(Double.toString(totalTime));
+        SLATAH = b1.divide(b2, 8, RoundingMode.HALF_UP).doubleValue();
+
+        double totalRequested = 0;
+        double totalUnderAllocatedDueToMigration = 0;
+        for(Vm vm:vmList){
+            totalRequested += vm.getTotalrequestUtilization();
+            totalUnderAllocatedDueToMigration += vm.getVmUnderAllocatedDueToMigration();
+        }
+        BigDecimal b3 = new BigDecimal(Double.toString(totalUnderAllocatedDueToMigration));
+        BigDecimal b4 = new BigDecimal(Double.toString(totalRequested));
+        PDM += b3.divide(b4, 8, RoundingMode.HALF_UP).doubleValue();
+
+        SLAV = SLATAH * PDM;
+        ESV = SLAV * totalEnergyCumsumption;
+        ESVM = ESV * migrationsNumber;
+        System.out.println("当前系统的SLATAH是： " + SLATAH);
+        System.out.println("当前系统的PDM是： " + PDM);
+        System.out.println("当前系统的SLAV是： " + SLAV);
+        System.out.println("当前系统的ESV是： " + ESV);
+        System.out.println("当前系统的ESVM是： " + ESVM);
+    }
+
     public void printSystemAverageResourceWastage(List<Double> resourceWastageList){
         double sum = 0.0;
         for(double num:resourceWastageList){

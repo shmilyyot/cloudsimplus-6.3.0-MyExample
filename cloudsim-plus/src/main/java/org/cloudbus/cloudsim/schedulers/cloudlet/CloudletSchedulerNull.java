@@ -73,4 +73,6 @@ final class CloudletSchedulerNull implements CloudletScheduler {
     @Override public void clear() { }
     @Override public CloudletScheduler addOnCloudletResourceAllocationFail(EventListener<CloudletResourceAllocationFailEventInfo> listener) { return this; }
     @Override public boolean removeOnCloudletResourceAllocationFail(EventListener<CloudletResourceAllocationFailEventInfo> listener) { return false; }
+    @Override public double getTotalUtilizationOfCpu(double time) {return 0;}
+    @Override public double getTotalCurrentAvailableMipsForCloudlet(CloudletExecution cle, MipsShare mipsShare) {return 0;}
 }

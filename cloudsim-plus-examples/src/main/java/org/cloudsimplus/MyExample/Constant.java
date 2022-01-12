@@ -39,7 +39,7 @@ public class Constant {
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
     public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.15;
     public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;  //高阈值，一开始加了0.2，其实是1
-    public static final boolean USING_UNDERLOAD_THRESHOLD = false;
+    public static final boolean USING_UNDERLOAD_THRESHOLD = true;
     public static final boolean USING_SINGLE_OVERLOAD = false;
     public static final boolean USING_RAM = true;
 
@@ -86,8 +86,8 @@ public class Constant {
     public static final long[] HOST_BW = {1024 * 8,1024 * 8};  //带宽速率
     public static final long[] HOST_STORAGE = {1_000_000,1_000_000};  //硬盘大小
     public static final double[] HOST_MIPS = {1860,2660};  //cpu处理速率
-    public static final Double[] HOST_G4_SPEC_POWER = {89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
-    public static final Double[] HOST_G5_SPEC_POWER = {97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
+    public static final Double[] HOST_G4_SPEC_POWER = {86.0,89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
+    public static final Double[] HOST_G5_SPEC_POWER = {93.7,97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
     public static final double[] IDLE_POWER = {86,93};
     public static final double IDLE_SHUTDOWN_TIME = 0.2;    //主机闲置关机的时间
 
@@ -121,9 +121,9 @@ public class Constant {
 //    public static final int[] VM_NUMBER = {300,280,466,523};
 public static final int[] VM_NUMBER = {455,250,455,409};
     public static final int[]  VM_MIPS = {2500,2000,1000,500};
-    public static final long[] VM_RAM = {850,3750,1700,613};
+    public static final long[] VM_RAM = {870,1740,1740,613};
     public static final long[] VM_BW = {1,1,1,1};
-    public static final long[] VM_SIZE_MB = {10000,10000,10000,10000};
+    public static final long[] VM_SIZE_MB = {2500,2500,2500,2500};
 
     /**
      * 自定义vm的相关参数设置

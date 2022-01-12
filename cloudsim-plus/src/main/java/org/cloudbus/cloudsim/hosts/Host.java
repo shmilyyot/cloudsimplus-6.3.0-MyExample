@@ -29,6 +29,7 @@ import org.cloudsimplus.listeners.HostUpdatesVmsProcessingEventInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,6 +95,21 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
     int getCpuMemLoad();
 
     void setCpuMemLoad(int cpuMemLoad);
+
+    double getUtilizationMips();
+
+    void setUtilizationMips(double utilizationMips);
+
+    double getPreviousUtilizationMips();
+
+    void setPreviousUtilizationMips(double previousUtilizationMips);
+
+    double getSlaViolationTimePerHost();
+
+    void setSlaViolationTimePerHost(double slaViolationTimePerHost);
+
+    List<Double> getCpuUtilizationHistory();
+    List<Double> getRamUtilizationHistory();
 
     /**
      * Gets the Datacenter where the host is placed.

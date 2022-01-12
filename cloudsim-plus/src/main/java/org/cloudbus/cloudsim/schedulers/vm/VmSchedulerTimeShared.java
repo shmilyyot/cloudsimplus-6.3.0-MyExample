@@ -279,11 +279,6 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
     protected boolean isSuitableForVmInternal(final Vm vm, final MipsShare requestedMips) {
         final double totalRequestedMips = requestedMips.totalMips();
         final double exsitRequestedMips = getAllocatedMips(vm).totalMips();
-//        if(vm.getId() == 1564 && getHost().getId() == 4){
-//            System.out.println("mark3: "+exsitRequestedMips+" "+totalRequestedMips+" "+getTotalAvailableMips());
-//            System.out.println(getTotalAvailableMips() + exsitRequestedMips >= totalRequestedMips);
-//        }
-
 
         //（更改），这里真的有必要吗？好像已经考虑过了
         //请求的vm额外10%mips开销
@@ -348,9 +343,10 @@ public class VmSchedulerTimeShared extends VmSchedulerAbstract implements Serial
         if(scalingFactor == 1){
             return requestedMips;
         }
-        double beforeMips = requestedMips.mips() * scalingFactor;
-        double afterMips = new BigDecimal(String.valueOf(beforeMips)).setScale(1, RoundingMode.DOWN).doubleValue();
-        return new MipsShare(requestedMips.pes(), afterMips);
+//        double beforeMips = requestedMips.mips() * scalingFactor;
+//        double afterMips = new BigDecimal(String.valueOf(beforeMips)).setScale(1, RoundingMode.DOWN).doubleValue();
+        //更改mark2，修改mips
+        return new MipsShare(requestedMips.pes(), requestedMips.mips() * scalingFactor);
     }
 
     @Override

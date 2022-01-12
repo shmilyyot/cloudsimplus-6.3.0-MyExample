@@ -16,11 +16,13 @@ import org.cloudbus.cloudsim.hosts.HostSimple;
 import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
+import org.cloudbus.cloudsim.power.models.PowerModelHostSpec;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisionerSimple;
 import org.cloudbus.cloudsim.resources.*;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumMigrationTime;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyRandomSelection;
@@ -40,6 +42,9 @@ import org.cloudsimplus.util.Log;
 import java.io.*;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static org.cloudbus.cloudsim.util.Conversion.megaBytesToBytes;
 import static org.cloudbus.cloudsim.util.MathUtil.positive;
 
@@ -218,7 +223,7 @@ public class myImplementationMigrationDatacenter {
 
 //        hostList.forEach(host -> System.out.println(host.getTotalUpTime()));
 
-        dataCenterPrinter.calculateSLAV(hostList,vmList,totalEnergyCumsumption,migrationsNumber);
+        dataCenterPrinter.printNewSLAV(hostList,vmList,totalEnergyCumsumption,migrationsNumber);
         dataCenterPrinter.calculateAverageActiveHost(activeHostNumber,hostList.size());
         dataCenterPrinter.printSystemAverageResourceWastage(resourceWastageList);
         dataCenterPrinter.printTtoalShutdownHostNumber(hostList);
@@ -438,8 +443,8 @@ public class myImplementationMigrationDatacenter {
         for(int i=0;i<halfNumOfHost;++i){
             Host host1 = createHost(0);
             Host host2 = createHost(1);
-            host1.setIdlePower(Constant.IDLE_POWER[0]);
-            host2.setIdlePower(Constant.IDLE_POWER[1]);
+//            host1.setIdlePower(Constant.IDLE_POWER[0]);
+//            host2.setIdlePower(Constant.IDLE_POWER[1]);
             hostList.add(host1);
             hostList.add(host2);
         }
@@ -620,17 +625,17 @@ public class myImplementationMigrationDatacenter {
     private Host createHost(int hostType) {
         PowerModelHost powerModel;
         if(hostType == 0){
-            powerModel = new PowerModelHostSimple(Constant.HOST_G4_SPEC_POWER[Constant.HOST_G4_SPEC_POWER.length-1],Constant.IDLE_POWER[0]);
-//            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G4_SPEC_POWER));
+//            powerModel = new PowerModelHostSimple(Constant.HOST_G4_SPEC_POWER[Constant.HOST_G4_SPEC_POWER.length-1],Constant.IDLE_POWER[0]);
+            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G4_SPEC_POWER));
         }else{
-            powerModel = new PowerModelHostSimple(Constant.HOST_G5_SPEC_POWER[Constant.HOST_G5_SPEC_POWER.length-1],Constant.IDLE_POWER[0]);
-//            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G5_SPEC_POWER));
+//            powerModel = new PowerModelHostSimple(Constant.HOST_G5_SPEC_POWER[Constant.HOST_G5_SPEC_POWER.length-1],Constant.IDLE_POWER[0]);
+            powerModel = new PowerModelHostSpec(Arrays.asList(Constant.HOST_G5_SPEC_POWER));
         }
         final Host host = new HostSimple(Constant.HOST_RAM[hostType], Constant.HOST_BW[hostType], Constant.HOST_STORAGE[hostType], createPesList(Constant.HOST_PES,hostType));
         host
             .setRamProvisioner(new ResourceProvisionerSimple())
             .setBwProvisioner(new ResourceProvisionerSimple())
-            .setVmScheduler(new VmSchedulerTimeShared())
+            .setVmScheduler(new VmSchedulerTimeSharedOverSubscription())
             .setPowerModel(powerModel);
         host.setIdleShutdownDeadline(Constant.IDLE_SHUTDOWN_TIME);
 //        host.addOnUpdateProcessingListener(this::updateHostResource);
@@ -704,28 +709,27 @@ public class myImplementationMigrationDatacenter {
     }
 
     private List<Vm> createVms() {
-        List<Vm> vmList = new ArrayList<>();
-        int id = 0;
-        for(int i=0;i<Constant.VM_NUMBER.length;++i){
-            for(int j=0;j<Constant.VM_NUMBER[i];++j){
-                vmList.add(createVm(id,i));
-            }
-        }
-        return vmList;
+//        List<Vm> vmList = new ArrayList<>();
+//        int id = 0;
+//        for(int i=0;i<Constant.VM_NUMBER.length;++i){
+//            for(int j=0;j<Constant.VM_NUMBER[i];++j){
+//                vmList.add(createVm(id));
+//            }
+//        }
+//        return vmList;
         //每个代理都创建vms个虚拟机
-//        return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
+        return IntStream.range(0, Constant.VMS).mapToObj(this::createVm).collect(Collectors.toList());
     }
 
     private Vm createVm(final int id) {
-        //Uses a CloudletSchedulerTimeShared by default
-//        Random r = new Random(System.currentTimeMillis());
-//        int type = r.nextInt(4);
-        int type = id % Constant.VM_TYPE.length;
-//        return new VmSimple(Constant.VM_MIPS_M, Constant.VM_PES_M).setRam(Constant.VM_RAM_M).setBw(Constant.VM_BW[0]).setSize(Constant.VM_SIZE_MB[0]);
+        int type = id / (int) Math.ceil((double) Constant.VMS / Constant.VM_TYPE.length);
         Vm vm = new VmSimple(Constant.VM_MIPS[type], Constant.VM_PES);
         vm
             .setRam(Constant.VM_RAM[type]).setBw(Constant.VM_BW[type])
             .setSize(0);
+        vm.setMinCpuUtilization(10/(double)Constant.VM_MIPS[type]);
+        vm.setMinRamUtilization(10/(double)Constant.VM_RAM[type]);
+        vm.setLogLength(Constant.VM_LogLength);
 //        vm.enableUtilizationStats();
         return vm;
     }
@@ -771,17 +775,6 @@ public class myImplementationMigrationDatacenter {
         if(time - currentTime != 0.0 && currentTime == preClockTime) return;
         long number = dataCenterPrinter.activeHostCount(hostList,simulation.clockStr());
         activeHostNumber.add(number);
-        //不应该一直记录运行时间的请求mips，因为利用率本来就是大概300秒变一次，应该一致
-        if(currentTime % Constant.COLLECTTIME == 0){
-            vmList.forEach(vm->{
-                //更新vm总共请求的mips数目
-                if(!vm.getCloudletScheduler().isEmpty()){
-                    double currentTotalCpuMipsUtilization = vm.getTotalCpuMipsUtilization();
-                    vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + currentTotalCpuMipsUtilization);
-                    vm.setMipsUtilizationBeforeMigration(currentTotalCpuMipsUtilization);
-                }
-            });
-        }
         if(currentTime % Constant.SCHEDULING_INTERVAL == 0){
 
 //            System.out.println(currentTime+" 发生了收集");
@@ -792,54 +785,54 @@ public class myImplementationMigrationDatacenter {
 //            collectHostResourceUtilization();
             double systemWastage = 0.0;
 
-            for(Host host:hostList){
-
-                LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
-                LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-
-                if(host.isActive()){
-
-                    //计算host资源浪费
-                    systemWastage += host.resourceWastage();
-
-                    //获取SLATH
-                    double hostRamUtilization = host.getRamPercentUtilization();
-                    double hostCpuUtilization = host.getCpuPercentUtilization();
-
-//                    if(hostRamUtilization >= 0.85 || hostCpuUtilization >= 0.85){
-//                        host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
+//            for(Host host:hostList){
+//
+//                LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
+//                LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
+//
+//                if(host.isActive()){
+//
+//                    //计算host资源浪费
+//                    systemWastage += host.resourceWastage();
+//
+//                    //获取SLATH
+//                    double hostRamUtilization = host.getRamPercentUtilization();
+//                    double hostCpuUtilization = host.getCpuPercentUtilization();
+//
+////                    if(hostRamUtilization >= 0.85 || hostCpuUtilization >= 0.85){
+////                        host.setTotalOver100Time(host.getTotalOver100Time() + Constant.SCHEDULING_INTERVAL);
+////                    }
+//
+//                    //记录host和vm利用率
+//                    hostRamhistory.addLast(hostRamUtilization);
+//                    hostCpuhistory.addLast(hostCpuUtilization);
+//                    host.getVmList().forEach(vm -> {
+//                        if(vm.getHost().getId() == host.getId()){
+//                            LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
+//                            LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
+//                            double vmCpuUtilization = vm.getCpuPercentUtilization();
+//                            double vmRamUtilization = vm.getCurrentRequestedRam()/(double)vm.getRam().getCapacity();
+//                            vmCpuHistory.addLast(vmCpuUtilization);
+//                            vmRamHistory.addLast(vmRamUtilization);
+//                            while(vmCpuHistory.size() > Constant.VM_LogLength){
+//                                vmCpuHistory.removeFirst();
+//                            }
+//                            while(vmRamHistory.size() > Constant.VM_LogLength){
+//                                vmRamHistory.removeFirst();
+//                            }
+//                        }
+//                    });
+//                    while(hostRamhistory.size() > Constant.HOST_LogLength){
+//                        hostRamhistory.removeFirst();
 //                    }
-
-                    //记录host和vm利用率
-                    hostRamhistory.addLast(hostRamUtilization);
-                    hostCpuhistory.addLast(hostCpuUtilization);
-                    host.getVmList().forEach(vm -> {
-                        if(vm.getHost().getId() == host.getId()){
-                            LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-                            LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-                            double vmCpuUtilization = vm.getCpuPercentUtilization();
-                            double vmRamUtilization = vm.getCurrentRequestedRam()/(double)vm.getRam().getCapacity();
-                            vmCpuHistory.addLast(vmCpuUtilization);
-                            vmRamHistory.addLast(vmRamUtilization);
-                            while(vmCpuHistory.size() > Constant.VM_LogLength){
-                                vmCpuHistory.removeFirst();
-                            }
-                            while(vmRamHistory.size() > Constant.VM_LogLength){
-                                vmRamHistory.removeFirst();
-                            }
-                        }
-                    });
-                    while(hostRamhistory.size() > Constant.HOST_LogLength){
-                        hostRamhistory.removeFirst();
-                    }
-                    while(hostCpuhistory.size() > Constant.HOST_LogLength){
-                        hostCpuhistory.removeFirst();
-                    }
-                }else{
-                    hostRamhistory.clear();
-                    hostCpuhistory.clear();
-                }
-            }
+//                    while(hostCpuhistory.size() > Constant.HOST_LogLength){
+//                        hostCpuhistory.removeFirst();
+//                    }
+//                }else{
+//                    hostRamhistory.clear();
+//                    hostCpuhistory.clear();
+//                }
+//            }
 
             resourceWastageList.add(systemWastage);
 
@@ -887,78 +880,8 @@ public class myImplementationMigrationDatacenter {
             info.getTime(), info.getVm(), host);
         System.out.print("\t\t");
         dataCenterPrinter.showHostAllocatedMips(info.getTime(), host);
-//        System.out.println(vm+"  "+vm.getHost()+" "+host+" "+vm.getCpuPercentUtilization()+" "+vm.getCpuUtilizationBeforeMigration());
-//        Vm vm = host.getVmList().get(0);
-//        System.out.println(host+" "+host.getVmList().size()+" "+vm+" mips: "+vm.getCurrentUtilizationMips().totalMips()+" ram: "+vm.getCurrentRequestedRam()+" host availablemips: "+
-//            host.getVmScheduler().getTotalAvailableMips()+ " host allocatedmips: "+host.getVmScheduler().getTotalAllocatedMipsForVm(vm)+" host actualallocatedmips: "+host.getVmScheduler().getActualTotalAllocatedMipsForVm(vm));
     }
 
-    private void updateHostResource(final HostUpdatesVmsProcessingEventInfo info) {
-        double time = simulation.clock();
-        final Host host = info.getHost();
-
-        LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
-        LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-
-
-        if(host.isActive()){
-            double hostRamUtilization = host.getRamPercentUtilization();
-            double hostCpuUtilization = host.getCpuPercentUtilization();
-            if(!hostRamhistory.isEmpty()){
-                if(hostRamUtilization != hostRamhistory.getLast()){
-                    hostRamhistory.addLast(hostRamUtilization);
-                }
-            }else{
-                hostRamhistory.addLast(hostRamUtilization);
-            }
-            if(!hostCpuhistory.isEmpty()){
-                if(hostCpuUtilization != hostCpuhistory.getLast()){
-                    hostCpuhistory.addLast(hostCpuUtilization);
-                }
-            }else{
-                hostCpuhistory.addLast(hostCpuUtilization);
-            }
-            host.getVmList().forEach(vm -> {
-                if(vm.getHost().getId() == host.getId()){
-                    LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-                    LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-                    double vmCpuUtilization = vm.getCpuPercentUtilization();
-                    double vmRamUtilization = vm.getRam().getPercentUtilization();
-//                    System.out.println(simulation.clock()+"mark: "+vm+" "+vmCpuUtilization+"  "+vmRamUtilization);
-                    if(!vmCpuHistory.isEmpty()){
-                        if(vmCpuUtilization != vmCpuHistory.getLast()){
-                            vmCpuHistory.addLast(vmCpuUtilization);
-                        }
-                    }else{
-                        vmCpuHistory.addLast(vmCpuUtilization);
-                    }
-                    if(!vmRamHistory.isEmpty()){
-                        if(vmRamUtilization != vmRamHistory.getLast()){
-                            vmRamHistory.addLast(vmRamUtilization);
-                        }
-                    }else{
-                        vmRamHistory.addLast(vmRamUtilization);
-                    }
-                    while(vmCpuHistory.size() > Constant.VM_LogLength){
-                        vmCpuHistory.removeFirst();
-                    }
-                    while(vmRamHistory.size() > Constant.VM_LogLength){
-                        vmRamHistory.removeFirst();
-                    }
-                }
-            });
-            while(hostRamhistory.size() > Constant.HOST_LogLength){
-                hostRamhistory.removeFirst();
-            }
-            while(hostCpuhistory.size() > Constant.HOST_LogLength){
-                hostCpuhistory.removeFirst();
-            }
-        }else{
-            hostRamhistory.clear();
-            hostCpuhistory.clear();
-        }
-        preLogClockTime = time;
-    }
 
     /**
      * A listener that is called after all VMs from a broker are created,
@@ -981,64 +904,17 @@ public class myImplementationMigrationDatacenter {
     }
 
     public void initializeUtilizationHistory() {
-//        allVmsRamUtilizationHistory = new HashMap<>(Constant.VMS);
-//        vmList.forEach(vm -> allVmsRamUtilizationHistory.put(vm, new TreeMap<>()));
-//        allHostsRamUtilizationHistory = new HashMap<>(800);
-//        hostList.forEach(host -> allHostsRamUtilizationHistory.put(host,new TreeMap<>()));
         System.out.println(simulation.clockStr()+": 当前正在初始化vm和host利用率记录");
         hostList.forEach(host -> allHostsRamUtilizationHistoryQueue.put(host,new LinkedList<>()));
         hostList.forEach(host -> allHostsCpuUtilizationHistoryQueue.put(host,new LinkedList<>()));
         vmList.forEach(vm->allVmsCpuUtilizationHistoryQueue.put(vm,new LinkedList<>()));
         vmList.forEach(vm->allVmsRamUtilizationHistoryQueue.put(vm,new LinkedList<>()));
-//        allHostsRamUtilizationHistoryAL = new HashMap<>(Constant.HOSTS);
-//        allHostsCpuUtilizationHistoryAL = new HashMap<>(Constant.HOSTS);
-//        hostList.forEach(host -> allHostsRamUtilizationHistoryAL.put(host,new ArrayList<>()));
-//        hostList.forEach(host -> allHostsCpuUtilizationHistoryAL.put(host,new ArrayList<>()));
     }
     public void createUtilizationHistory(){
         allHostsRamUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
         allHostsCpuUtilizationHistoryQueue = new HashMap<>(Constant.HOSTS);
         allVmsRamUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
         allVmsCpuUtilizationHistoryQueue = new HashMap<>(Constant.VMS);
-    }
-
-    private void collectHostResourceUtilization(){
-        hostList.forEach(host -> {
-            LinkedList<Double> hostRamhistory = allHostsRamUtilizationHistoryQueue.get(host);
-            LinkedList<Double> hostCpuhistory = allHostsCpuUtilizationHistoryQueue.get(host);
-
-            if(host.isActive()){
-                double hostRamUtilization = host.getRamPercentUtilization();
-                double hostCpuUtilization = host.getCpuPercentUtilization();
-                hostRamhistory.addLast(hostRamUtilization);
-                hostCpuhistory.addLast(hostCpuUtilization);
-                host.getVmList().forEach(vm -> {
-                    if(vm.getHost().getId() == host.getId()){
-                        LinkedList<Double> vmRamHistory = allVmsRamUtilizationHistoryQueue.get(vm);
-                        LinkedList<Double> vmCpuHistory = allVmsCpuUtilizationHistoryQueue.get(vm);
-                        double vmCpuUtilization = vm.getCpuPercentUtilization();
-                        double vmRamUtilization = vm.getRam().getPercentUtilization();
-                        vmCpuHistory.addLast(vmCpuUtilization);
-                        vmRamHistory.addLast(vmRamUtilization);
-                        while(vmCpuHistory.size() > Constant.VM_LogLength){
-                            vmCpuHistory.removeFirst();
-                        }
-                        while(vmRamHistory.size() > Constant.VM_LogLength){
-                            vmRamHistory.removeFirst();
-                        }
-                    }
-                });
-                while(hostRamhistory.size() > Constant.HOST_LogLength){
-                    hostRamhistory.removeFirst();
-                }
-                while(hostCpuhistory.size() > Constant.HOST_LogLength){
-                    hostCpuhistory.removeFirst();
-                }
-            }else{
-                hostRamhistory.clear();
-                hostCpuhistory.clear();
-            }
-        });
     }
 
     public void calculateResourceWastage(List<Host> hostList,List<Double> resourceWastageList){
@@ -1049,21 +925,6 @@ public class myImplementationMigrationDatacenter {
             }
         }
         resourceWastageList.add(systemWastage);
-    }
-
-    public double resourceWastage(Host host){
-        double xita = 0.0001;
-        double hostCpuCapacity = host.getTotalMipsCapacity();
-        double hostRamCapacity = host.getRam().getCapacity();
-        double hostCpuUtilization = Math.min(host.getCpuPercentUtilization(),1.0);
-        double hostRamUtilization = Math.min(host.getRamPercentUtilization(),1.0);
-        if(hostCpuUtilization == 0.0 || hostRamUtilization == 0.0) return 1.0;
-        double hostRemindingCpuUtilization = (hostCpuCapacity - hostCpuUtilization * hostCpuCapacity ) / hostCpuCapacity;
-        double hostRemindingRamUtilization = (hostRamCapacity - hostRamUtilization * hostRamCapacity ) / hostRamCapacity;
-        double wastage = (Math.abs(hostRemindingCpuUtilization - hostRemindingRamUtilization) + xita) / (hostCpuUtilization + hostRamUtilization);
-//        System.out.println(host+" "+wastage);
-//        System.out.println("remove "+vm +" in "+host+" wastage :" + wastage);
-        return wastage;
     }
 
 

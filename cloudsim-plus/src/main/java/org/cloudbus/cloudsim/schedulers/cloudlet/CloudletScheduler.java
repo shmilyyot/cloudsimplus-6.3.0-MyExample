@@ -289,4 +289,9 @@ public interface CloudletScheduler extends Serializable {
      * @return true if the Listener was removed, false otherwise
      */
     boolean removeOnCloudletResourceAllocationFail(EventListener<CloudletResourceAllocationFailEventInfo> listener);
+
+    //加入获取cloudlet scheduler的cpu利用率，将每个cloudlet的cpu利用率加起来，避免获得为空
+    double getTotalUtilizationOfCpu(final double time);
+
+    double getTotalCurrentAvailableMipsForCloudlet(final CloudletExecution cle,MipsShare mipsShare);
 }

@@ -82,9 +82,7 @@ public class ResourceProvisionerSimple extends ResourceProvisionerAbstract imple
         getResourceAllocationMap().put(vm, newTotalVmResourceCapacity);
         vm.getResource(getResourceClass()).setCapacity(vm.getResource(getResourceClass()).getCapacity());
         vm.getResource(getResourceClass()).setAllocatedResource(newTotalVmResourceCapacity);
-//        if(getResource().isSubClassOf(Ram.class)){
-//            System.out.println(newTotalVmResourceCapacity+"   "+getResource().getAvailableResource());
-//        }
+
         return true;
     }
 

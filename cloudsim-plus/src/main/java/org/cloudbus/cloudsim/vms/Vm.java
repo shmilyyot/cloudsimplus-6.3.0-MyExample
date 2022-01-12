@@ -55,31 +55,48 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
     Vm setRam(final long ramCapacity,boolean forceChange);
 
     Vm getTempVm();
-
     void setTempVm(Vm tempVm);
 
     double getMinCpuUtilization();
-
     void setMinCpuUtilization(double minCpuUtilization);
 
     double getMinRamUtilization();
-
     void setMinRamUtilization(double minRamUtilization);
 
     double getRequestUtilization();
-
     void setRequestUtilization(double requestUtilization);
 
     double getMipsUtilizationBeforeMigration();
-
     void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration);
+
+    List<Double> getUtilizationHistory();
+    List<Double> getUtilizationHistoryRam();
+    double getLogLength();
+    void setLogLength(double logLength);
 
     double getTotalrequestUtilization();
 
     void setTotalrequestUtilization(double totalrequestUtilization);
 
-    boolean isSearchForHost();
+    double getVmUnderAllocatedDueToMigration();
+    void setVmUnderAllocatedDueToMigration(double vmUnderAllocatedDueToMigration);
 
+    double getVmRamUnderAllocatedDueToMigration();
+    void setVmRamUnderAllocatedDueToMigration(double vmRamUnderAllocatedDueToMigration);
+
+    double getPreviousTime();
+    void setPreviousTime(double previousTime);
+
+    double getPreviousAllocated();
+    void setPreviousAllocated(double previousAllocated);
+
+    double getPreviousRequested();
+    void setPreviousRequested(double previousRequested);
+
+    boolean isPreviousIsInMigration();
+    void setPreviousIsInMigration(boolean previousIsInMigration);
+
+    boolean isSearchForHost();
     void setSearchForHost(boolean searchForHost);
 
     boolean isForcePlace();
@@ -90,21 +107,17 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
     void setCpuForcePlace(boolean cpuForcePlace);
 
     boolean isDestory();
-
     void setDestory(boolean destory);
 
     MipsShare getCurrentUtilizationMips();
 
     double getCpuUtilizationBeforeMigration();
-
     void setCpuUtilizationBeforeMigration(double cpuUtilizationBeforeMigration);
 
     long getActualIdForTempVm();
-
     void setActualIdForTempVm(long actualIdForTempVm);
 
     boolean isRestorePlace();
-
     void setRestorePlace(boolean restorePlace);
     /**
      * Gets the Vm description, which is an optional text

@@ -78,13 +78,18 @@ public class VmSchedulerTimeSharedOverSubscription extends VmSchedulerTimeShared
         if(requestedMipsReduced.isEmpty()){
             return;
         }
-
         final double totalRequestedMips = requestedMipsReduced.totalMips();
+
+        //如果重分配的话，当前的requestmips一定要放进去
+        //不是requestmap，是allocatemap？？？
+//        getRequestedMipsMap().put(vm,requestedMipsReduced);
+
         if (getTotalAvailableMips() >= totalRequestedMips) {
             super.allocateMipsShareForVm(vm, requestedMipsReduced);
             return;
         }
 
+        //重分配会产生两位小数，或者更多
         redistributeMipsDueToOverSubscription();
     }
 

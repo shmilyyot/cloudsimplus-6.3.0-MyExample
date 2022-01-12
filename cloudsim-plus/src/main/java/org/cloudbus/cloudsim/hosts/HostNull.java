@@ -79,6 +79,14 @@ final class HostNull implements Host, Serializable {
     @Override public void setShutdownNumber(int shutdownNumber) {}
     @Override public int getCpuMemLoad() {return 0;}
     @Override public void setCpuMemLoad(int cpuMemLoad) {}
+    @Override public double getUtilizationMips() {return 0;}
+    @Override public void setUtilizationMips(double utilizationMips) {}
+    @Override public double getPreviousUtilizationMips() {return 0;}
+    @Override public void setPreviousUtilizationMips(double previousUtilizationMips) {}
+    @Override public double getSlaViolationTimePerHost() {return 0;}
+    @Override public void setSlaViolationTimePerHost(double slaViolationTimePerHost) {}
+    @Override public List<Double> getCpuUtilizationHistory() {return null;}
+    @Override public List<Double> getRamUtilizationHistory() {return null;}
     @Override public Datacenter getDatacenter() {
         return Datacenter.NULL;
     }

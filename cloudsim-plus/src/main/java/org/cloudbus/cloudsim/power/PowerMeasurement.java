@@ -13,7 +13,7 @@ import java.util.Objects;
  * such as {@link #add(PowerMeasurement)} and {@link #multiply(double)} that returns a new instance.</p>
  * @since CloudSim Plus 6.0.0
  */
-public class PowerMeasurement {
+public class    PowerMeasurement {
 
     /** @see #getStaticPower() */
     private double staticPower;

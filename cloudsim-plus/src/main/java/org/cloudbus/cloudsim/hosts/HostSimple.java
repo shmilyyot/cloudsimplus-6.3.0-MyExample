@@ -6,10 +6,7 @@
  */
 package org.cloudbus.cloudsim.hosts;
 
-import org.cloudbus.cloudsim.core.AbstractMachine;
-import org.cloudbus.cloudsim.core.ChangeableId;
-import org.cloudbus.cloudsim.core.ResourceStatsComputer;
-import org.cloudbus.cloudsim.core.Simulation;
+import org.cloudbus.cloudsim.core.*;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.provisioners.ResourceProvisioner;
@@ -26,6 +23,7 @@ import org.cloudsimplus.listeners.HostEventInfo;
 import org.cloudsimplus.listeners.HostUpdatesVmsProcessingEventInfo;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -49,6 +47,7 @@ public class HostSimple implements Host, Serializable {
     private static long defaultRamCapacity = (long)Conversion.gigaToMega(10);
     private static long defaultBwCapacity = 1000;
     private static long defaultStorageCapacity = (long)Conversion.gigaToMega(500);
+    private static int logLength = 12;
 
     public boolean isInFindMigrateVm() {
         return inFindMigrateVm;
@@ -75,6 +74,41 @@ public class HostSimple implements Host, Serializable {
 
     /**@see #getPowerModel() */
     private PowerModelHost powerModel;
+
+    public double getUtilizationMips() {
+        return utilizationMips;
+    }
+
+    public void setUtilizationMips(double utilizationMips) {
+        this.utilizationMips = utilizationMips;
+    }
+
+    private double utilizationMips = 0.0;
+
+    public double getPreviousUtilizationMips() {
+        return previousUtilizationMips;
+    }
+
+    public void setPreviousUtilizationMips(double previousUtilizationMips) {
+        this.previousUtilizationMips = previousUtilizationMips;
+    }
+
+    private double previousUtilizationMips = 0.0;
+    private boolean previousActive = false;
+    private double previousTime = -1;
+    private double previousAllocated = 0;
+    private double previousRequested = 0;
+    private long previousAllocatedRam = 0;
+    private long previousRequestedRam = 0;
+    private double slaViolationTimePerHost = 0;
+
+    public double getSlaViolationTimePerHost() {
+        return slaViolationTimePerHost;
+    }
+
+    public void setSlaViolationTimePerHost(double slaViolationTimePerHost) {
+        this.slaViolationTimePerHost = slaViolationTimePerHost;
+    }
 
     /** @see #getId() */
     private long id;
@@ -437,32 +471,150 @@ public class HostSimple implements Host, Serializable {
 
         double nextSimulationDelay = Double.MAX_VALUE;
 
+        //更新最新的每个vm分配的mips
+        double hostCpuPercentage = getCpuPercentUtilization();
+        double hostRamPercentage = getRamPercentUtilization();
+        if(hostCpuPercentage > 1.0){
+            System.out.println("mark5: "+getSimulation().clock()+" "+this+" currentCpuPercentage is: "+hostCpuPercentage+ ",need to be reallocated    and currentRamPercentage is:" + getRamPercentUtilization());
+        }
+        vmScheduler.deallocatePesForAllVms();
+        double vmsRequestMipsTotal = 0.0;
+        double vmsAllocatedMipsTotal = 0.0;
+        for (Vm vm : getVmList()) {
+            vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+        }
+
+        //更新最新的每个vm分配的ram
+        ramProvisioner.deallocateResourceForAllVms();
+        VmsRamReAllocations.clear();
+        long vmsRequestRamTotal = 0;
+        long vmsAllocatedRamTotal = 0;
+        long hostRamCapacity = getRam().getCapacity();
+        if(hostRamPercentage > 1.0){
+            System.out.println("mark6: "+getSimulation().clock()+" "+ this +" currentRamPercentage is: "+hostRamPercentage+ ",need to be reallocated    and currentCpuPercentage is:" + getCpuPercentUtilization());
+            for(Vm vm:getVmList()){
+                vmsRequestRamTotal += vm.getCurrentRequestedRam();
+            }
+            for(final Vm vm:getVmsMigratingIn()){
+                if(!getVmList().contains(vm))
+                    vmsRequestRamTotal += vm.getCurrentRequestedRam();
+            }
+            double factor = (double) hostRamCapacity / vmsRequestRamTotal;
+            for(Vm vm:getVmList()){
+                long requestRam = (long)(vm.getCurrentRequestedRam() * factor);
+                VmsRamReAllocations.put(vm,requestRam);
+                ramProvisioner.allocateResourceForVm(vm, requestRam);
+            }
+            for(final Vm vm:getVmsMigratingIn()){
+                long requestRam = (long)(vm.getCurrentRequestedRam() * factor);
+                VmsRamReAllocations.put(vm,requestRam);
+                ramProvisioner.allocateResourceForVm(vm, requestRam);
+            }
+        }else{
+            for(Vm vm:getVmList()){
+                long requestRam = vm.getCurrentRequestedRam();
+                VmsRamReAllocations.put(vm,requestRam);
+                ramProvisioner.allocateResourceForVm(vm, requestRam);
+            }
+            for(final Vm vm:getVmsMigratingIn()){
+                long requestRam = vm.getCurrentRequestedRam();
+                VmsRamReAllocations.put(vm,requestRam);
+                ramProvisioner.allocateResourceForVm(vm, requestRam);
+            }
+        }
+
         /* Uses an indexed for to avoid ConcurrentModificationException,
          * e.g., in cases when Vm is destroyed during simulation execution.*/
         for (int i = 0; i < vmList.size(); i++) {
             final Vm vm = vmList.get(i);
-
-            //（更改）放弃修改迁移时cloudlet可以请求的最大mips数目
-            MipsShare mipsShare = vm.getCurrentRequestedMips();
-//            double scalingFactor = this.getVmScheduler().percentOfMipsToRequest(vm);
-//            if(scalingFactor != 1){
-//                mipsShare = new MipsShare(mipsShare.pes(),mipsShare.mips()*scalingFactor);
-//            }
-
-            final double delay = vm.updateProcessing(currentTime, mipsShare);
+            final double delay = vm.updateProcessing(currentTime, vmScheduler.getAllocatedMips(vm));
             nextSimulationDelay = delay > 0 ? Math.min(delay, nextSimulationDelay) : nextSimulationDelay;
+
+            double AllocatedMips = vmScheduler.getAllocatedMips(vm).totalMips();
+            long AllocatedRam = ramProvisioner.getAllocatedResourceForVm(vm);
+            double RequestedMips = vm.getCurrentUtilizationMips().totalMips();
+            long RequestedRam = vm.getCurrentRequestedRam();
+
+            //计算host mips请求和分配总和
+            vmsRequestMipsTotal += RequestedMips;
+            vmsAllocatedMipsTotal += AllocatedMips;
+            //计算host ram请求和分配总和
+            vmsRequestRamTotal += RequestedRam;
+            vmsAllocatedRamTotal += AllocatedRam;
+
+            //计算单个vm的迁移性能降级
+            underallocatedMigration(vm, AllocatedMips, AllocatedRam, RequestedMips, RequestedRam, currentTime);
         }
+
+        //记录主机活跃的sla违反时间
+        SlaTimePerActiveHost(currentTime,vmsAllocatedMipsTotal,vmsRequestMipsTotal,vmsAllocatedRamTotal,vmsRequestRamTotal);
 
         notifyOnUpdateProcessingListeners(currentTime);
 
-        cpuUtilizationStats.add(currentTime);
-
+//        cpuUtilizationStats.add(currentTime);
         addStateHistory(currentTime);
+
         if (!vmList.isEmpty()) {
             lastBusyTime = currentTime;
         }
 
         return nextSimulationDelay;
+    }
+
+    private void SlaTimePerActiveHost(double currentTime,double vmsAllocatedMipsTotal,double vmsRequestMipsTotal,long vmsAllocatedRamTotal,long vmsRequestRamTotal){
+        if (previousTime != -1 && previousActive) {
+            double timeDiff = currentTime - previousTime;
+            if (previousAllocated < previousRequested || previousAllocatedRam < previousRequestedRam) {
+                slaViolationTimePerHost += timeDiff;
+            }
+        }
+
+        previousTime = currentTime;
+        previousAllocated = vmsAllocatedMipsTotal;
+        previousRequested = vmsRequestMipsTotal;
+        previousAllocatedRam = vmsAllocatedRamTotal;
+        previousRequestedRam = vmsRequestRamTotal;
+        previousActive = isActive();
+    }
+
+    private void underallocatedMigration(Vm vm,double AllocatedMips, long AllocatedRam, double RequestedMips, long RequestedRam,double currentTime){
+
+        double previousTime = vm.getPreviousTime();
+        double timeDiff = currentTime - previousTime;
+
+        //获取之前的vm状态，只获取mips
+        boolean isPreviousInMigration = vm.isPreviousIsInMigration();
+        double previousAllocated = vm.getPreviousAllocated();
+        double previousRequested = vm.getPreviousRequested();
+        BigDecimal b1 = new BigDecimal(Double.toString(previousAllocated));
+        BigDecimal b2 = new BigDecimal(Double.toString(previousRequested));
+
+        //记录vm的迁移性能降级
+        if(previousTime != -1){
+            if(previousAllocated < previousRequested){
+                if(isPreviousInMigration){
+                    vm.setVmUnderAllocatedDueToMigration(vm.getVmUnderAllocatedDueToMigration() + (b2.subtract(b1).doubleValue()) * timeDiff);
+                }
+            }
+        }
+
+//        //迁移代价忽略ram的影响
+//        BigDecimal b3 = new BigDecimal(Double.toString(AllocatedRam));
+//        BigDecimal b4 = new BigDecimal(Double.toString(RequestedRam));
+//        if(AllocatedRam < RequestedRam){
+//            if(isInMigration){
+//                vm.setVmRamUnderAllocatedDueToMigration(vm.getVmRamUnderAllocatedDueToMigration() + (b4.subtract(b3).doubleValue()) * timeDiff);
+//            }
+//        }
+
+        //记录单个vm总请求的mips
+        vm.setTotalrequestUtilization(vm.getTotalrequestUtilization() + AllocatedMips * timeDiff);
+
+        //迁移的代价只记录mips，记录当前时刻的状态
+        vm.setPreviousTime(currentTime);
+        vm.setPreviousIsInMigration(vm.isInMigration() && !getVmsMigratingIn().contains(vm));
+        vm.setPreviousAllocated(AllocatedMips);
+        vm.setPreviousRequested(RequestedMips);
     }
 
     private void notifyOnUpdateProcessingListeners(final double nextSimulationTime) {
@@ -511,7 +663,7 @@ public class HostSimple implements Host, Serializable {
      */
     private HostSuitability allocateResourcesForVm(final Vm vm, final boolean inMigration){
         HostSuitability suitability;
-        if(!vm.isForcePlace() && !vm.isRestorePlace()){
+        if(!vm.isRestorePlace()){
             suitability = isSuitableForVm(vm, inMigration, true);
         }else{
             suitability = new HostSuitability();
@@ -531,27 +683,33 @@ public class HostSimple implements Host, Serializable {
     }
 
     private void allocateResourcesForVm(Vm vm) {
-        if(!vm.isForcePlace()){
-            if(vm.isRestorePlace()){
-                ramProvisioner.allocateResourceForVm(vm, getVmsRamReAllocations().get(vm));
-            }else{
-                ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
-            }
+//        if(!vm.isForcePlace()){
+//            if(vm.isRestorePlace()){
+//                ramProvisioner.allocateResourceForVm(vm, getVmsRamReAllocations().get(vm));
+//            }else{
+//                ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
+//            }
+//        }else{
+//            long leftRam = ramProvisioner.getAvailableResource();
+//            ramProvisioner.allocateResourceForVm(vm,leftRam);
+//        }
+//        if(!vm.isCpuForcePlace()){
+//            if(vm.isRestorePlace()){
+//                vmScheduler.allocatePesForVm(vm, getVmMipsReAllocations().get(vm));
+//            }else{
+//                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
+//            }
+//        }else{
+//            double leftMips = vmScheduler.getTotalAvailableMips();
+//            long pes = vm.getNumberOfPes();
+//            vmScheduler.allocatePesForVm(vm,new MipsShare(pes,leftMips/pes));
+//        }
+        if(vm.isRestorePlace()){
+            ramProvisioner.allocateResourceForVm(vm,VmsRamReAllocations.get(vm));
         }else{
-            long leftRam = ramProvisioner.getAvailableResource();
-            ramProvisioner.allocateResourceForVm(vm,leftRam);
+            ramProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedRam());
         }
-        if(!vm.isCpuForcePlace()){
-            if(vm.isRestorePlace()){
-                vmScheduler.allocatePesForVm(vm, getVmMipsReAllocations().get(vm));
-            }else{
-                vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
-            }
-        }else{
-            double leftMips = vmScheduler.getTotalAvailableMips();
-            long pes = vm.getNumberOfPes();
-            vmScheduler.allocatePesForVm(vm,new MipsShare(pes,leftMips/pes));
-        }
+        vmScheduler.allocatePesForVm(vm, vm.getCurrentUtilizationMips());
         bwProvisioner.allocateResourceForVm(vm, vm.getCurrentRequestedBw());
         disk.getStorage().allocateResource(vm.getStorage());
     }
@@ -626,11 +784,7 @@ public class HostSimple implements Host, Serializable {
         }
 
         suitability.setForRam(ramProvisioner.isSuitableForVm(vm, vm.getRam()));
-//        if(getSimulation().clock() >= 10800.0 && getSimulation().clock() <= 10801.0 && (vm.getId() == 1270 || vm.getId() == 1255)){
-//            System.out.println(suitability.forRam() +" "+this+" 可用ram："+ramProvisioner.getAvailableResource()+" gerram.getaviliable:"+this.getRam().getAvailableResource()+ "  "+ vm + " 请求的ram："+vm.getCurrentRequestedRam());
-//        }
         if (!suitability.forRam()) {
-//            System.out.println("当前不可以选的"+this+"还有多少剩余内存"+this.getRam().getAvailableResource());
             logAllocationError(showFailureLog, vm, inMigration, "MB", this.getRam(), vm.getRam());
             if(lazySuitabilityEvaluation)
                 return suitability;
@@ -643,18 +797,7 @@ public class HostSimple implements Host, Serializable {
                 return suitability;
         }
 
-//        if(this.getRam().getAvailableResource() < vm.getRam().getCapacity()) suitability.setForRam(false);
-//        System.out.println(vm+" "+vm.getRam().getCapacity() + " "+this+" "+this.getRam().getAvailableResource() +" "+suitability.forRam());
         suitability.setForPes(vmScheduler.isSuitableForVm(vm));
-//        if(!suitability.forPes()){
-//            if(this.getVmMipsReAllocations().get(vm) != null)
-//                LOGGER.error(
-//                    "{}: {}: Allocation of {} to {} failed due to lack of Mips. Required {} but there is {} available.",
-//                    simulation.clockStr(), getClass().getSimpleName(), vm, this, this.getVmMipsReAllocations().get(vm).totalMips(), this.getVmScheduler().getTotalAvailableMips());
-//        }
-//        if(simulation.clock()> 0.2)
-//        if(simulation.clock()> 0.2)
-//            System.out.println(vm+" "+this+" "+suitability);
         return suitability;
     }
 
@@ -1122,7 +1265,7 @@ public class HostSimple implements Host, Serializable {
 //        System.out.println("before migration:"+vm+": "+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
 
         if(!allocateResourcesForVm(vm, true).fully()){
-            System.out.println(vm+" 请求的mips："+vm.getCurrentUtilizationMips().totalMips()+"  请求的ram:"+vm.getCurrentRequestedRam()+" cpu利用率："+vm.getCpuPercentUtilization()+" beforeMigration:"+vm.getCpuUtilizationBeforeMigration());
+            System.out.println(vm+" 请求的mips："+vm.getCurrentUtilizationMips().totalMips()+"  请求的ram:"+vm.getCurrentRequestedRam()+" cpu利用率："+vm.getCpuPercentUtilization()+" beforeMigration:"+vm.getCpuPercentUtilization());
             System.out.println(this+" 剩余的mips："+this.getVmScheduler().getTotalAvailableMips()+"  剩余ram"+this.getRam().getAvailableResource()+" host已分配mips："+this.getVmScheduler().getAllocatedMips(vm));
             vmsMigratingIn.remove(vm);
             return false;
@@ -1337,7 +1480,6 @@ public class HostSimple implements Host, Serializable {
 
     @Override
     public long getRamUtilization() {
-//        System.out.println("vmlist size:"+vmList.size());
         return vmList.stream().mapToLong(Vm::getCurrentRequestedRam).sum();
     }
 
@@ -1347,13 +1489,11 @@ public class HostSimple implements Host, Serializable {
     }
 
     private double computeRamUtilizationPercent(final long ramUsage){
-//        if(this.vmList.size() == 0) return 0.0;
         final double totalRam = ramProvisioner.getResource().getCapacity();
         if(totalRam == 0){
             return 0;
         }
         final double utilization = ramUsage/ totalRam;
-//        System.out.println("inside:  "+ramUsage + "   "+ totalRam);
         return (utilization > 1 && utilization < 1.01 ? 1 : utilization);
     }
 
@@ -1436,11 +1576,12 @@ public class HostSimple implements Host, Serializable {
             LOGGER.info("{}: {}: {} is migrating in", getSimulation().clockStr(), this, vm);
             return totalAllocatedMips;
         }
-
-        final double totalRequestedMips = vm.getCurrentRequestedTotalMips();
+        final double totalRequestedMips = vm.getCurrentUtilizationTotalMips();
         if (totalAllocatedMips + 0.1 < totalRequestedMips) {
+            BigDecimal b1 = new BigDecimal(Double.toString(totalAllocatedMips));
+            BigDecimal b2 = new BigDecimal(Double.toString(totalRequestedMips));
             final String reason = getVmsMigratingOut().contains(vm) ? "migration overhead" : "capacity unavailability";
-            final long notAllocatedMipsByPe = (long)((totalRequestedMips - totalAllocatedMips)/vm.getNumberOfPes());
+            final double notAllocatedMipsByPe = (b2.subtract(b1).doubleValue())/vm.getNumberOfPes();
             LOGGER.warn(
                 "{}: {}: {} MIPS not allocated for each one of the {} PEs from {} due to {}.",
                 getSimulation().clockStr(), this, notAllocatedMipsByPe, vm.getNumberOfPes(), vm, reason);
@@ -1471,7 +1612,7 @@ public class HostSimple implements Host, Serializable {
             addVmResourceUseToHistoryIfNotMigratingIn(vm, currentTime);
             hostTotalRequestedMips += totalRequestedMips;
         }
-
+//        System.out.println(hostTotalRequestedMips);
         addStateHistoryEntry(currentTime, getCpuMipsUtilization(),hostTotalRequestedMips,active);
     }
 
@@ -1544,6 +1685,44 @@ public class HostSimple implements Host, Serializable {
 
     public double avgResourceWastage(){
         return resourceWastage()/getVmList().size();
+    }
+
+    public List<Double> getCpuUtilizationHistory() {
+        double[] utilizationHistory = new double[logLength];
+        double hostMips = getTotalMipsCapacity();
+        for(Vm vm:getVmList()){
+            if(vm.getId() == -1){
+                vm = vm.getTempVm();
+            }
+            for (int i = 0; i < vm.getUtilizationHistory().size(); i++) {
+                utilizationHistory[i] += vm.getUtilizationHistory().get(i) * vm.getTotalMipsCapacity() / hostMips;
+            }
+        }
+        LinkedList<Double> usages = new LinkedList<>();
+        for(double num:utilizationHistory){
+            if(num == 0.0) return usages;
+            usages.addLast(num);
+        }
+        return usages;
+    }
+
+    public List<Double> getRamUtilizationHistory() {
+        double[] utilizationHistory = new double[logLength];
+        double hostRam = getRam().getCapacity();
+        for(Vm vm:getVmList()){
+            if(vm.getId() == -1){
+                vm = vm.getTempVm();
+            }
+            for (int i = 0; i < vm.getUtilizationHistoryRam().size(); i++) {
+                utilizationHistory[i] += vm.getUtilizationHistoryRam().get(i) * vm.getRam().getCapacity() / hostRam;
+            }
+        }
+        LinkedList<Double> usages = new LinkedList<>();
+        for(double num:utilizationHistory){
+            if(num == 0.0) return usages;
+            usages.addLast(num);
+        }
+        return usages;
     }
 
 }

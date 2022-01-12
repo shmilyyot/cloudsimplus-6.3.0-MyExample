@@ -452,7 +452,6 @@ public final class GoogleTaskUsageTraceReader extends GoogleTraceReaderAbstract<
             final DatacenterBroker broker = cloudlet.getBroker();
             broker.LOGGER.trace("{}: {}: {} on {} on {} resource usage changed: {}", simulation.clockStr(), broker.getName(), cloudlet,cloudlet.getVm(), cloudlet.getVm().getHost(), builder);
             cloudlet.getVm().getHost().updateProcessing(simulation.clock());
-//            System.out.println("更新后：cpu:"+cloudlet.getVm().getHost().getCpuPercentUtilization()+" ram:"+cloudlet.getVm().getHost().getRamPercentUtilization());
         };
 
 

@@ -111,8 +111,8 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
             host.removeVmMigratingOut(vm);
         }
 
-        //request的mips不变
-        requestedMipsMap.put(vm,new MipsShare(vm.getCurrentRequestedMips()));
+        //request的mips直接变成当前实际请求的mips，不再是vm的规格容量，allocatemips变成实际分配的mips，非迁移的话两者相同
+        requestedMipsMap.put(vm,requestedMips);
 
         if(allocatePesForVmInternal(vm, requestedMips)) {
             updateStatusOfHostPesUsedByVm(vm, getHost().getFreePeList(), Pe.Status.BUSY);
@@ -225,7 +225,8 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         experience overhead, but for the first time the VM is allocated into
         the target Host, the allocated MIPS is stored already considering this overhead.
          */
-        return host.getVmsMigratingOut().contains(vm) ? getMipsShareRequestedReduced(vm, mipsShare) : mipsShare;
+//        return host.getVmsMigratingOut().contains(vm) ? getMipsShareRequestedReduced(vm, mipsShare) : mipsShare;
+        return mipsShare;
     }
 
     //获取真实的内部分配的mips
@@ -335,9 +336,7 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
                             .sum();
         BigDecimal p1 = new BigDecimal(Double.toString(host.getTotalMipsCapacity()));
         BigDecimal p2 = new BigDecimal(Double.toString(allocatedMips));
-        double availableMips = p1.subtract(p2).doubleValue();
-        return availableMips;
-//        return host.getTotalMipsCapacity() - afterMips;
+        return p1.subtract(p2).doubleValue();
     }
 
     /**
@@ -369,9 +368,10 @@ public abstract class VmSchedulerAbstract implements VmScheduler {
         The line below computes the original
         requested MIPS (which correspond to 100%)
         */
+        //更改mark，标记返回实际的mips
         double beformips = totalVmRequestedMips / percentOfMipsToRequest(entry.getKey());
-        double afterMips = new BigDecimal(String.valueOf(beformips)).setScale(1, RoundingMode.DOWN).doubleValue();
-        return afterMips;
+//        double afterMips = new BigDecimal(String.valueOf(beformips)).setScale(1, RoundingMode.DOWN).doubleValue();
+        return beformips;
     }
 
     /**

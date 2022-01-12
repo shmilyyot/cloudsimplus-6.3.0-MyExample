@@ -19,7 +19,6 @@ import org.cloudbus.cloudsim.vms.VmGroup;
 import org.cloudsimplus.listeners.CloudletVmEventInfo;
 import org.cloudsimplus.listeners.EventListener;
 
-import java.io.Serializable;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
@@ -31,7 +30,7 @@ import static java.util.Objects.requireNonNull;
  * @author Anton Beloglazov
  * @author Manoel Campos da Silva Filho
  */
-public abstract class CloudletAbstract extends CustomerEntityAbstract implements Cloudlet, Serializable {
+public abstract class CloudletAbstract extends CustomerEntityAbstract implements Cloudlet {
 
     /** @see #getJobId() */
     private long jobId;
@@ -388,6 +387,7 @@ public abstract class CloudletAbstract extends CustomerEntityAbstract implements
         final long maxLengthToAdd = getLength() < 0 ?
                                     partialFinishedMI :
                                     Math.min(partialFinishedMI, absLength()-getFinishedLengthSoFar());
+//        System.out.println(this.getSimulation().clock()+" "+this.getVm()+" "+partialFinishedMI + " "+ (absLength()-getFinishedLengthSoFar()));
         getLastExecutionInDatacenterInfo().addFinishedSoFar(maxLengthToAdd);
         returnToBrokerIfFinished();
         notifyListenersIfCloudletIsFinished();

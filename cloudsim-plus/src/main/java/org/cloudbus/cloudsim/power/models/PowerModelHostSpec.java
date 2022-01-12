@@ -63,29 +63,50 @@ public class PowerModelHostSpec extends PowerModelHost {
 
     @Override
     public PowerMeasurement getPowerMeasurement() {
-        double idlePower = this.getHost().getIdlePower();
-        int n = powerSpec.size();
-        double utilizationFraction = Math.min(getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity(), 1.0);
-        final int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
-        if(utilizationIndex == 0){
-            return new PowerMeasurement(idlePower, 0);
+//        double idlePower = this.getHost().getIdlePower();
+//        int n = powerSpec.size();
+//        double utilizationFraction = Math.min(getHost().getCpuMipsUtilization() / getHost().getTotalMipsCapacity(), 1.0);
+//        final int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
+//        if(utilizationIndex == 0){
+//            return new PowerMeasurement(idlePower, 0);
+//        }
+//        //放置下标一次，0代表利用率0.5~1.5
+//        final double powerUsage = powerSpec.get(utilizationIndex-1);
+//        return new PowerMeasurement(idlePower, powerUsage - idlePower);
+        double idlePower = powerSpec.get(0);
+        double utilizationFraction = Math.min(getHost().getCpuPercentUtilization(), 1.0);
+        if(utilizationFraction == 0.0) {
+            return new PowerMeasurement(idlePower, 0.0);
         }
-        //放置下标一次，0代表利用率0.5~1.5
-        final double powerUsage = powerSpec.get(utilizationIndex-1);
-        return new PowerMeasurement(idlePower, powerUsage - idlePower);
+        double dynamicPower = getPower(utilizationFraction) - idlePower;
+        return new PowerMeasurement(idlePower, dynamicPower);
     }
 
 
     @Override
     public double getPower(final double utilizationFraction) throws IllegalArgumentException {
-        int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
-        if(utilizationIndex == 0){
-            if(this.getHost().isActive()){
-                return this.getHost().getIdlePower();
-            }else{
-                return 0.0;
-            }
+//        int utilizationIndex = (int) Math.round(utilizationFraction * powerSpec.size());
+//        if(utilizationIndex == 0){
+//            if(this.getHost().isActive()){
+//                return this.getHost().getIdlePower();
+//            }else{
+//                return 0.0;
+//            }
+//        }
+//        return powerSpec.get(utilizationIndex-1);
+        if (utilizationFraction < 0 || utilizationFraction > 1) {
+            System.out.println(utilizationFraction);
+            throw new IllegalArgumentException("Utilization value must be between 0 and 1");
         }
-        return powerSpec.get(utilizationIndex-1);
+        if (utilizationFraction % 0.1 == 0) {
+            return powerSpec.get(((int) (utilizationFraction * 10)));
+        }
+        int utilization1 = (int) Math.floor(utilizationFraction * 10);
+        int utilization2 = (int) Math.ceil(utilizationFraction * 10);
+        double power1 = powerSpec.get(utilization1);
+        double power2 = powerSpec.get(utilization2);
+        double delta = (power2 - power1) / 10;
+        double power = power1 + delta * (utilizationFraction - (double) utilization1 / 10) * 100;
+        return power;
     }
 }

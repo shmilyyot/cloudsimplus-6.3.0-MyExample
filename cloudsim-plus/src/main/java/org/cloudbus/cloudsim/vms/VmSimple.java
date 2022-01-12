@@ -47,6 +47,27 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     /** @see #setDefaultStorageCapacity(long) */
     private static long defaultStorageCapacity = 1024;
 
+    public List<Double> getUtilizationHistory() {
+        return utilizationHistory;
+    }
+
+    public List<Double> getUtilizationHistoryRam() {
+        return utilizationHistoryRam;
+    }
+    public double getLogLength() {
+        return logLength;
+    }
+
+    public void setLogLength(double logLength) {
+        this.logLength = logLength;
+    }
+
+    /** The CPU utilization percentage history. */
+    private final List<Double> utilizationHistory = new LinkedList<Double>();
+    private final List<Double> utilizationHistoryRam = new LinkedList<Double>();
+    private double logLength = 12;
+
+
     /** @see #getCpuUtilizationStats() */
     private VmResourceStats cpuUtilizationStats;
 
@@ -141,17 +162,6 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     private boolean restorePlace;
 
-    public double getRequestUtilization() {
-        return requestUtilization;
-    }
-
-    public void setRequestUtilization(double requestUtilization) {
-        this.requestUtilization = requestUtilization;
-    }
-
-    //迁移产生的开销
-    private double requestUtilization = 0.0;
-
     public long getActualIdForTempVm() {
         return actualIdForTempVm;
     }
@@ -162,16 +172,78 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     public long actualIdForTempVm = -1;
 
+    //总请求的mips
+    private double totalrequestUtilization = 0.0;
     public double getTotalrequestUtilization() {
         return totalrequestUtilization;
     }
-
     public void setTotalrequestUtilization(double totalrequestUtilization) {
         this.totalrequestUtilization = totalrequestUtilization;
     }
+    //迁移产生的开销
+    private double requestUtilization = 0.0;
+    public double getRequestUtilization() {
+        return requestUtilization;
+    }
+    public void setRequestUtilization(double requestUtilization) {
+        this.requestUtilization = requestUtilization;
+    }
 
-    //总请求的mips
-    private double totalrequestUtilization = 0.0;
+    public double getVmUnderAllocatedDueToMigration() {
+        return vmUnderAllocatedDueToMigration;
+    }
+
+    public void setVmUnderAllocatedDueToMigration(double vmUnderAllocatedDueToMigration) {
+        this.vmUnderAllocatedDueToMigration = vmUnderAllocatedDueToMigration;
+    }
+
+    public double getVmRamUnderAllocatedDueToMigration() {
+        return vmRamUnderAllocatedDueToMigration;
+    }
+
+    public void setVmRamUnderAllocatedDueToMigration(double vmRamUnderAllocatedDueToMigration) {
+        this.vmRamUnderAllocatedDueToMigration = vmRamUnderAllocatedDueToMigration;
+    }
+
+    public double getPreviousTime() {
+        return previousTime;
+    }
+
+    public void setPreviousTime(double previousTime) {
+        this.previousTime = previousTime;
+    }
+
+    public double getPreviousAllocated() {
+        return previousAllocated;
+    }
+
+    public void setPreviousAllocated(double previousAllocated) {
+        this.previousAllocated = previousAllocated;
+    }
+
+    public double getPreviousRequested() {
+        return previousRequested;
+    }
+
+    public void setPreviousRequested(double previousRequested) {
+        this.previousRequested = previousRequested;
+    }
+
+    public boolean isPreviousIsInMigration() {
+        return previousIsInMigration;
+    }
+
+    public void setPreviousIsInMigration(boolean previousIsInMigration) {
+        this.previousIsInMigration = previousIsInMigration;
+    }
+
+    //单个vm的sla 迁移违反代价
+    public double vmUnderAllocatedDueToMigration = 0.0;
+    public double vmRamUnderAllocatedDueToMigration = 0;
+    public double previousTime = -1;
+    public double previousAllocated = 0;
+    public double previousRequested = 0;
+    public boolean previousIsInMigration = false;
 
     public boolean isDestory() {
         return isDestory;
@@ -244,6 +316,22 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     private Vm tempVm = null;
+
+    public void addUtilizationHistoryValue(final double utilization) {
+        LinkedList<Double> list = (LinkedList<Double>) getUtilizationHistory();
+        list.add(0, utilization);
+        if (getUtilizationHistory().size() > logLength) {
+            list.removeLast();
+        }
+    }
+
+    public void addRamUtilizationHistoryValue(final double utilization) {
+        LinkedList<Double> list = (LinkedList<Double>) getUtilizationHistoryRam();
+        list.add(0, utilization);
+        if (getUtilizationHistoryRam().size() > logLength) {
+            list.removeLast();
+        }
+    }
 
     /**
      * Creates a Vm with 1024 MEGA of RAM, 100 Megabits/s of Bandwidth and 1024 MEGA of Storage Size.
@@ -394,7 +482,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     }
 
     public VmSimple(final Vm sourceVm,boolean temporary) {
-        this(sourceVm.getSimulation().clock() >= 0.2 ? Math.floor(sourceVm.getCpuUtilizationBeforeMigration() * sourceVm.getMips()) : sourceVm.getMips(),sourceVm.getNumberOfPes());
+        this(sourceVm.getSimulation().clock() >= 0.2 ? Math.floor(sourceVm.getCpuPercentUtilization() * sourceVm.getMips()) : sourceVm.getMips(),sourceVm.getNumberOfPes());
         this.setActualIdForTempVm(sourceVm.getId());
         this.setTempVm(sourceVm);
 //        this(sourceVm.getMips(), sourceVm.getNumberOfPes());
@@ -437,6 +525,17 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
             return nextSimulationDelay;
         }
 
+        //记录vm历史利用率
+        if (currentTime > previousTime && currentTime % getHost().getDatacenter().getSchedulingInterval() == 0) {
+            double cpuUtilization = getCpuPercentUtilization();
+            double ramUtilization = (double)getCurrentRequestedRam() / getRam().getCapacity();
+            if (getSimulation().clock() != 0 || cpuUtilization != 0) {
+                addUtilizationHistoryValue(cpuUtilization);
+            }
+            if (getSimulation().clock() != 0 || ramUtilization != 0) {
+                addRamUtilizationHistoryValue(ramUtilization);
+            }
+        }
         return nextSimulationDelay - decimals < 0 ? nextSimulationDelay : nextSimulationDelay - decimals;
     }
 
@@ -501,9 +600,14 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         return getCpuPercentUtilization(getSimulation().clock());
     }
 
+//    @Override
+//    public double getCpuPercentUtilization(final double time) {
+//        return cloudletScheduler.getRequestedCpuPercentUtilization(time);
+//    }
+
     @Override
     public double getCpuPercentUtilization(final double time) {
-        return cloudletScheduler.getRequestedCpuPercentUtilization(time);
+        return cloudletScheduler.getTotalUtilizationOfCpu(time);
     }
 
     @Override
@@ -528,12 +632,12 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public double getTotalCpuMipsUtilization() {
-        return getTotalCpuMipsUtilization(getSimulation().clock());
+        return Math.floor(getTotalCpuMipsUtilization(getSimulation().clock()));
     }
 
     @Override
     public double getTotalCpuMipsUtilization(final double time) {
-        if(this.getId() == -1){
+        if(this.getId() == -1 || getSimulation().clock() < 0.2){
             return getTotalMipsCapacity();
         }
         return getCpuPercentUtilization(time) * getTotalMipsCapacity();
@@ -551,12 +655,12 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public MipsShare getCurrentRequestedMips() {
-        if (isCreated()) {
-            return host.getVmScheduler().getRequestedMips(this);
-        }
-        if (getSimulation().clock() < 0.2) {
-            return new MipsShare(getNumberOfPes(), getMips());
-        }
+//        if (isCreated()) {
+//            return host.getVmScheduler().getRequestedMips(this);
+//        }
+//        if (getSimulation().clock() < 0.2) {
+//            return new MipsShare(getNumberOfPes(), getMips());
+//        }
         return new MipsShare(getNumberOfPes(), getMips());
     }
 
@@ -570,8 +674,8 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 //            return new MipsShare(getNumberOfPes(),getMips());
 //        }
         double currentCpuercent = getCpuPercentUtilization();
-        double cpuPercent = (currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent);
-        return new MipsShare(getNumberOfPes(),Math.floor(cpuPercent * getMips()));
+//        double cpuPercent = (currentCpuercent == 0? getCpuUtilizationBeforeMigration():currentCpuercent);
+        return new MipsShare(getNumberOfPes(),Math.floor(currentCpuercent * getMips()));
     }
 
     @Override
@@ -590,14 +694,10 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     @Override
     public long getCurrentRequestedRam() {
-//        if (!isCreated()) {
-//            return ram.getCapacity();
-//        }
         if (getSimulation().clock() < 0.2) {
             return ram.getCapacity();
         }
         if (getId() == -1) {
-            System.out.println(" -1执行了！！！");
             return ram.getCapacity();
         }
         return (long)(cloudletScheduler.getCurrentRequestedRamPercentUtilization() * ram.getCapacity());
