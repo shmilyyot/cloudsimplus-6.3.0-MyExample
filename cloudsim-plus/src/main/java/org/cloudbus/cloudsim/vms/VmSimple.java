@@ -54,18 +54,18 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     public List<Double> getUtilizationHistoryRam() {
         return utilizationHistoryRam;
     }
-    public double getLogLength() {
+
+    public int getLogLength() {
         return logLength;
     }
-
-    public void setLogLength(double logLength) {
+    public void setLogLength(int logLength) {
         this.logLength = logLength;
     }
 
     /** The CPU utilization percentage history. */
-    private final List<Double> utilizationHistory = new LinkedList<Double>();
-    private final List<Double> utilizationHistoryRam = new LinkedList<Double>();
-    private double logLength = 12;
+    private final List<Double> utilizationHistory = new LinkedList<>();
+    private final List<Double> utilizationHistoryRam = new LinkedList<>();
+    private int logLength = 12;
 
 
     /** @see #getCpuUtilizationStats() */
@@ -317,19 +317,17 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
 
     private Vm tempVm = null;
 
-    public void addUtilizationHistoryValue(final double utilization) {
-        LinkedList<Double> list = (LinkedList<Double>) getUtilizationHistory();
-        list.add(0, utilization);
+    public void addUtilizationHistoryValue(double utilization) {
+        getUtilizationHistory().add(0, utilization);
         if (getUtilizationHistory().size() > logLength) {
-            list.removeLast();
+            getUtilizationHistory().remove(logLength);
         }
     }
 
-    public void addRamUtilizationHistoryValue(final double utilization) {
-        LinkedList<Double> list = (LinkedList<Double>) getUtilizationHistoryRam();
-        list.add(0, utilization);
+    public void addRamUtilizationHistoryValue(double utilization) {
+        getUtilizationHistoryRam().add(0, utilization);
         if (getUtilizationHistoryRam().size() > logLength) {
-            list.removeLast();
+            getUtilizationHistoryRam().remove(logLength);
         }
     }
 
@@ -504,6 +502,32 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
             setLastBusyTime();
         }
         final double nextSimulationDelay = cloudletScheduler.updateProcessing(currentTime, mipsShare);
+
+        //记录vm历史利用率
+        if (currentTime > getPreviousTime() && currentTime % getHost().getDatacenter().getSchedulingInterval() == 0) {
+            double cpuUtilization = cloudletScheduler.getTotalUtilizationOfCpu(currentTime);
+            double ramUtilization = cloudletScheduler.getCurrentRequestedRamPercentUtilization();
+            if (getSimulation().clock() != 0 || cpuUtilization != 0) {
+                addUtilizationHistoryValue(cpuUtilization);
+            }
+            if (getSimulation().clock() != 0 || ramUtilization != 0) {
+                addRamUtilizationHistoryValue(ramUtilization);
+            }
+            setPreviousTime(currentTime);
+        }else if(currentTime == getPreviousTime() && currentTime % getHost().getDatacenter().getSchedulingInterval() == 0){
+            double cpuUtilization = cloudletScheduler.getTotalUtilizationOfCpu(currentTime);
+            double ramUtilization = cloudletScheduler.getCurrentRequestedRamPercentUtilization();
+            if (getSimulation().clock() != 0 || cpuUtilization != 0) {
+                getUtilizationHistory().remove(0);
+                addUtilizationHistoryValue(cpuUtilization);
+            }
+            if (getSimulation().clock() != 0 || ramUtilization != 0) {
+                getUtilizationHistoryRam().remove(0);
+                addRamUtilizationHistoryValue(ramUtilization);
+            }
+            setPreviousTime(currentTime);
+        }
+
         notifyOnUpdateProcessingListeners();
 
         /* If the current time is some value with the decimals greater than x.0
@@ -523,18 +547,6 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
         getBroker().requestIdleVmDestruction(this);
         if (nextSimulationDelay == Double.MAX_VALUE) {
             return nextSimulationDelay;
-        }
-
-        //记录vm历史利用率
-        if (currentTime > previousTime && currentTime % getHost().getDatacenter().getSchedulingInterval() == 0) {
-            double cpuUtilization = getCpuPercentUtilization();
-            double ramUtilization = (double)getCurrentRequestedRam() / getRam().getCapacity();
-            if (getSimulation().clock() != 0 || cpuUtilization != 0) {
-                addUtilizationHistoryValue(cpuUtilization);
-            }
-            if (getSimulation().clock() != 0 || ramUtilization != 0) {
-                addRamUtilizationHistoryValue(ramUtilization);
-            }
         }
         return nextSimulationDelay - decimals < 0 ? nextSimulationDelay : nextSimulationDelay - decimals;
     }

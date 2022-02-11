@@ -65,47 +65,40 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
     double resourceWastage();
 
     boolean isInFindMigrateVm();
-
     void setInFindMigrateVm(boolean inFindMigrateVm);
 
     int getTotalOver100Time();
-
     void setTotalOver100Time(int i);
 
     double getResourceWastage();
-
     double avgResourceWastage();
 
     boolean isCantShutdown();
-
     void setCantShutdown(boolean cantShutdown);
 
     Map<Vm, MipsShare> getVmMipsReAllocations();
-
     void setVmMipsReAllocations(Map<Vm, MipsShare> vmMipsReAllocations);
 
     Map<Vm, Long> getVmsRamReAllocations();
-
     void setVmsRamReAllocations(Map<Vm, Long> vmsRamReAllocations);
 
     int getShutdownNumber();
-
     void setShutdownNumber(int shutdownNumber);
 
     int getCpuMemLoad();
-
     void setCpuMemLoad(int cpuMemLoad);
 
     double getUtilizationMips();
-
     void setUtilizationMips(double utilizationMips);
+    double getUtilizationOfCpu();
 
     double getPreviousUtilizationMips();
-
     void setPreviousUtilizationMips(double previousUtilizationMips);
 
-    double getSlaViolationTimePerHost();
+    double getPreviousUtilizationOfCpu();
+    double getEnergyLinearInterpolation(double fromUtilization, double toUtilization, double time);
 
+    double getSlaViolationTimePerHost();
     void setSlaViolationTimePerHost(double slaViolationTimePerHost);
 
     List<Double> getCpuUtilizationHistory();

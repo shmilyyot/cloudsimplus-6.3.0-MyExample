@@ -40,66 +40,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
 
     @Override
     protected Optional<Host> findHostForVmInternal(final Vm vm, final Stream<Host> hostStream){
-        double vmCpuUtilization = 1.0;
-        double vmRamUtilization = 1.0;
-        if(vm.getSimulation().clock() > 0.2){
-            vmCpuUtilization = vm.getCpuPercentUtilization();
-            vmRamUtilization = vm.getRam().getPercentUtilization();
-        }
-//        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-        final double[] vmPredict = new double[]{vmCpuUtilization,vmRamUtilization};
-        return hostStream.min(Comparator.comparingDouble(host->{
-            final double hostCpuUtilization = host.getCpuPercentUtilization();
-            final double hostRamUtilization = host.getRamPercentUtilization();
-//            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-            final double[] hostPredict = new double[]{1-hostCpuUtilization,1-hostRamUtilization};
-            return getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
-        }));
-//        final Comparator<Host> hostPowerConsumptionComparator =
-//            comparingDouble(host -> getPowerDifferenceAfterAllocation(host, vm));
-//        return hostStream.min(hostPowerConsumptionComparator);
-    }
-
-    //重写计算未来放置能耗的函数
-    protected double getPowerDifferenceAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization){
-        final double powerAfterAllocation = getPowerAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization);
-        if (powerAfterAllocation > 0) {
-            return powerAfterAllocation - host.getPowerModel().getPower();
-        }
-
-        return 0;
-    }
-
-    protected double getPowerAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
-        try {
-            return host.getPowerModel().getPower(getMaxUtilizationAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization));
-        } catch (IllegalArgumentException e) {
-            LOGGER.error("Power consumption for {} could not be determined: {}", host, e.getMessage());
-        }
-        return 0;
-    }
-
-    protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
-        final double requestedTotalMips = vmCpuUtilization * vm.getTotalMipsCapacity();
-        double hostUtilizationMips = Math.floor((hostCpuUtilization) * host.getTotalMipsCapacity());
-        if(host.getSimulation().clock()<0.2){
-            hostUtilizationMips = 0.0;
-            for(Vm nvm:host.getVmList()){
-                hostUtilizationMips += nvm.getTotalMipsCapacity();
-            }
-        }
-        final double hostPotentialMipsUse = hostUtilizationMips + requestedTotalMips;
-        final double utilization = hostPotentialMipsUse / host.getTotalMipsCapacity();
-        return utilization;
-    }
-
-    public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
-        return new double[]{mathHandler.GM11Predicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max)};
-    }
-
-    //获取host最小剩余资源利用率，用1减过了
-    public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
-        return new double[]{1-mathHandler.GM11Predicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max)};
+        return hostStream.min(Comparator.comparingDouble(host-> getPowerDifferenceAfterAllocation(host, vm)));
     }
 
     protected double[] getParameterEstimates(double[] usages) {
@@ -117,13 +58,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
      */
     @Override
     public double getOverUtilizationThreshold(final Host host) {
-        return 0;
+        return 1.0;
     }
-
 
     @Override
     public double getRamOverUtilizationThreshold(final Host host) {
-        return 0;
+        return 1.0;
     }
 
     @Override
@@ -134,28 +74,29 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     protected double getMaximumVmMigrationTime(Host host) {
         long maxRam = Long.MIN_VALUE;
         for (Vm vm : host.getVmList()) {
-            long ram = vm.getCurrentRequestedRam();
+            long ram = vm.getRam().getCapacity();
             if (ram > maxRam) {
                 maxRam = ram;
             }
         }
-        return maxRam / (Conversion.bitesToBytes(host.getBw().getCapacity()) * 0.5);
+        return maxRam / ((double) host.getBw().getCapacity() / (2 * 8000));
     }
 
     public double getPredictedUtilization(Host host,List<Double> usages){
+        int length = 10;
         double[] utilizationHistory = mathHandler.convertListToArray(usages);
-        double[] utilizationHistoryReversed = new double[Constant.HOST_LogLength];
-        for (int i = 0; i < Constant.HOST_LogLength; i++) {
-            utilizationHistoryReversed[i] = utilizationHistory[Constant.HOST_LogLength - i - 1];
+        double[] utilizationHistoryReversed = new double[length];
+        for (int i = 0; i < length; i++) {
+            utilizationHistoryReversed[i] = utilizationHistory[length - i - 1];
         }
         double[] estimates = null;
         try {
-            estimates = getParameterEstimates(utilizationHistory);
+            estimates = getParameterEstimates(utilizationHistoryReversed);
         } catch (IllegalArgumentException e) {
             return Double.MAX_VALUE;
         }
         double migrationIntervals = Math.ceil(getMaximumVmMigrationTime(host) / Constant.SCHEDULING_INTERVAL);
-        double predictedUtilization = estimates[0] + estimates[1] * (Constant.HOST_LogLength + migrationIntervals);
+        double predictedUtilization = estimates[0] + estimates[1] * (length + migrationIntervals);
         predictedUtilization *= getSafetyParameter();
         return predictedUtilization;
     }
@@ -163,8 +104,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     //重写判断host本身是否过载，用未来利用率预测
     @Override
     public boolean isHostOverloaded(final Host host) {
-        List<Double> cpuUsages = getCpuUtilizationHistory(host);
-        List<Double> ramUsages = getRamUtilizationHistory(host);
+        List<Double> cpuUsages = host.getCpuUtilizationHistory();
+        List<Double> ramUsages = host.getRamUtilizationHistory();
         if(cpuUsages.size() < Constant.HOST_LogLength || ramUsages.size() < Constant.HOST_LogLength) {
             return getFallbackVmAllocationPolicy().isHostOverloaded(host);
         }
@@ -181,92 +122,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > 1.0 || ramUsagePercent >= 1.0;
+        return cpuUsagePercent >= 1.0 || ramUsagePercent >= 1.0;
     }
-
-    //重写判断一个vm放进去host的话会不会过载
-    @Override
-    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        double vmCpuUtilization = 1.0;
-        double vmRamUtilization = 1.0;
-        if(vm.getSimulation().clock() > 0.2){
-            vmCpuUtilization = vm.getCpuPercentUtilization();
-            vmRamUtilization = vm.getRam().getPercentUtilization();
-        }
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
-        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
-        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
-        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
-    }
-
-    protected List<Double> getCpuUtilizationHistory(Host host) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        return getDoubles(host, hostCpuUtilization, allVmsCpuUtilizationHistoryQueue);
-    }
-
-    private List<Double> getDoubles(Host host, double hostCpuUtilization, Map<Vm, LinkedList<Double>> allVmsUtilizationHistoryQueue) {
-        double[] utilizationHistory = new double[Constant.HOST_LogLength];
-        double hostMips = host.getTotalMipsCapacity();
-        if(host.getVmList().isEmpty()) return new LinkedList<>();
-        for (Vm vm : host.getVmList()) {
-            if(allVmsUtilizationHistoryQueue.get(vm) == null){
-                if(host.getSimulation().clock() < 0.2) return new LinkedList<>();
-            }
-            List<Double> VmUsages = null;
-            if(vm.getId() == -1){
-                VmUsages = new ArrayList<>(allVmsUtilizationHistoryQueue.get(vm.getTempVm()));
-            }else{
-                VmUsages = new ArrayList<>(allVmsUtilizationHistoryQueue.get(vm));
-            }
-            if(VmUsages.size() < Constant.HOST_LogLength){
-                return new LinkedList<>();
-            }
-            for (int i = 1; i < VmUsages.size(); i++) {
-                utilizationHistory[i-1] += VmUsages.get(i) * vm.getTotalMipsCapacity() / hostMips;
-            }
-        }
-        utilizationHistory[Constant.HOST_LogLength-1] = hostCpuUtilization;
-        LinkedList<Double> usages = new LinkedList<>();
-        for(double num:utilizationHistory){
-            usages.addLast(num);
-        }
-        return usages;
-    }
-
-    protected List<Double> getRamUtilizationHistory(Host host) {
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        return getDoubles(host, hostRamUtilization, allVmsRamUtilizationHistoryQueue);
-    }
-
-    protected List<Double> getVmCpuUtilizationHistory(Vm vm) {
-        LinkedList<Double> cpuVmUsages = new LinkedList<>(allVmsCpuUtilizationHistoryQueue.get(vm));
-        double vmCpuUtilization = vm.getCpuPercentUtilization();
-        cpuVmUsages.addLast(vmCpuUtilization);
-        while(cpuVmUsages.size() > Constant.VM_LogLength){
-            cpuVmUsages.removeFirst();
-        }
-        return cpuVmUsages;
-    }
-
-    protected List<Double> getVmRamUtilizationHistory(Vm vm) {
-        LinkedList<Double> ramVmUsages = new LinkedList<>(allVmsRamUtilizationHistoryQueue.get(vm));
-        double vmRamUtilization = vm.getRam().getPercentUtilization();
-        ramVmUsages.add(vmRamUtilization);
-        while(ramVmUsages.size() > Constant.VM_LogLength){
-            ramVmUsages.removeFirst();
-        }
-        return ramVmUsages;
-    }
-
-    public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
-        return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
-    }
-
-
 
 }

@@ -3,9 +3,11 @@ package org.cloudsimplus.MyExample.modifyMigration;
 import org.cloudbus.cloudsim.allocationpolicies.VmAllocationPolicy;
 import org.cloudbus.cloudsim.allocationpolicies.migration.VmAllocationPolicyMigrationStaticThreshold;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.hosts.HostSuitability;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicy;
 import org.cloudbus.cloudsim.util.MathUtil;
 import org.cloudbus.cloudsim.vms.Vm;
+import org.cloudbus.cloudsim.vms.VmSimple;
 import org.cloudsimplus.MyExample.Constant;
 import org.cloudsimplus.MyExample.MathHandler;
 import java.util.*;
@@ -71,9 +73,6 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold exte
             return getPowerDifferenceAfterAllocation(host, vm,1-hostPredict[0],vmPredict[0]);
 //            return powerDifference * mathHandler.reverseCosSimilarity(vmPredictRecourse,hostPredictRecourse);
         }));
-//        final Comparator<Host> hostPowerConsumptionComparator =
-//            comparingDouble(host -> getPowerDifferenceAfterAllocation(host, vm));
-//        return hostStream.min(hostPowerConsumptionComparator);
     }
 
     //重写计算未来放置能耗的函数
@@ -91,8 +90,11 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold exte
             return host.getPowerModel().getPower(getMaxUtilizationAfterAllocation(host, vm,hostCpuUtilization,vmCpuUtilization));
         } catch (IllegalArgumentException e) {
             System.out.println(host+" "+host.getTotalMipsCapacity()+" "+vm+" "+vm.getCurrentRequestedMips());
+            System.out.println("当前值："+host.getCpuPercentUtilization()+" "+host.getRamPercentUtilization());
+            double[] hostPredict = getHostPredictValue(host,host.getCpuPercentUtilization(),host.getRamPercentUtilization(),false);
+            System.out.println("预测值："+hostPredict[0]+" "+hostPredict[1]);
             for(Vm nvm:host.getVmList()){
-                System.out.println(nvm+" "+nvm.getCurrentRequestedMips());
+                System.out.println(nvm+" "+nvm.getCurrentUtilizationMips());
             }
             LOGGER.error("Power consumption for {} could not be determined: {}", host, e.getMessage());
         }
@@ -100,7 +102,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold exte
     }
 
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm,double hostCpuUtilization,double vmCpuUtilization) {
-        final double requestedTotalMips = vmCpuUtilization * vm.getTotalMipsCapacity();
+        final double requestedTotalMips = Math.floor(vmCpuUtilization * vm.getTotalMipsCapacity());
         double hostUtilizationMips = Math.floor((hostCpuUtilization) * host.getTotalMipsCapacity());
         if(host.getSimulation().clock()<0.2){
             hostUtilizationMips = 0.0;
@@ -132,45 +134,15 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold exte
     @Override
     public boolean isHostOverloaded(final Host host) {
         if(isHostRamThreshold()){
-
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
             final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
             if(1-hostPredict[0] >= 1.0 || 1-hostPredict[1] >= 1.0) return true;
-            return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization) && isHostOverloaded(host,1-hostPredict[0],1-hostPredict[1]);
+//            return isHostOverloaded(host, hostCpuUtilization,hostRamUtilization);
+            return isHostOverloaded(host,1-hostPredict[0],1-hostPredict[1]) || isHostOverloaded(host,hostCpuUtilization,hostRamUtilization);
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
         }
-    }
-
-
-    protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > getOverUtilizationThreshold(host) || ramUsagePercent > getRamOverUtilizationThreshold(host);
-    }
-
-
-    //重写判断一个vm放进去host的话会不会过载
-    @Override
-    protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        double vmCpuUtilization = 1.0;
-        double vmRamUtilization = 1.0;
-        if(vm.getSimulation().clock() > 0.2){
-            vmCpuUtilization = vm.getCpuPercentUtilization();
-            vmRamUtilization = vm.getRam().getPercentUtilization();
-        }
-        final double[] vmPredict = getVmPredictValue(vm,vmCpuUtilization,vmRamUtilization,true);
-        final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,true);
-        final double hostTotalCpuUsage = vmPredict[0] * vm.getTotalMipsCapacity() + (1-hostPredict[0]) * host.getTotalMipsCapacity();
-        final double hostTotalRamUsage = vmPredict[1] * vm.getRam().getCapacity() + (1-hostPredict[1]) * host.getRam().getCapacity();
-        final double hostCpuPredictUtilization = hostTotalCpuUsage/host.getTotalMipsCapacity();
-        final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
-        return !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
-    }
-
-    public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent) {
-        return cpuUsagePercent < getUnderUtilizationThreshold() || ramUsagePercent < getUnderRamUtilizationThreshold();
     }
 
 

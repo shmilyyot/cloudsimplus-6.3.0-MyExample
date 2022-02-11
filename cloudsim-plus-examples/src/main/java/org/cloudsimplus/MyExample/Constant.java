@@ -33,13 +33,13 @@ public class Constant {
     /**
      * 数据中心迁移相关设置
      */
-    public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.15;    //低阈值
-    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;     //高阈值，一开始加了0.2，其实是1
+    public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;    //低阈值
+    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;     //高阈值，一开始加了0.2，其实是1
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
-    public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.15;
-    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.9;  //高阈值，一开始加了0.2，其实是1
-    public static final boolean USING_UNDERLOAD_THRESHOLD = true;
+    public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;
+    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;  //高阈值，一开始加了0.2，其实是1
+    public static final boolean USING_UNDERLOAD_THRESHOLD = false;
     public static final boolean USING_SINGLE_OVERLOAD = false;
     public static final boolean USING_RAM = true;
 
@@ -83,13 +83,14 @@ public class Constant {
     public static final int HOSTS = 800;   //主机数量
     public static final int HOST_PES = 2;  //服务器核心数
     public static final long[] HOST_RAM = {4096,4096}; //内存大小
-    public static final long[] HOST_BW = {1024 * 8,1024 * 8};  //带宽速率
+    public static final long[] HOST_BW = {1_000_000,1_000_000};  //带宽速率
+//    public static final long[] HOST_BW = {1024 * 8,1024 * 8};  //带宽速率
     public static final long[] HOST_STORAGE = {1_000_000,1_000_000};  //硬盘大小
     public static final double[] HOST_MIPS = {1860,2660};  //cpu处理速率
     public static final Double[] HOST_G4_SPEC_POWER = {86.0,89.4,92.6,96.0,99.5,102.0,106.0,108.0,112.0,114.0,117.0};   //G4主机的spec测量功耗,开启并闲置时86
     public static final Double[] HOST_G5_SPEC_POWER = {93.7,97.0,101.0,105.0,110.0,116.0,121.0,125.0,129.0,133.0,135.0};   //G5主机的spec测量功耗,开启并闲置时93
     public static final double[] IDLE_POWER = {86,93};
-    public static final double IDLE_SHUTDOWN_TIME = 0.2;    //主机闲置关机的时间
+    public static final double IDLE_SHUTDOWN_TIME = 0;    //主机闲置关机的时间
 
 
     /**
@@ -98,7 +99,7 @@ public class Constant {
      * */
     public static final int TEST_CLOUDLET_LENGTH = 200000;
     public static final boolean USING_TEST_CLOUDLET = false;
-    public static final int  CLOUDLET_LENGTH = -10_000;
+    public static final int  CLOUDLET_LENGTH = 24 * 60 * 60 * 2500;
     public static final boolean USING_FILTER = false;
     public static final boolean FILTER_INSIDE_CLOUDLET = false;  //true过滤掉cloudlet里所有5~90%之外的利用率变化,false过滤掉只要出现过5~90%之外利用率的整个cloudlet
     public static final boolean READ_INITIAL_MACHINE_CLOUDLET = false;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成

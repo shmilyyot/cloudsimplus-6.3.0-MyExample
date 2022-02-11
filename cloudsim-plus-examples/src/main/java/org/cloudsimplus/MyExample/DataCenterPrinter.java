@@ -5,6 +5,7 @@ import org.cloudbus.cloudsim.cloudlets.Cloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.datacenters.Datacenter;
 import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.hosts.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.power.PowerMeasurement;
 import org.cloudbus.cloudsim.power.PowerMeter;
 import org.cloudbus.cloudsim.power.models.PowerModel;
@@ -12,9 +13,11 @@ import org.cloudbus.cloudsim.power.models.PowerModelHost;
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple;
 import org.cloudbus.cloudsim.schedulers.MipsShare;
 import org.cloudbus.cloudsim.util.Conversion;
+import org.cloudbus.cloudsim.util.MathUtil;
 import org.cloudbus.cloudsim.vms.HostResourceStats;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudbus.cloudsim.vms.VmResourceStats;
+import org.cloudbus.cloudsim.vms.VmStateHistoryEntry;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
 import org.cloudsimplus.builders.tables.HostHistoryTableBuilder;
 import org.cloudsimplus.builders.tables.TextTableColumn;
@@ -22,10 +25,7 @@ import org.cloudsimplus.listeners.CloudletVmEventInfo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparingLong;
@@ -144,8 +144,16 @@ public class DataCenterPrinter {
         int recordSize = powerMeter.getPowerMeasurements().size();
         if(!npa){
             double totalDataCenterPowerConsumption = 0.0;
+            double previouspower = -1;
+            double linerpower;
             for(PowerMeasurement powerMeasurement:powerMeter.getPowerMeasurements()){
-                totalDataCenterPowerConsumption += powerMeasurement.getTotalPower();
+                if(previouspower == -1){
+                    linerpower = powerMeasurement.getTotalPower();
+                }else{
+                    linerpower = previouspower + (powerMeasurement.getTotalPower() - previouspower) / 2;
+                }
+                previouspower = powerMeasurement.getTotalPower();
+                totalDataCenterPowerConsumption += linerpower;
 //            System.out.println(powerMeasurement.getTotalPower());
             }
 //        System.out.println("能耗统计的数量："+powerMeter.getPowerMeasurements().size());
@@ -158,6 +166,19 @@ public class DataCenterPrinter {
             System.out.println("The total Energy Consumption in the system is : " + totalDataCenterEnergyConsumption + " kWh");
         }
         return totalDataCenterEnergyConsumption;
+    }
+
+    public double dataCenterTotalEnergyComsumption(Datacenter datacenter,boolean npa){
+        double energy;
+        if(npa){
+            double G5power = Constant.HOST_G5_SPEC_POWER[Constant.HOST_G5_SPEC_POWER.length-1];
+            double G4power = Constant.HOST_G4_SPEC_POWER[Constant.HOST_G4_SPEC_POWER.length-1];
+            energy = 400 * (G4power+G5power) * 86400 / (3600 * 1000);
+        }else{
+            energy = datacenter.getPower() / (3600 * 1000);
+        }
+        System.out.println("The total Energy Consumption in the system is : " + energy + " kWh");
+        return energy;
     }
 
     public void printHostsInformation(List<Host> hostList){
@@ -270,26 +291,30 @@ public class DataCenterPrinter {
         double PDM = 0.0;
         double ESV ;
         double ESVM ;
-        double slaViolationTimePerHost = 0;
-        double totalTime = 0;
-        for(Host host:hostList){
-            slaViolationTimePerHost += host.getSlaViolationTimePerHost();
-            totalTime += host.getTotalUpTime();
-        }
-        BigDecimal b1 = new BigDecimal(Double.toString(slaViolationTimePerHost));
-        BigDecimal b2 = new BigDecimal(Double.toString(totalTime));
-        SLATAH = b1.divide(b2, 8, RoundingMode.HALF_UP).doubleValue();
+        Map<String, Double> slaMetrics = getSlaMetrics(vmList);
+//        double slaViolationTimePerHost = 0;
+//        double totalTime = 0;
+//        for(Host host:hostList){
+//            slaViolationTimePerHost += host.getSlaViolationTimePerHost();
+//            totalTime += host.getTotalUpTime();
+//        }
+//        BigDecimal b1 = new BigDecimal(Double.toString(slaViolationTimePerHost));
+//        BigDecimal b2 = new BigDecimal(Double.toString(totalTime));
+//        SLATAH = b1.divide(b2, 8, RoundingMode.HALF_UP).doubleValue();
+        SLATAH = getSlaTimePerActiveHost(hostList);
 
-        double totalRequested = 0;
-        double totalUnderAllocatedDueToMigration = 0;
-        for(Vm vm:vmList){
-            totalRequested += vm.getTotalrequestUtilization();
-            totalUnderAllocatedDueToMigration += vm.getVmUnderAllocatedDueToMigration();
-        }
-        BigDecimal b3 = new BigDecimal(Double.toString(totalUnderAllocatedDueToMigration));
-        BigDecimal b4 = new BigDecimal(Double.toString(totalRequested));
-        PDM += b3.divide(b4, 8, RoundingMode.HALF_UP).doubleValue();
-
+//        double totalRequested = 0;
+//        double totalUnderAllocatedDueToMigration = 0;
+//        for(Vm vm:vmList){
+//            totalRequested += vm.getTotalrequestUtilization();
+//            totalUnderAllocatedDueToMigration += vm.getVmUnderAllocatedDueToMigration();
+//        }
+//        BigDecimal b3 = new BigDecimal(Double.toString(totalUnderAllocatedDueToMigration));
+//        BigDecimal b4 = new BigDecimal(Double.toString(totalRequested));
+//        PDM += b3.divide(b4, 8, RoundingMode.HALF_UP).doubleValue();
+        PDM = slaMetrics.get("underallocated_migration");
+//        double slaOverall = slaMetrics.get("overall");
+//        double slaAverage = slaMetrics.get("average");
         SLAV = SLATAH * PDM;
         ESV = SLAV * totalEnergyCumsumption;
         ESVM = ESV * migrationsNumber;
@@ -298,6 +323,112 @@ public class DataCenterPrinter {
         System.out.println("当前系统的SLAV是： " + SLAV);
         System.out.println("当前系统的ESV是： " + ESV);
         System.out.println("当前系统的ESVM是： " + ESVM);
+    }
+
+    protected double getSlaTimePerActiveHost(List<Host> hosts) {
+        double slaViolationTimePerHost = 0;
+        double totalTime = 0;
+
+        for (Host host : hosts) {
+            double previousTime = -1;
+            double previousAllocated = 0;
+            double previousRequested = 0;
+            long previousAllocatedRam = 0;
+            long previousRequestedRam = 0;
+            boolean previousIsActive = true;
+//            totalTime += host.getTotalUpTime();
+
+            for (HostStateHistoryEntry entry : host.getStateHistory()) {
+                if (previousTime != -1 && previousIsActive) {
+                    double timeDiff = entry.getTime() - previousTime;
+                    totalTime += timeDiff;
+                    if (previousAllocated < previousRequested || previousAllocatedRam < previousRequestedRam) {
+                        slaViolationTimePerHost += timeDiff;
+                    }
+                }
+
+                previousAllocated = entry.getAllocatedMips();
+                previousRequested = entry.getRequestedMips();
+                previousAllocatedRam = entry.getAllocatedRam();
+                previousRequestedRam = entry.getRequestedRam();
+                previousTime = entry.getTime();
+                previousIsActive = entry.isActive();
+            }
+        }
+//        System.out.println(slaViolationTimePerHost+" "+totalTime);
+
+        return slaViolationTimePerHost / totalTime;
+    }
+
+    protected static Map<String, Double> getSlaMetrics(List<Vm> vms) {
+        Map<String, Double> metrics = new HashMap<String, Double>();
+        List<Double> slaViolation = new LinkedList<Double>();
+        double totalAllocated = 0;
+        double totalRequested = 0;
+        double totalUnderAllocatedDueToMigration = 0;
+
+        for (Vm vm : vms) {
+            double vmTotalAllocated = 0;
+            double vmTotalRequested = 0;
+            double vmUnderAllocatedDueToMigration = 0;
+            double previousTime = -1;
+            double previousAllocated = 0;
+            double previousRequested = 0;
+            boolean previousIsInMigration = false;
+
+            for (VmStateHistoryEntry entry : vm.getStateHistory()) {
+                if (previousTime != -1) {
+                    double timeDiff = entry.getTime() - previousTime;
+                    vmTotalAllocated += previousAllocated * timeDiff;
+                    vmTotalRequested += previousRequested * timeDiff;
+
+                    if (previousAllocated < previousRequested) {
+                        slaViolation.add((previousRequested - previousAllocated) / previousRequested);
+                        if (previousIsInMigration) {
+                            vmUnderAllocatedDueToMigration += (previousRequested - previousAllocated)
+                                * timeDiff;
+                        }
+                    }
+                }
+
+                previousAllocated = entry.getAllocatedMips();
+                previousRequested = entry.getRequestedMips();
+                previousTime = entry.getTime();
+                previousIsInMigration = entry.isInMigration();
+            }
+
+            totalAllocated += vmTotalAllocated;
+            totalRequested += vmTotalRequested;
+            totalUnderAllocatedDueToMigration += vmUnderAllocatedDueToMigration;
+        }
+
+        metrics.put("overall", (totalRequested - totalAllocated) / totalRequested);
+        if (slaViolation.isEmpty()) {
+            metrics.put("average", 0.);
+        } else {
+            metrics.put("average", MathUtil.mean(slaViolation));
+        }
+        metrics.put("underallocated_migration", totalUnderAllocatedDueToMigration / totalRequested);
+
+        return metrics;
+    }
+
+    public static List<Double> getTimesBeforeHostShutdown(List<Host> hosts) {
+        List<Double> timeBeforeShutdown = new LinkedList<Double>();
+        for (Host host : hosts) {
+            boolean previousIsActive = true;
+            double lastTimeSwitchedOn = 0;
+            for (HostStateHistoryEntry entry : host.getStateHistory()) {
+                if (previousIsActive == true && entry.isActive() == false) {
+                    timeBeforeShutdown.add(entry.getTime() - lastTimeSwitchedOn);
+                }
+                if (previousIsActive == false && entry.isActive() == true) {
+                    lastTimeSwitchedOn = entry.getTime();
+                }
+                previousIsActive = entry.isActive();
+            }
+        }
+        return timeBeforeShutdown;
     }
 
     public void printSystemAverageResourceWastage(List<Double> resourceWastageList){
@@ -318,7 +449,9 @@ public class DataCenterPrinter {
     }
 
     public void printTtoalShutdownHostNumber(List<Host> hostList){
-        int totalShutdownNumber = hostList.stream().mapToInt(Host::getShutdownNumber).sum() + 1;
+        List<Double> timeBeforeHostShutdown = getTimesBeforeHostShutdown(hostList);
+        int totalShutdownNumber = timeBeforeHostShutdown.size();
+//        int totalShutdownNumber = hostList.stream().mapToInt(Host::getShutdownNumber).sum() + 1;
         System.out.println("当前系统关闭的host总数是： "+totalShutdownNumber);
     }
 

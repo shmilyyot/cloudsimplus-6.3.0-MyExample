@@ -17,6 +17,7 @@ import org.cloudsimplus.listeners.VmDatacenterEventInfo;
 import org.cloudsimplus.listeners.VmHostEventInfo;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -199,8 +200,8 @@ class VmNull implements Vm {
     @Override public void setMipsUtilizationBeforeMigration(double mipsUtilizationBeforeMigration) {}
     @Override public List<Double> getUtilizationHistory() {return null;}
     @Override public List<Double> getUtilizationHistoryRam() {return null;}
-    @Override public double getLogLength() {return 0;}
-    @Override public void setLogLength(double logLength) {}
+    @Override public int getLogLength() {return 0;}
+    @Override public void setLogLength(int logLength) {}
     @Override public double getTotalrequestUtilization() {return 0;}
     @Override public void setTotalrequestUtilization(double totalrequestUtilization) {}
     @Override public double getVmUnderAllocatedDueToMigration() {return 0;}

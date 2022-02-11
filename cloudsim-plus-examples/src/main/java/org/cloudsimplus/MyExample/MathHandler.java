@@ -15,19 +15,19 @@ public class MathHandler {
 
     public static void main(String[] args) {
         MathHandler mathHandler = new MathHandler();
-        List<Double> list = new ArrayList<>();
-        list.add(0.07947);
-        list.add(0.1262);
-        list.add(0.1411);
-        list.add(0.1409);
-        list.add(0.1218);
-        list.add(0.1311);
-        list.add(0.1338);
-        list.add(0.135);
-        list.add(0.1289);
-        list.add(0.1191);
-        list.add(0.1187);
-        list.add(0.1219);
+        List<Double> list = new LinkedList<>();
+//        list.add(0.07947);
+//        list.add(0.1262);
+//        list.add(0.1411);
+//        list.add(0.1409);
+//        list.add(0.1218);
+//        list.add(0.1311);
+//        list.add(0.1338);
+//        list.add(0.135);
+//        list.add(0.1289);
+//        list.add(0.1191);
+//        list.add(0.1187);
+//        list.add(0.1219);
 //        list.add(1.0);
 //        list.add(2.1);
 //        list.add(3.3);
@@ -40,18 +40,19 @@ public class MathHandler {
 //        list.add(10.2);
 //        list.add(11.0);
 //        list.add(12.3);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
-//        list.add(0.02);
+        list.add(0.012800751879699247);
+        list.add(0.012020676691729326);
+        list.add(0.01954887218045113);
+        list.add(0.02405075187969925);
+        list.add(0.024182330827067666);
+        list.add(0.013167293233082706);
+        list.add(0.015714285714285712);
+        list.add(0.014454887218045111);
+        list.add(0.022781954887218046);
+        list.add(0.02450187969924812);
+        list.add(0.027077067669172936);
+        list.add(0.012988721804511277);
+//        Collections.reverse(list);
 
 
 //        //暂时还是GM(1,1)靠谱，等待更好的
@@ -136,11 +137,7 @@ public class MathHandler {
             return utilization;
         }
         double predict = ARIMRPrediction(dataHistory,n);
-        if(max){
-            return cutTo0To1(Math.max(predict,utilization));
-        }else{
-            return cutTo0To1(Math.min(predict,utilization));
-        }
+        return cutTo0To1(predict);
     }
 
     public double ARIMRPrediction(List<Double> dataHistory,int n){
@@ -606,8 +603,9 @@ public class MathHandler {
     }
 
     public List<Double> reverseList(List<Double> usages){
-        Collections.reverse(usages);
-        return usages;
+        List<Double> list = new LinkedList<>(usages);
+        Collections.reverse(list);
+        return list;
     }
 
 

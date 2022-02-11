@@ -31,6 +31,9 @@ public final class HostStateHistoryEntry {
      */
     private final double requestedMips;
 
+    private final long allocateRam;
+    private final long requestRam;
+
     /**
      * @see #isActive()
      */
@@ -49,7 +52,32 @@ public final class HostStateHistoryEntry {
         this.allocatedMips = allocatedMips;
         this.requestedMips = requestedMips;
         this.active = active;
+        this.allocateRam = 0;
+        this.requestRam = 0;
     }
+
+    public HostStateHistoryEntry(final double time, final double allocatedMips, final double requestedMips,final long allocateRam, final long requestRam,final boolean active) {
+        this.time = time;
+        this.allocatedMips = allocatedMips;
+        this.requestedMips = requestedMips;
+        this.allocateRam = allocateRam;
+        this.requestRam = requestRam;
+        this.active = active;
+    }
+
+    public long getAllocatedRam() {
+        return allocateRam;
+    }
+
+    /**
+     * Gets the total MIPS requested by running VMs to all PEs of the Host at the recorded time.
+     *
+     * @return the requested mips
+     */
+    public long getRequestedRam() {
+        return requestRam;
+    }
+
 
     /**
      * Gets the time the data in this history entry is related to.

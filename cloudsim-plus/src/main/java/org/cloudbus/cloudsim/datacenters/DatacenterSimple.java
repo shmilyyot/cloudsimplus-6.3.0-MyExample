@@ -105,6 +105,15 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 
     private PowerModelDatacenter powerModel = PowerModelDatacenter.NULL;
 
+    public double getPower() {
+        return power;
+    }
+    public void setPower(double power) {
+        this.power = power;
+    }
+
+    private double power = 0.0;
+
     /**
      * Creates a Datacenter with an empty {@link #getDatacenterStorage() storage}
      * and a {@link VmAllocationPolicySimple} by default.
@@ -652,11 +661,6 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         //Updates processing of all Hosts to get their latest state before migrating VMs
         updateHostsProcessing();
 
-        //更新主机状态之后有可能host会被关闭，这时候把vm立刻打开
-        if(!targetHost.isActive()){
-            System.out.println("被迁移"+targetHost+"被关闭了，立即打开");
-            targetHost.setActive(true);
-        }
 
         //De-allocates the VM on the source Host (where it is migrating out)
         vmAllocationPolicy.deallocateHostForVm(vm);
@@ -779,10 +783,25 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         final double minTimeBetweenEvents = getSimulation().getMinTimeBetweenEvents()+0.01;
         nextSimulationDelay = nextSimulationDelay == 0 ? nextSimulationDelay : Math.max(nextSimulationDelay, minTimeBetweenEvents);
 
+        //线性计算能耗
+        double timeDiff = clock() - getLastProcessTime();
+        double timeFrameDatacenterEnergy = 0.0;
+        if(timeDiff > 0){
+            for(final Host host: getHostList()){
+                double previousUtilizationOfCpu = host.getPreviousUtilizationOfCpu();
+                double utilizationOfCpu = host.getUtilizationOfCpu();
+                double timeFrameHostEnergy = host.getEnergyLinearInterpolation(
+                    previousUtilizationOfCpu,
+                    utilizationOfCpu,
+                    timeDiff);
+                timeFrameDatacenterEnergy += timeFrameHostEnergy;
+            }
+        }
+        setPower(getPower() + timeFrameDatacenterEnergy);
+
         if (nextSimulationDelay == Double.MAX_VALUE) {
             return nextSimulationDelay;
         }
-
         return nextSimulationDelay;
     }
 
@@ -804,11 +823,9 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             return Double.MAX_VALUE;
         }
         double nextSimulationDelay = updateHostsProcessing();
-//        System.out.println("mark21: "+nextSimulationDelay);
 
         if (nextSimulationDelay != Double.MAX_VALUE) {
             nextSimulationDelay = getCloudletProcessingUpdateInterval(nextSimulationDelay);
-//            System.out.println("mark22: "+nextSimulationDelay);
             schedule(nextSimulationDelay, CloudSimTags.VM_UPDATE_CLOUDLET_PROCESSING);
         }
         setLastProcessTime(clock());
@@ -840,12 +857,9 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
 
         //大于一定时间停止迁移
-        if(getSimulation().clock() < 600.0 || getSimulation().clock() > 85392.0){
+        if(getSimulation().clock() < 600.0 && getSimulation().clock() < 86400.0){
             return;
         }
-//        if(getSimulation().clock() > 85392.0){
-//            return;
-//        }
 
         lastMigrationMap = getVmAllocationPolicy().getOptimizedAllocationMap(getVmList());
         for (final Map.Entry<Vm, Host> entry : lastMigrationMap.entrySet()) {
@@ -925,15 +939,11 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
             "It's expected to finish in %.2f seconds, considering the %.0f%% of bandwidth allowed for migration and the VM RAM size.",
             delay, getBandwidthPercentForMigration()*100);
 
-//        //统计迁移产生的额外开销
-//        sourceVm.setRequestUtilization(sourceVm.getRequestUtilization() + 0.1 * delay * sourceVm.getTotalCpuMipsUtilization());
-
         LOGGER.info("{}: {}: Migration of {} is started. {}", currentTime, getName(), msg1, msg2);
         if(targetHost.addMigratingInVm(sourceVm)) {
             sourceHost.addVmMigratingOut(sourceVm);
             send(this, delay, CloudSimTags.VM_MIGRATE, new TreeMap.SimpleEntry<>(sourceVm, targetHost));
         }
-//        System.out.println("A:"+targetHost.getVmScheduler().getAllocatedMips(sourceVm)+" B:"+sourceHost.getVmScheduler().getAllocatedMips(sourceVm));
     }
 
     /**
@@ -948,7 +958,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
 //        System.out.println(vm+" 迁移虚拟机内存是："+vm.getCurrentRequestedRam());
 //        System.out.println(vm+" 虚拟机容量是："+vm.getRam().getCapacity());
 //        System.out.println("迁移带宽是："+ Conversion.bitesToBytes(targetHost.getBw().getCapacity()));
-        return vm.getCurrentRequestedRam() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
+        return vm.getCurrentRequestedRam() / ((double) targetHost.getBw().getCapacity() / (2 * 8000));
 //        return vm.getRam().getCapacity() / (Conversion.bitesToBytes(targetHost.getBw().getCapacity()) * getBandwidthPercentForMigration());
     }
 

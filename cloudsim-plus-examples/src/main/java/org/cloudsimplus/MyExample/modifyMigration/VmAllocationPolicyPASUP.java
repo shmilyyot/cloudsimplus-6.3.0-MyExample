@@ -174,96 +174,22 @@ public class VmAllocationPolicyPASUP extends VmAllocationPolicyMigrationStaticTh
         final double hostRamPredictUtilization = hostTotalRamUsage/host.getRam().getCapacity();
 
         final boolean notOverloadedAfterAllocation = !isHostOverloaded(host,hostCpuPredictUtilization,hostRamPredictUtilization);
-
-//        //只用当前值来进行判断过载
-//        final boolean notOverloadedAfterAllocation = !isHostOverloaded(host);
-//
-////        System.out.println(vm.getId() + ": "+ host.getId() + "  "+ notOverloadedAfterAllocation);
-//        host.destroyTemporaryVm(tempVm);
         return notOverloadedAfterAllocation;
     }
 
     public double[] getVmPredictValue(Vm vm,double vmCpuUtilization,double vmRamUtilization,boolean max){
-        return new double[]{mathHandler.GM11Predicting(getVmCpuUtilizationHistory(vm), Constant.VM_LogLength,vmCpuUtilization,max),mathHandler.GM11Predicting(getVmRamUtilizationHistory(vm),Constant.VM_LogLength,vmRamUtilization,max)};
+        return new double[]{
+            Constant.USING_GM ? mathHandler.GM11Predicting(mathHandler.reverseList(vm.getUtilizationHistory()), Constant.VM_LogLength,vmCpuUtilization,max): mathHandler.ARIMRPredicting(mathHandler.reverseList(vm.getUtilizationHistory()), Constant.VM_LogLength,vmCpuUtilization,max),
+            Constant.USING_GM ? mathHandler.GM11Predicting(mathHandler.reverseList(vm.getUtilizationHistoryRam()),Constant.VM_LogLength,vmRamUtilization,max) : mathHandler.ARIMRPredicting(mathHandler.reverseList(vm.getUtilizationHistoryRam()),Constant.VM_LogLength,vmRamUtilization,max)
+        };
     }
-
     //获取host最小剩余资源利用率，用1减过了
     public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
-        return new double[]{1-mathHandler.GM11Predicting(getCpuUtilizationHistory(host),Constant.HOST_LogLength,hostCpuUtilization,max),1-mathHandler.GM11Predicting(getRamUtilizationHistory(host),Constant.HOST_LogLength,hostRamUtilization,max)};
+        return new double[]{
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(mathHandler.reverseList(host.getCpuUtilizationHistory()),Constant.HOST_LogLength,hostCpuUtilization,max) : 1 - mathHandler.ARIMRPredicting(mathHandler.reverseList(host.getCpuUtilizationHistory()),Constant.HOST_LogLength,hostCpuUtilization,max),
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(mathHandler.reverseList(host.getRamUtilizationHistory()),Constant.HOST_LogLength,hostRamUtilization,max) : 1- mathHandler.ARIMRPredicting(mathHandler.reverseList(host.getRamUtilizationHistory()),Constant.HOST_LogLength,hostRamUtilization,max)
+        };
     }
 
-    protected List<Double> getCpuUtilizationHistory(Host host) {
-        final double hostCpuUtilization = host.getCpuPercentUtilization();
-        return getDoubles(host, hostCpuUtilization, allVmsCpuUtilizationHistoryQueue);
-    }
-
-    private List<Double> getDoubles(Host host, double hostCpuUtilization, Map<Vm, LinkedList<Double>> allVmsUtilizationHistoryQueue) {
-        double[] utilizationHistory = new double[Constant.HOST_LogLength];
-        double hostMips = host.getTotalMipsCapacity();
-        if(host.getVmList().isEmpty()) return new LinkedList<>();
-        for (Vm vm : host.getVmList()) {
-            List<Double> VmUsages = new ArrayList<>(allVmsUtilizationHistoryQueue.get(vm));
-            if(VmUsages.size() < Constant.HOST_LogLength){
-                return new LinkedList<>();
-            }
-            for (int i = 1; i < VmUsages.size(); i++) {
-                utilizationHistory[i-1] += VmUsages.get(i) * vm.getTotalMipsCapacity() / hostMips;
-            }
-        }
-        utilizationHistory[Constant.HOST_LogLength-1] = hostCpuUtilization;
-        LinkedList<Double> usages = new LinkedList<>();
-        for(double num:utilizationHistory){
-            usages.addLast(num);
-        }
-        return usages;
-    }
-
-    protected List<Double> getRamUtilizationHistory(Host host) {
-        final double hostRamUtilization = host.getRamPercentUtilization();
-        return getDoubles(host, hostRamUtilization, allVmsRamUtilizationHistoryQueue);
-    }
-
-    protected List<Double> getVmCpuUtilizationHistory(Vm vm) {
-        LinkedList<Double> cpuVmUsages = new LinkedList<>(allVmsCpuUtilizationHistoryQueue.get(vm));
-        double vmCpuUtilization = vm.getCpuPercentUtilization();
-        cpuVmUsages.addLast(vmCpuUtilization);
-        while(cpuVmUsages.size() > Constant.VM_LogLength){
-            cpuVmUsages.removeFirst();
-        }
-        return cpuVmUsages;
-    }
-
-    protected List<Double> getVmRamUtilizationHistory(Vm vm) {
-        LinkedList<Double> ramVmUsages = new LinkedList<>(allVmsRamUtilizationHistoryQueue.get(vm));
-        double vmRamUtilization = vm.getRam().getPercentUtilization();
-        ramVmUsages.add(vmRamUtilization);
-        while(ramVmUsages.size() > Constant.VM_LogLength){
-            ramVmUsages.removeFirst();
-        }
-        return ramVmUsages;
-    }
-
-    @Override
-    public boolean isHostUnderloaded(final Host host) {
-        if(isHostRamThreshold()){
-            final double hostCpuUtilization = host.getCpuPercentUtilization();
-            final double hostRamUtilization = host.getRamPercentUtilization();
-            List<Double> cpuHistory = getCpuUtilizationHistory(host);
-            List<Double> ramHistory = getRamUtilizationHistory(host);
-            //如果利用率历史小于12，直接迁移最不平衡的
-            if(cpuHistory.size() < Constant.HOST_LogLength || ramHistory.size() < Constant.HOST_LogLength){
-                return true;
-            }
-            double pHostCpuUtilization = Constant.USING_GM ? mathHandler.GM11Predicting(getCpuUtilizationHistory(host), Constant.HOST_LogLength,hostCpuUtilization,true): mathHandler.ARIMRPredicting(getCpuUtilizationHistory(host), Constant.HOST_LogLength,hostCpuUtilization,true);
-            double pHostRamUtilization = Constant.USING_GM ? mathHandler.GM11Predicting(getRamUtilizationHistory(host), Constant.HOST_LogLength,hostRamUtilization,true): mathHandler.ARIMRPredicting(getRamUtilizationHistory(host), Constant.HOST_LogLength,hostRamUtilization,true);
-            return isHostUnderloaded(host.getCpuPercentUtilization(),host.getRamPercentUtilization(),pHostCpuUtilization,pHostRamUtilization);
-        }else{
-            return isHostUnderloaded(host.getCpuPercentUtilization());
-        }
-    }
-
-    public boolean isHostUnderloaded(final double cpuUsagePercent,final double ramUsagePercent,final double pHostCpuUtilization,final double pHostRamUtilization) {
-        return pHostCpuUtilization <= cpuUsagePercent && pHostRamUtilization <= ramUsagePercent;
-    }
 
 }

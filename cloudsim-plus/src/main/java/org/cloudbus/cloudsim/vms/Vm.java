@@ -27,6 +27,7 @@ import org.cloudsimplus.listeners.VmHostEventInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -71,8 +72,8 @@ public interface Vm extends AbstractMachine<Resource>, UniquelyIdentifiable, Com
 
     List<Double> getUtilizationHistory();
     List<Double> getUtilizationHistoryRam();
-    double getLogLength();
-    void setLogLength(double logLength);
+    int getLogLength();
+    void setLogLength(int logLength);
 
     double getTotalrequestUtilization();
 

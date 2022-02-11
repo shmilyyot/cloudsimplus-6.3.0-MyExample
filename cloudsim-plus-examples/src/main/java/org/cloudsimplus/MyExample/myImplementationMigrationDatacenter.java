@@ -189,16 +189,16 @@ public class myImplementationMigrationDatacenter {
 //
         //创建数据中心能耗跟踪模型
         //记录每个数据中心的能耗
-        PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
-        powerMeter.setMeasurementInterval(Constant.COLLECTTIME);
+//        PowerMeter powerMeter = new PowerMeter(simulation, datacenters);
+//        powerMeter.setMeasurementInterval(Constant.COLLECTTIME);
 
         //系统在第一天结束停止运行
-//        simulation.terminateAt(Constant.STOP_TIME);
+        simulation.terminateAt(Constant.STOP_TIME);
 
         //数据中心模拟器启动
         simulation.start();
 //        //打印所有cloudlet运行状况
-        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
+//        brokers.stream().sorted().forEach(broker->dataCenterPrinter.printCloudlets(broker));
 
 //        //打印生成的服务器的配置信息
 //        hostList.stream().forEach(this::printHostInfo);
@@ -208,7 +208,8 @@ public class myImplementationMigrationDatacenter {
 //        dataCenterPrinter.printHostsCpuUtilizationAndPowerConsumption(hostList);
 
         //计算并打印数据中心能耗
-        totalEnergyCumsumption = dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter,npa);
+//        totalEnergyCumsumption = dataCenterPrinter.printDataCenterTotalEnergyComsumption(powerMeter,npa);
+        totalEnergyCumsumption = dataCenterPrinter.dataCenterTotalEnergyComsumption(datacenters.get(0),npa);
 
         //打印迁移次数
         System.out.printf("Number of VM migrations: %d%n", migrationsNumber);
@@ -464,22 +465,22 @@ public class myImplementationMigrationDatacenter {
 //            this.allocationPolicy =
 //                new VmAllocationPolicyMigrationFirstFitStaticThreshold(
 //                    new VmSelectionPolicyUnbalanceUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值jintia
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1);
 
-//            //PABFD + static算法 默认算法
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
-//            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.1);
-//            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+            //PABFD + static算法 默认算法
+            this.allocationPolicy =
+                new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
+                    new VmSelectionPolicyMinimumMigrationTime(),
+                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
+                    mathHandler,
+                    allHostsRamUtilizationHistoryQueue,
+                    allHostsCpuUtilizationHistoryQueue,
+                    allVmsRamUtilizationHistoryQueue,
+                    allVmsCpuUtilizationHistoryQueue);
+            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
+            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
             myVersion = true;
             this.allocationPolicy =
@@ -510,7 +511,7 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsCpuUtilizationHistoryQueue);
 
 //            //必须保证有一个static和一个dynamic开着
-//            //PABFD + MAD算法
+//            //PABFD + MtversionMAD算法
 //            dynamicUpperThreshold = true;
 //            this.dynamicUpperAllocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold(
@@ -649,7 +650,7 @@ public class myImplementationMigrationDatacenter {
 //        host.setIdleShutdownDeadline(shutdownDeadlineSeconds);
 
         //启用host记录历史状态
-//        host.enableStateHistory();
+        host.enableStateHistory();
 
         //记录cpu历史利用率的一些数据
 //        host.enableUtilizationStats();
@@ -730,7 +731,6 @@ public class myImplementationMigrationDatacenter {
         vm.setMinCpuUtilization(10/(double)Constant.VM_MIPS[type]);
         vm.setMinRamUtilization(10/(double)Constant.VM_RAM[type]);
         vm.setLogLength(Constant.VM_LogLength);
-//        vm.enableUtilizationStats();
         return vm;
     }
 

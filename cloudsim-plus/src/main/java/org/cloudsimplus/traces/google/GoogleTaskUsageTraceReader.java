@@ -425,7 +425,6 @@ public final class GoogleTaskUsageTraceReader extends GoogleTraceReaderAbstract<
     private boolean requestCloudletUsageChange(final Cloudlet cloudlet, final TaskUsage taskUsage)
     {
         final Runnable resourceUsageUpdateRunnable = () -> {
-//            System.out.println("更新前：cpu:"+cloudlet.getVm().getHost().getCpuPercentUtilization()+" ram:"+cloudlet.getVm().getHost().getRamPercentUtilization());
             final StringBuilder builder = new StringBuilder();
             double meanCpuUsageRate = Math.max(taskUsage.getMeanCpuUsageRate(), cloudlet.getVm().getMinCpuUtilization());
             if (cloudlet.getUtilizationOfCpu() != meanCpuUsageRate) {

@@ -78,19 +78,50 @@ public class HostSimple implements Host, Serializable {
     public double getUtilizationMips() {
         return utilizationMips;
     }
-
     public void setUtilizationMips(double utilizationMips) {
         this.utilizationMips = utilizationMips;
     }
-
     private double utilizationMips = 0.0;
+    public double getUtilizationOfCpu() {
+        double utilization = getUtilizationMips() / getTotalMipsCapacity();
+        if (utilization > 1 && utilization < 1.01) {
+            utilization = 1;
+        }
+        return utilization;
+    }
 
     public double getPreviousUtilizationMips() {
         return previousUtilizationMips;
     }
-
     public void setPreviousUtilizationMips(double previousUtilizationMips) {
         this.previousUtilizationMips = previousUtilizationMips;
+    }
+    public double getPreviousUtilizationOfCpu() {
+        double utilization = getPreviousUtilizationMips() / getTotalMipsCapacity();
+        if (utilization > 1 && utilization < 1.01) {
+            utilization = 1;
+        }
+        return utilization;
+    }
+
+    public double getEnergyLinearInterpolation(double fromUtilization, double toUtilization, double time) {
+        if (fromUtilization == 0) {
+            return 0;
+        }
+        double fromPower = getPower(fromUtilization);
+        double toPower = getPower(toUtilization);
+        return (fromPower + (toPower - fromPower) / 2) * time;
+    }
+
+    protected double getPower(double utilization) {
+        double power = 0;
+        try {
+            power = getPowerModel().getPower(utilization);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+        return power;
     }
 
     private double previousUtilizationMips = 0.0;
@@ -465,11 +496,18 @@ public class HostSimple implements Host, Serializable {
     @Override
     public double updateProcessing(final double currentTime) {
         if(vmList.isEmpty() && isIdleEnough(idleShutdownDeadline) && !isCantShutdown()){
-            if(this.active) shutdownNumber++;
             setActive(false);
         }
 
+        setPreviousUtilizationMips(getUtilizationMips());
+        setUtilizationMips(0);
+
         double nextSimulationDelay = Double.MAX_VALUE;
+        for (int i = 0; i < vmList.size(); i++) {
+            final Vm vm = vmList.get(i);
+            final double delay = vm.updateProcessing(currentTime, vmScheduler.getAllocatedMips(vm));
+            nextSimulationDelay = delay > 0 ? Math.min(delay, nextSimulationDelay) : nextSimulationDelay;
+        }
 
         //更新最新的每个vm分配的mips
         double hostCpuPercentage = getCpuPercentUtilization();
@@ -523,18 +561,27 @@ public class HostSimple implements Host, Serializable {
             }
         }
 
-        /* Uses an indexed for to avoid ConcurrentModificationException,
-         * e.g., in cases when Vm is destroyed during simulation execution.*/
         for (int i = 0; i < vmList.size(); i++) {
             final Vm vm = vmList.get(i);
-            final double delay = vm.updateProcessing(currentTime, vmScheduler.getAllocatedMips(vm));
-            nextSimulationDelay = delay > 0 ? Math.min(delay, nextSimulationDelay) : nextSimulationDelay;
 
-            double AllocatedMips = vmScheduler.getAllocatedMips(vm).totalMips();
+            double AllocatedMips = vmScheduler.getTotalAllocatedMipsForVm(vm);
             long AllocatedRam = ramProvisioner.getAllocatedResourceForVm(vm);
             double RequestedMips = vm.getCurrentUtilizationMips().totalMips();
             long RequestedRam = vm.getCurrentRequestedRam();
 
+            if(!getVmsMigratingIn().contains(vm)){
+
+                //添加vm的利用率
+                vm.addStateHistoryEntry(new VmStateHistoryEntry(
+                    currentTime, AllocatedMips, RequestedMips, (vm.isInMigration() && !getVmsMigratingIn().contains(vm))));
+
+                //计算单个vm的迁移性能降级
+//                underallocatedMigration(vm, AllocatedMips, AllocatedRam, RequestedMips, RequestedRam, currentTime);
+
+                if(vm.isInMigration()){
+                    AllocatedMips /= 0.9;
+                }
+            }
             //计算host mips请求和分配总和
             vmsRequestMipsTotal += RequestedMips;
             vmsAllocatedMipsTotal += AllocatedMips;
@@ -542,17 +589,19 @@ public class HostSimple implements Host, Serializable {
             vmsRequestRamTotal += RequestedRam;
             vmsAllocatedRamTotal += AllocatedRam;
 
-            //计算单个vm的迁移性能降级
-            underallocatedMigration(vm, AllocatedMips, AllocatedRam, RequestedMips, RequestedRam, currentTime);
+            setUtilizationMips(getUtilizationMips() + AllocatedMips);
+        }
+        if(getUtilizationMips() > getTotalMipsCapacity()){
+            setUtilizationMips(getTotalMipsCapacity());
         }
 
         //记录主机活跃的sla违反时间
-        SlaTimePerActiveHost(currentTime,vmsAllocatedMipsTotal,vmsRequestMipsTotal,vmsAllocatedRamTotal,vmsRequestRamTotal);
-
+//        SlaTimePerActiveHost(currentTime,getUtilizationMips(),vmsRequestMipsTotal,vmsAllocatedRamTotal,vmsRequestRamTotal);
+        if(stateHistoryEnabled){
+            addStateHistoryEntry(currentTime, getUtilizationMips() ,vmsRequestMipsTotal,vmsAllocatedRamTotal,vmsRequestRamTotal,(getUtilizationMips()  > 0));
+        }
         notifyOnUpdateProcessingListeners(currentTime);
-
-//        cpuUtilizationStats.add(currentTime);
-        addStateHistory(currentTime);
+//        addStateHistory(currentTime);
 
         if (!vmList.isEmpty()) {
             lastBusyTime = currentTime;
@@ -563,7 +612,7 @@ public class HostSimple implements Host, Serializable {
 
     private void SlaTimePerActiveHost(double currentTime,double vmsAllocatedMipsTotal,double vmsRequestMipsTotal,long vmsAllocatedRamTotal,long vmsRequestRamTotal){
         if (previousTime != -1 && previousActive) {
-            double timeDiff = currentTime - previousTime;
+            double timeDiff = currentTime - previousTime;;
             if (previousAllocated < previousRequested || previousAllocatedRam < previousRequestedRam) {
                 slaViolationTimePerHost += timeDiff;
             }
@@ -574,7 +623,7 @@ public class HostSimple implements Host, Serializable {
         previousRequested = vmsRequestMipsTotal;
         previousAllocatedRam = vmsAllocatedRamTotal;
         previousRequestedRam = vmsRequestRamTotal;
-        previousActive = isActive();
+        previousActive = vmsAllocatedMipsTotal > 0;
     }
 
     private void underallocatedMigration(Vm vm,double AllocatedMips, long AllocatedRam, double RequestedMips, long RequestedRam,double currentTime){
@@ -827,6 +876,7 @@ public class HostSimple implements Host, Serializable {
             setStartTime(getSimulation().clock());
         } else if(!activate && this.active){
             setShutdownTime(getSimulation().clock());
+            shutdownNumber++;
         }
 
         this.active = activate;
@@ -1101,7 +1151,6 @@ public class HostSimple implements Host, Serializable {
 
         this.shutdownTime = Math.floor(shutdownTime);
         this.totalUpTime += getUpTime();
-//        System.out.println("目前为止的时间："+totalUpTime);
     }
 
     @Override
@@ -1259,22 +1308,26 @@ public class HostSimple implements Host, Serializable {
         }
 
         vmsMigratingIn.add(vm);
-
+        vmList.add(vm);
         //在这里确实分配了所有资源，但是没有加入vmlist
 
-//        System.out.println("before migration:"+vm+": "+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
 
         if(!allocateResourcesForVm(vm, true).fully()){
             System.out.println(vm+" 请求的mips："+vm.getCurrentUtilizationMips().totalMips()+"  请求的ram:"+vm.getCurrentRequestedRam()+" cpu利用率："+vm.getCpuPercentUtilization()+" beforeMigration:"+vm.getCpuPercentUtilization());
             System.out.println(this+" 剩余的mips："+this.getVmScheduler().getTotalAvailableMips()+"  剩余ram"+this.getRam().getAvailableResource()+" host已分配mips："+this.getVmScheduler().getAllocatedMips(vm));
             vmsMigratingIn.remove(vm);
+            vmList.remove(vm);
             return false;
         }
 
-//        System.out.println("after migration: "+ this+" "+this.getRam().getAvailableResource()+ " "+this.getVmScheduler().getTotalAvailableMips()+" "+this.getVmList().size());
-        ((VmSimple)vm).updateMigrationStartListeners(this);
-        //迁移前这台主机不能关闭
+        //迁移结束前这台主机不能关闭,再次确认不能关闭并且已经开启
         this.setCantShutdown(true);
+        if(!isActive()){
+            System.out.println(getSimulation().clockStr() + ": Host "+ this.getId()+" has been awake for Vm " +vm.getId()+" migration successful!");
+            setActive(true);
+        }
+
+        ((VmSimple)vm).updateMigrationStartListeners(this);
         updateProcessing(simulation.clock());
         vm.getHost().updateProcessing(simulation.clock());
         return true;
@@ -1489,7 +1542,7 @@ public class HostSimple implements Host, Serializable {
     }
 
     private double computeRamUtilizationPercent(final long ramUsage){
-        final double totalRam = ramProvisioner.getResource().getCapacity();
+        final double totalRam = ram.getCapacity();
         if(totalRam == 0){
             return 0;
         }
@@ -1612,7 +1665,6 @@ public class HostSimple implements Host, Serializable {
             addVmResourceUseToHistoryIfNotMigratingIn(vm, currentTime);
             hostTotalRequestedMips += totalRequestedMips;
         }
-//        System.out.println(hostTotalRequestedMips);
         addStateHistoryEntry(currentTime, getCpuMipsUtilization(),hostTotalRequestedMips,active);
     }
 
@@ -1631,6 +1683,26 @@ public class HostSimple implements Host, Serializable {
         final boolean isActive)
     {
         final HostStateHistoryEntry newState = new HostStateHistoryEntry(time, allocatedMips,requestedMips,isActive);
+        if (!stateHistory.isEmpty()) {
+            final HostStateHistoryEntry previousState = stateHistory.get(stateHistory.size() - 1);
+            if (previousState.getTime() == time) {
+                stateHistory.set(stateHistory.size() - 1, newState);
+                return;
+            }
+        }
+
+        stateHistory.add(newState);
+    }
+
+    private void addStateHistoryEntry(
+        final double time,
+        final double allocatedMips,
+        final double requestedMips,
+        final long allocatedram,
+        final long requestram,
+        final boolean isActive)
+    {
+        final HostStateHistoryEntry newState = new HostStateHistoryEntry(time, allocatedMips,requestedMips,allocatedram,requestram,isActive);
         if (!stateHistory.isEmpty()) {
             final HostStateHistoryEntry previousState = stateHistory.get(stateHistory.size() - 1);
             if (previousState.getTime() == time) {
@@ -1695,7 +1767,7 @@ public class HostSimple implements Host, Serializable {
                 vm = vm.getTempVm();
             }
             for (int i = 0; i < vm.getUtilizationHistory().size(); i++) {
-                utilizationHistory[i] += vm.getUtilizationHistory().get(i) * vm.getTotalMipsCapacity() / hostMips;
+                utilizationHistory[i] += Math.floor(vm.getUtilizationHistory().get(i) * vm.getMips()) / hostMips;
             }
         }
         LinkedList<Double> usages = new LinkedList<>();
@@ -1714,13 +1786,13 @@ public class HostSimple implements Host, Serializable {
                 vm = vm.getTempVm();
             }
             for (int i = 0; i < vm.getUtilizationHistoryRam().size(); i++) {
-                utilizationHistory[i] += vm.getUtilizationHistoryRam().get(i) * vm.getRam().getCapacity() / hostRam;
+                utilizationHistory[i] += Math.floor(vm.getUtilizationHistoryRam().get(i) * vm.getRam().getCapacity()) / hostRam;
             }
         }
-        LinkedList<Double> usages = new LinkedList<>();
+        List<Double> usages = new LinkedList<>();
         for(double num:utilizationHistory){
             if(num == 0.0) return usages;
-            usages.addLast(num);
+            usages.add(num);
         }
         return usages;
     }

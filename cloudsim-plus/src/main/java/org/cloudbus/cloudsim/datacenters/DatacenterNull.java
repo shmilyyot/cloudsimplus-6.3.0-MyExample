@@ -33,6 +33,8 @@ final class DatacenterNull implements Datacenter, SimEntityNullBase, Serializabl
     @Override public VmAllocationPolicy getVmAllocationPolicy() {
         return VmAllocationPolicy.NULL;
     }
+    @Override public double getPower() {return 0;}
+    @Override public void setPower(double power) {}
     @Override public void requestVmMigration(Vm sourceVm, Host targetHost) {/**/}
     @Override public void requestVmMigration(Vm sourceVm) {/**/}
     @Override public Stream<? extends Host> getActiveHostStream() { return Stream.empty(); }

@@ -76,7 +76,7 @@ public class PowerModelHostSpec extends PowerModelHost {
         double idlePower = powerSpec.get(0);
         double utilizationFraction = Math.min(getHost().getCpuPercentUtilization(), 1.0);
         if(utilizationFraction == 0.0) {
-            return new PowerMeasurement(idlePower, 0.0);
+            return new PowerMeasurement(0, 0.0);
         }
         double dynamicPower = getPower(utilizationFraction) - idlePower;
         return new PowerMeasurement(idlePower, dynamicPower);
