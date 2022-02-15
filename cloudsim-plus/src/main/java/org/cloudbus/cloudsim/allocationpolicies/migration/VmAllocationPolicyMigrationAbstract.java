@@ -1233,7 +1233,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
     protected double getMaxUtilizationAfterAllocation(final Host host, final Vm vm) {
         //（更改），默认取虚拟机请求容量，这是不对的
         final double requestedTotalMips = host.getSimulation().clock() < 0.2? vm.getTotalMipsCapacity(): vm.getCurrentUtilizationTotalMips();
-        double hostUtilizationMips = Math.floor(host.getCpuPercentUtilization() * host.getTotalMipsCapacity());
+        double hostUtilizationMips = host.getVmList().stream().mapToDouble(Vm::getTotalCpuMipsUtilization).sum();
+//        double hostUtilizationMips = Math.floor(host.getCpuPercentUtilization() * host.getTotalMipsCapacity());
         if(host.getSimulation().clock() < 0.2){
             hostUtilizationMips = 0.0;
             for(Vm nvm:host.getVmList()){

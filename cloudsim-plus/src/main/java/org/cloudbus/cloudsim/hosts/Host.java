@@ -62,6 +62,11 @@ public interface Host extends Machine, Comparable<Host>, PowerAware<PowerModelHo
      */
     Host NULL = new HostNull();
 
+    double getCPU_THRESHOLD();
+    void setCPU_THRESHOLD(double CPU_THRESHOLD);
+    double getRAM_THRESHOLD();
+    void setRAM_THRESHOLD(double RAM_THRESHOLD);
+
     double resourceWastage();
 
     boolean isInFindMigrateVm();

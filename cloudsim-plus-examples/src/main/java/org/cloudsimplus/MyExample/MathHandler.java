@@ -531,6 +531,17 @@ public class MathHandler {
         return data;
     }
 
+    public double distance(List<Double> usages){
+        double[] data = convertListToArray(usages);
+        Arrays.sort(data);
+        double avg = usages.stream().mapToDouble(Double::doubleValue).sum()/usages.size();
+        double totalD = 0.0;
+        for(double num:data){
+            totalD += Math.abs(num - avg);
+        }
+        return totalD / data.length;
+    }
+
     public double getMedian(double[] data){
         return getStatistics(data).getPercentile(50);
     }

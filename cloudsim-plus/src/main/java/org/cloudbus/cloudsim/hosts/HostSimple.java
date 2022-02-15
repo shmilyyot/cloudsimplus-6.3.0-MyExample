@@ -49,6 +49,22 @@ public class HostSimple implements Host, Serializable {
     private static long defaultStorageCapacity = (long)Conversion.gigaToMega(500);
     private static int logLength = 12;
 
+    public double getCPU_THRESHOLD() {
+        return CPU_THRESHOLD;
+    }
+    public void setCPU_THRESHOLD(double CPU_THRESHOLD) {
+        this.CPU_THRESHOLD = CPU_THRESHOLD;
+    }
+    public double getRAM_THRESHOLD() {
+        return RAM_THRESHOLD;
+    }
+    public void setRAM_THRESHOLD(double RAM_THRESHOLD) {
+        this.RAM_THRESHOLD = RAM_THRESHOLD;
+    }
+
+    double CPU_THRESHOLD = 1.0;
+    double RAM_THRESHOLD = 1.0;
+
     public boolean isInFindMigrateVm() {
         return inFindMigrateVm;
     }
@@ -1523,7 +1539,8 @@ public class HostSimple implements Host, Serializable {
         }
 
         final double utilization = mipsUsage / totalMips;
-        return (utilization > 1 && utilization < 1.01 ? 1 : utilization);
+        return utilization;
+//        return (utilization > 1 && utilization < 1.01 ? 1 : utilization);
     }
 
     @Override
