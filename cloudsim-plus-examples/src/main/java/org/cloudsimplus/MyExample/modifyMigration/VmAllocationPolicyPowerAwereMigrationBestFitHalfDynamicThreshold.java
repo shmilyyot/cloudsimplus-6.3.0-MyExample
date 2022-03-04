@@ -94,12 +94,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
             //获取主机未来利用率U'，hostPredict[0]是cpu利用率,hostPredict[1]是内存利用率
             final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
             final double predictCpuUsage = 1 - hostPredict[0],predictRamUsage = 1 - hostPredict[1];
-            if(predictCpuUsage >= 1.0){
+            if(predictCpuUsage > 1.0){
 //                host.setCPU_THRESHOLD(0.8);
                 decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
                 canUpCpuThreshold = false;
             }
-            if(predictRamUsage >= 1.0){
+            if(predictRamUsage > 1.0){
 //                host.setRAM_THRESHOLD(0.8);
                 decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
                 canUpRamThreshold = false;
@@ -189,25 +189,16 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
     public void decreaseCpuThresHold(Host host,double cpuThreshold,double CpuUsage, double RamUsage,boolean overCapacity){
         //先降低cpu的T
         double dcpu = overCapacity ? getPenalityModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory())): getModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory()));
-        double newThreshold = Math.max(0,cpuThreshold - dcpu);
+        double newThreshold = Math.max(0,1 - dcpu);
         host.setCPU_THRESHOLD(newThreshold);
-        System.out.println(host+ " 递减之后的cpu阈值是： "+host.getCPU_THRESHOLD());
-//        boolean futureCpuOverload = isHostOverloaded(host,CpuUsage,RamUsage);
-//        if(futureCpuOverload){
-//            recoverCpuThreadHold(host,cpuThreshold);
-//            futureCpuOverload = false;
-//        }
     }
 
     public void increaseCpuThreshold(Host host,double cpuThreshold){
         if(host.getCPU_THRESHOLD() == 1.0) return;
-        //U' > T,预测值过载，有限提高T到T’，增加一个标准差
-        System.out.println(host+ " 递增之前的cpu阈值是： "+host.getCPU_THRESHOLD());
         double dcpu = 1.2 * getModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory()));
         if(cpuThreshold + dcpu > 1.0) return;
         double newCpuThreshold = Math.min(cpuThreshold + dcpu, 1.0);
         host.setCPU_THRESHOLD(newCpuThreshold);
-        System.out.println(host+ " 递增之后的cpu阈值是： "+host.getCPU_THRESHOLD());
     }
 
     public void recoverCpuThreadHold(Host host,double originalThreshold){
@@ -216,24 +207,16 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
 
     public void decreaseRamThresHold(Host host,double ramThreshold,double CpuUsage, double RamUsage,boolean overCapacity){
         double dram = overCapacity ? getPenalityModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory())): getModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory()));
-        double newThreshold = Math.max(0,ramThreshold - dram);
+        double newThreshold = Math.max(0,1 - dram);
         host.setRAM_THRESHOLD(newThreshold);
-        System.out.println(host+ " 递减之后的ram阈值是： "+host.getRAM_THRESHOLD());
-//        boolean futureRamOverload = isHostOverloaded(host,CpuUsage,RamUsage);
-//        if(futureRamOverload){
-//            recoverRamThreadHold(host,ramThreshold);
-//            futureRamOverload = false;
-//        }
     }
 
     public void increaseRamThresHold(Host host,double ramThreshold){
         if(host.getRAM_THRESHOLD() == 1.0) return;
-        System.out.println(host+ " 递增之前的ram阈值是： "+host.getRAM_THRESHOLD());
         double dram = 1.2 * getModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory()));
         if(ramThreshold + dram > 1.0) return;
         double newRamThreshold = Math.min(ramThreshold + dram, 1.0);
         host.setRAM_THRESHOLD(newRamThreshold);
-        System.out.println(host+ " 递增之后的ram阈值是： "+host.getRAM_THRESHOLD());
     }
 
     public void recoverRamThreadHold(Host host ,double originalThreshold){
