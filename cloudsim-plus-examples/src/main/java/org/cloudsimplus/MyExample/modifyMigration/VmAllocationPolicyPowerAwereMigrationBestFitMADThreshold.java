@@ -51,6 +51,13 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
         throw new IllegalArgumentException();
     }
 
+    protected double getHostUtilizationMad(List<Double> usages) throws IllegalArgumentException {
+        if(usages.size() >= Constant.HOST_LogLength){
+            return mathHandler.mad(usages);
+        }
+        throw new IllegalArgumentException();
+    }
+
     /**
      * Gets a dynamically computed Host over utilization threshold based on the
      * Host CPU utilization history.

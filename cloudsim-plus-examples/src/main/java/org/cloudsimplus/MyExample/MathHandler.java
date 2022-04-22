@@ -56,7 +56,7 @@ public class MathHandler {
 
 
 //        //暂时还是GM(1,1)靠谱，等待更好的
-        mathHandler.GM11PredictingTest(list,list.size());
+//        mathHandler.GM11PredictingTest(list,list.size());
 //        //结论：DGM是个乐色算法
 //        mathHandler.DGM21PredictingTest(list,12);
 //        mathHandler.DGM11PredictingTest(list,12);

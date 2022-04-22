@@ -75,14 +75,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
             final double hostRamUtilization = host.getRamPercentUtilization();
             boolean canUpCpuThreshold = true,canUpRamThreshold = true;
 //            if(hostCpuUtilization > 1.0){
-//                host.setCPU_THRESHOLD(0.9);
-////                decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
-////                canUpCpuThreshold = false;
+//                decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
+//                canUpCpuThreshold = false;
 //            }
 //            if(hostRamUtilization > 1.0){
-//                host.setRAM_THRESHOLD(0.9);
-////                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
-////                canUpRamThreshold = false;
+//                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
+//                canUpRamThreshold = false;
 //            }
             boolean currentOverload = isHostOverloaded(host,hostCpuUtilization,hostRamUtilization);
             // U > T ,直接返回过载迁移;U <= T,继续往下执行
@@ -94,12 +92,12 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
             //获取主机未来利用率U'，hostPredict[0]是cpu利用率,hostPredict[1]是内存利用率
             final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
             final double predictCpuUsage = 1 - hostPredict[0],predictRamUsage = 1 - hostPredict[1];
-            if(predictCpuUsage > 1.0){
+            if(predictCpuUsage >= 1.0){
 //                host.setCPU_THRESHOLD(0.8);
                 decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
                 canUpCpuThreshold = false;
             }
-            if(predictRamUsage > 1.0){
+            if(predictRamUsage >= 1.0){
 //                host.setRAM_THRESHOLD(0.8);
                 decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
                 canUpRamThreshold = false;
@@ -179,11 +177,13 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
     }
 
     public double getModifyDistance(List<Double> usages){
-        return usages.size() >= Constant.HOST_LogLength ? mathHandler.distance(usages) : 0;
+        return usages.size() >= Constant.HOST_LogLength ? mathHandler.mad(usages) : 0;
+//        return usages.size() >= Constant.HOST_LogLength ? mathHandler.distance(usages) : 0;
     }
 
     public double getPenalityModifyDistance(List<Double> usages){
-        return 2 * getModifyDistance(usages);
+        return usages.size() >= Constant.HOST_LogLength ? 2.5 * mathHandler.mad(usages) : 0;
+//        return 2.0 * getModifyDistance(usages);
     }
 
     public void decreaseCpuThresHold(Host host,double cpuThreshold,double CpuUsage, double RamUsage,boolean overCapacity){
@@ -195,7 +195,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
 
     public void increaseCpuThreshold(Host host,double cpuThreshold){
         if(host.getCPU_THRESHOLD() == 1.0) return;
-        double dcpu = 1.2 * getModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory()));
+        double dcpu = getModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory()));
         if(cpuThreshold + dcpu > 1.0) return;
         double newCpuThreshold = Math.min(cpuThreshold + dcpu, 1.0);
         host.setCPU_THRESHOLD(newCpuThreshold);
@@ -213,7 +213,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
 
     public void increaseRamThresHold(Host host,double ramThreshold){
         if(host.getRAM_THRESHOLD() == 1.0) return;
-        double dram = 1.2 * getModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory()));
+        double dram = getModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory()));
         if(ramThreshold + dram > 1.0) return;
         double newRamThreshold = Math.min(ramThreshold + dram, 1.0);
         host.setRAM_THRESHOLD(newRamThreshold);

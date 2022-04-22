@@ -133,7 +133,7 @@ public class ARIMAModel
 				minAIC = aic;
 				bestModel[0] = model[i][0];
 				bestModel[1] = model[i][1];
-				bestModel[2] = (int)Math.round(minAIC);
+				bestModel[2] = minAIC;
 				this.arimaCoe = coe;
 			}
 		}

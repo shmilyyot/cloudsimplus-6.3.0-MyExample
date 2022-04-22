@@ -62,7 +62,7 @@ public class Main
 			{
 				sumPredict += (double)tmpPredict[k] / (double)cnt;
 			}
-			int predict = (int)Math.round(sumPredict);
+			double predict = sumPredict;
 			System.out.println("Predict value="+predict);
 		}
 		catch (FileNotFoundException fnfe)
