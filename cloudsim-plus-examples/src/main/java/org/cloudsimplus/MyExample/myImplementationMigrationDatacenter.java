@@ -89,6 +89,16 @@ public class myImplementationMigrationDatacenter {
     private boolean npa = false;
     private boolean myVersion = false;
     private boolean dynamicUpperThreshold = false;
+    public List<Double> hostusages = new ArrayList<>();
+    public List<Double> hostusagesram = new ArrayList<>();
+    public List<Double> hostusages2 = new ArrayList<>();
+    public List<Double> hostusagesram2 = new ArrayList<>();
+    public List<Double> hostusages3 = new ArrayList<>();
+    public List<Double> hostusagesram3 = new ArrayList<>();
+    public List<Double> hostusages4 = new ArrayList<>();
+    public List<Double> hostusagesram4 = new ArrayList<>();
+    public List<Double> hostusages5 = new ArrayList<>();
+    public List<Double> hostusagesram5 = new ArrayList<>();
 
     /**
      * A map to store RAM utilization history for every VM.
@@ -229,6 +239,11 @@ public class myImplementationMigrationDatacenter {
         dataCenterPrinter.printSystemAverageResourceWastage(resourceWastageList);
         dataCenterPrinter.printTtoalShutdownHostNumber(hostList);
 
+        writeUsage(1, hostusages, hostusagesram);
+        writeUsage(2, hostusages2, hostusagesram2);
+        writeUsage(3, hostusages3, hostusagesram3);
+        writeUsage(4, hostusages4, hostusagesram4);
+        writeUsage(5, hostusages5, hostusagesram5);
         //打印当前系统活跃的主机数目
 //        dataCenterPrinter.activeHostCount(hostList);
 
@@ -236,6 +251,26 @@ public class myImplementationMigrationDatacenter {
 //        System.setOut(new PrintStream(new FileOutputStream(Constant.HOST_LOG_FILE_PATH)));
 //        System.out.printf("%nHosts CPU usage History (when the allocated MIPS is lower than the requested, it is due to VM migration overhead)%n");
 //        hostList.forEach(host->dataCenterPrinter.printHostStateHistory(host,allHostsRamUtilizationHistory.get(host)));
+    }
+
+    public void writeUsage(int index, List<Double> hostusages, List<Double> hostusagesram) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\originalcpu" + index + ".csv"));
+
+        for (Double line : hostusages) {
+            bw.write(String.valueOf(line));
+            bw.newLine();
+            bw.flush();
+        }
+
+        bw = new BufferedWriter(new FileWriter("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\originalram" + index + ".csv"));
+        for (Double line : hostusagesram) {
+            bw.write(String.valueOf(line));
+            bw.newLine();
+            bw.flush();
+        }
+
+        //释放资源
+        bw.close();
     }
 
     private void createCloudletsAndBrokersFromTraceFileType1() throws IOException, ClassNotFoundException {
@@ -847,9 +882,22 @@ public class myImplementationMigrationDatacenter {
 //            }
 
             resourceWastageList.add(systemWastage);
-
+            putUsage(439, hostusages, hostusagesram);
+            putUsage(0, hostusages2, hostusagesram2);
+            putUsage(195, hostusages3, hostusagesram3);
+            putUsage(211, hostusages4, hostusagesram4);
+            putUsage(243, hostusages5, hostusagesram5);
         }
         preClockTime = currentTime;
+    }
+
+    public void putUsage(int index, List<Double> hostusages, List<Double> hostusagesram)
+    {
+        double usage =  hostList.get(index).getCpuPercentUtilization();
+        double usageram = hostList.get(index).getRamPercentUtilization();
+        hostusages.add(usage);
+        hostusagesram.add(usageram);
+//        System.out.println(usage + "   " + usageram);
     }
 
     /**

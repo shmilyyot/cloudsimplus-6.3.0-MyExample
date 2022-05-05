@@ -35,7 +35,7 @@ public class Main
 			ARIMAModel arima = new ARIMAModel(data);
 
 			ArrayList<double []> list = new ArrayList<>();
-			int period = 7;
+			int period = 1;
 			int modelCnt = 5, cnt = 0;			//通过多次预测的平均值作为预测值
 			double [] tmpPredict = new double [modelCnt];
 			for (int k = 0; k < modelCnt; ++k)			//控制通过多少组参数进行计算最终的结果

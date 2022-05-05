@@ -1,5 +1,6 @@
 package org.cloudsimplus.MyExample;
 
+import java.io.*;
 import java.util.*;
 
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -7,13 +8,16 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.cloudbus.cloudsim.hosts.Host;
+import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.MyExample.ARIMA.ARIMAModel;
+import org.cloudsimplus.MyExample.arima2.ARIMA;
 
 public class MathHandler {
 
     public MathHandler() {}
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         MathHandler mathHandler = new MathHandler();
         List<Double> list = new LinkedList<>();
 //        list.add(0.07947);
@@ -28,40 +32,180 @@ public class MathHandler {
 //        list.add(0.1191);
 //        list.add(0.1187);
 //        list.add(0.1219);
-//        list.add(1.0);
-//        list.add(2.1);
-//        list.add(3.3);
-//        list.add(4.5);
-//        list.add(5.2);
-//        list.add(6.34);
-//        list.add(7.66);
-//        list.add(8.0);
-//        list.add(9.3);
-//        list.add(10.2);
-//        list.add(11.0);
-//        list.add(12.3);
-        list.add(0.012800751879699247);
-        list.add(0.012020676691729326);
-        list.add(0.01954887218045113);
-        list.add(0.02405075187969925);
-        list.add(0.024182330827067666);
-        list.add(0.013167293233082706);
-        list.add(0.015714285714285712);
-        list.add(0.014454887218045111);
-        list.add(0.022781954887218046);
-        list.add(0.02450187969924812);
-        list.add(0.027077067669172936);
-        list.add(0.012988721804511277);
+        list.add(1.0);
+        list.add(2.1);
+        list.add(3.3);
+        list.add(4.5);
+        list.add(5.2);
+        list.add(6.34);
+        list.add(7.66);
+        list.add(8.0);
+        list.add(9.3);
+        list.add(10.2);
+        list.add(11.0);
+        list.add(12.3);
+//        list.add(0.012800751879699247);
+//        list.add(0.012020676691729326);
+//        list.add(0.01954887218045113);
+//        list.add(0.02405075187969925);
+//        list.add(0.024182330827067666);
+//        list.add(0.013167293233082706);
+//        list.add(0.015714285714285712);
+//        list.add(0.014454887218045111);
+//        list.add(0.022781954887218046);
+//        list.add(0.02450187969924812);
+//        list.add(0.027077067669172936);
+//        list.add(0.012988721804511277);
 //        Collections.reverse(list);
 
-
+//        System.out.println(mathHandler.DGM21PredictingTest(list,list.size()));
 //        //暂时还是GM(1,1)靠谱，等待更好的
-//        mathHandler.GM11PredictingTest(list,list.size());
+//        System.out.println(mathHandler.GM11PredictingTest(list,list.size()));
 //        //结论：DGM是个乐色算法
 //        mathHandler.DGM21PredictingTest(list,12);
 //        mathHandler.DGM11PredictingTest(list,12);
         //ARIMA预测效果更好
-        System.out.println("Predict value="+mathHandler.ARIMRPrediction(list,Constant.HOST_LogLength));
+//        System.out.println("Predict value="+mathHandler.ARIMRPrediction(list,list.size()));
+//        System.out.println(mathHandler.LRPredicting(list,list.size()));
+        mathHandler.handlePredictValue(mathHandler);
+
+    }
+
+    public void handlePredictValue(MathHandler mathHandler) throws IOException {
+        ArrayList<Double> originalData = new ArrayList<>();
+        ArrayList<Double> predictData = new ArrayList<>();
+        ArrayList<Double> originalDataram = new ArrayList<>();
+        ArrayList<Double> predictDataram = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\originalcpu3.csv"));
+        String line = null;
+        while((line = br.readLine()) != null)
+        {
+            Double num = Double.parseDouble(line);
+            originalData.add(num);
+        }
+        ArrayList<Double> currentList = new ArrayList<>();
+        for(int i = 0; i < 12; ++i)
+        {
+            currentList.add(originalData.get(i));
+        }
+        double predictnum = mathHandler.ARIMRPrediction(currentList,Constant.HOST_LogLength);
+//        double predictnum = mathHandler.LRPredicting(currentList,Constant.HOST_LogLength);
+//        double predictnum = mathHandler.GM11PredictingTest(currentList,Constant.HOST_LogLength);
+        predictData.add(predictnum);
+        System.out.println("ori: "+ originalData.get(12) + "pre: " + predictnum);
+        for(int i = 12; i < originalData.size(); ++i)
+        {
+            currentList.remove(0);
+            currentList.add(originalData.get(i));
+            predictnum = mathHandler.ARIMRPrediction(currentList,Constant.HOST_LogLength);
+//            predictnum = mathHandler.LRPredicting(currentList,Constant.HOST_LogLength);
+//            predictnum = mathHandler.GM11PredictingTest(currentList,Constant.HOST_LogLength);
+            if(i+1 < originalData.size())
+            {
+                System.out.println("ori: "+ originalData.get(i+1) + "pre: " + predictnum);
+            }
+            else
+            {
+                System.out.println("pre: " + predictnum);
+            }
+            predictData.add(predictnum);
+        }
+
+        System.out.println("----------------------------------------------------------------------------------");
+
+        br = new BufferedReader(new FileReader("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\originalram3.csv"));
+
+        String line2 = null;
+        while((line2 = br.readLine()) != null)
+        {
+            Double num = Double.parseDouble(line2);
+            originalDataram.add(num);
+        }
+        ArrayList<Double> currentList2 = new ArrayList<>();
+        for(int i = 0; i < 12; ++i)
+        {
+            currentList2.add(originalDataram.get(i));
+        }
+        double predictnum2 = mathHandler.ARIMRPrediction(currentList2,Constant.HOST_LogLength);
+//        double predictnum2 = mathHandler.LRPredicting(currentList2,Constant.HOST_LogLength);
+//        double predictnum2 = mathHandler.GM11PredictingTest(currentList2,Constant.HOST_LogLength);
+        predictDataram.add(predictnum2);
+        System.out.println("ori: "+ originalDataram.get(12) + "pre: " + predictnum2);
+        for(int i = 12; i < originalDataram.size(); ++i)
+        {
+            currentList2.remove(0);
+            currentList2.add(originalDataram.get(i));
+            predictnum2 = mathHandler.ARIMRPrediction(currentList2,Constant.HOST_LogLength);
+//            predictnum2 = mathHandler.LRPredicting(currentList2,Constant.HOST_LogLength);
+//            predictnum2 = mathHandler.GM11PredictingTest(currentList2,Constant.HOST_LogLength);
+            if(i+1 < originalDataram.size())
+            {
+                System.out.println("ori: "+ originalDataram.get(i+1) + "pre: " + predictnum2);
+            }
+            else
+            {
+                System.out.println("pre: " + predictnum2);
+            }
+            predictDataram.add(predictnum2);
+        }
+
+        BufferedWriter bw = new BufferedWriter(new FileWriter("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\predictDatacpu.csv"));
+
+        for(int i=0;i < predictData.size();i++) {
+            Double num = predictData.get(i);
+            bw.write(String.valueOf(num));
+            bw.newLine();
+            bw.flush();
+        }
+
+        bw = new BufferedWriter(new FileWriter("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\predictDataram.csv"));
+        for(int i=0;i < predictDataram.size();i++) {
+            Double num = predictDataram.get(i);
+            bw.write(String.valueOf(num));
+            bw.newLine();
+            bw.flush();
+        }
+        //释放资源
+        bw.close();
+        calRMSE(predictData,originalData);
+        calMAE(predictData,originalData);
+        calRMSE(predictDataram,originalDataram);
+        calMAE(predictDataram,originalDataram);
+        calMAPE(predictData,originalData);
+        calMAPE(predictDataram,originalDataram);
+    }
+
+    public void calRMSE(ArrayList<Double> predictData,ArrayList<Double> originalData)
+    {
+        double totalpow = 0.0;
+        for(int i = 0; i < predictData.size() - 1; ++i)
+        {
+            totalpow += Math.pow(predictData.get(i) - originalData.get(i+12), 2);
+        }
+        double RMSE = Math.sqrt(totalpow / predictData.size());
+        System.out.println("RMSE : " + RMSE);
+    }
+
+    public void calMAE(ArrayList<Double> predictData,ArrayList<Double> originalData)
+    {
+        double totalmedian = 0.0;
+        for(int i = 0; i < predictData.size() - 1; ++i)
+        {
+            totalmedian += Math.abs(predictData.get(i) - originalData.get(i+12));
+        }
+        double MAE = totalmedian / predictData.size();
+        System.out.println("MAE : " + MAE);
+    }
+
+    public void calMAPE(ArrayList<Double> predictData,ArrayList<Double> originalData)
+    {
+        double totalmedian = 0.0;
+        for(int i = 0; i < predictData.size() - 1; ++i)
+        {
+            totalmedian += Math.abs((predictData.get(i) - originalData.get(i+12)) / originalData.get(i+12));
+        }
+        double MAPE = totalmedian / predictData.size() * 100;
+        System.out.println("MAPE : " + MAPE);
     }
 
     //余弦相似度（暂时只考虑cpu和mem，所以只有二维）
@@ -137,7 +281,63 @@ public class MathHandler {
             return utilization;
         }
         double predict = ARIMRPrediction(dataHistory,n);
-        return cutTo0To1(predict);
+        return predict;
+    }
+
+    public double LRPredicting(List<Double> dataHistory,int n,double utilization, Host host)
+    {
+        if(!Constant.USING_PREDICT){
+            return utilization;
+        }
+        int len = 10;
+        //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
+        if(dataHistory.size() < len){
+            return utilization;
+        }
+        double[] utilizationHistory = convertListToArray(dataHistory);
+        double[] utilizationHistoryReversed = new double[len];
+        for (int i = 0; i < len; i++) {
+            utilizationHistoryReversed[i] = utilizationHistory[len - i - 1];
+        }
+        double[] estimates = null;
+        try {
+            estimates = getRobustLoessParameterEstimates(utilizationHistoryReversed);
+        } catch (IllegalArgumentException e) {
+            return utilization;
+        }
+        double migrationIntervals = Math.ceil(getMaximumVmMigrationTime(host) / Constant.SCHEDULING_INTERVAL);
+        double predictedUtilization = estimates[0] + estimates[1] * (len + migrationIntervals) ;
+        if(predictedUtilization < 0)
+        {
+            return utilization;
+        }
+        return predictedUtilization;
+    }
+
+    public double LRPredicting(List<Double> dataHistory,int n)
+    {
+        int len = 10;
+        double[] utilizationHistory = convertListToArray(dataHistory);
+        double[] utilizationHistoryReversed = new double[len];
+        for (int i = 0; i < len; i++) {
+            utilizationHistoryReversed[i] = utilizationHistory[len - i - 1];
+        }
+        double[] estimates = null;
+        estimates = getLoessParameterEstimates(utilizationHistoryReversed);
+        double predictedUtilization = estimates[0] + estimates[1] * (len);
+        System.out.println(estimates.length + " " + estimates[0] + " " +estimates[1]);
+        return predictedUtilization;
+    }
+
+    protected double getMaximumVmMigrationTime(Host host) {
+        long maxRam = Long.MIN_VALUE;
+        for (Vm vm : host.getVmList()) {
+            long ram = vm.getRam().getCapacity();
+            if (ram > maxRam) {
+                maxRam = ram;
+            }
+        }
+        return maxRam / ((double) host.getBw().getCapacity() / (2 * 8000));
     }
 
     public double ARIMRPrediction(List<Double> dataHistory,int n){
@@ -277,9 +477,9 @@ public class MathHandler {
 //        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
         double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
         if(max){
-            return cutTo0To1(findPredictMax(predicts));
+            return findPredictMax(predicts);
         }else{
-            return cutTo0To1(findPredictMin(predicts));
+            return findPredictMin(predicts);
         }
     }
 
@@ -348,7 +548,7 @@ public class MathHandler {
 
     public double getGM11PredictResult(double a,double b,int k,double[] originalSequence){
 //        return (originalSequence[0]-b/a) * Math.exp(-a * (k-1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-2));
-        return (originalSequence[0]-b/a) * Math.exp(-a * (k-1)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-2));
+        return (originalSequence[0]-b/a) * Math.exp(-a * (k)) - (originalSequence[0]-b/a) * Math.exp(-a * (k-1));
     }
 
     public double getDGM21PredictResult(double a,double b,int k,double[] originalSequence){
@@ -360,8 +560,8 @@ public class MathHandler {
     }
 
     public double getDGMcumulativePredictValue(double a,double b,int k,double[] originalSequence){
-        return ( b/(a*a) - originalSequence[0]/a ) * Math.exp(-a * (k)) + (b/a) * (k) + originalSequence[0] * ((1+a)/a) - b/(a*a);
-//        return (b/(a*a) - originalSequence[0]/a) * Math.exp(-a * (k-1)) + b/a*(k-1) + (1+a)/a*originalSequence[0] - b/(a*a);
+//        return ( b/(a*a) - originalSequence[0]/a ) * Math.exp(-a * (k-1)) + (b/a) * (k) + originalSequence[0] * ((1+a)/a) - b/(a*a);
+        return (b/(a*a) - originalSequence[0]/a) * Math.exp(-a * (k-1)) + b/a*(k-1) + (1+a)/a*originalSequence[0] - b/(a*a);
     }
 
     public double getDGM11cumulativePredictValue(double a,double b,int k,double[] originalSequence){
@@ -444,12 +644,10 @@ public class MathHandler {
         initialB(B,meanSequence,tn);
         double[][] YN = new double[tn][1];
         initialYN(YN,originalSequence,tn);
+        initialYN(YN,originalSequence,tn);
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
         double[] predicts = getKGM11PredictResult(a,b,n,originalSequence);
-        for(int i=0;i<predicts.length;++i){
-            System.out.println("GM(1，1)的第"+i+"个预测结果："+predicts[i]);
-        }
         return getGM11PredictResult(a,b,13,originalSequence);
     }
 
@@ -475,10 +673,7 @@ public class MathHandler {
         double a = result[0][0],b = result[1][0];
 //        double predict = getGM11PredictResult(a,b,n+1,originalSequence);
         double[] predicts = getKDGM21PredictResult(a,b,n,originalSequence);
-//        for(int i=0;i<Constant.KSTEP;++i) predicts[i] /= 10;
-        for(int i=0;i<predicts.length;++i){
-            System.out.println("DGM(2，1)的第"+i+"个预测结果："+predicts[i]);
-        }
+
         return predicts[0];
     }
 
@@ -494,9 +689,6 @@ public class MathHandler {
         double[][] result = calculateGM11AandB(B,YN);
         double a = result[0][0],b = result[1][0];
         double[] predicts = getKDGM11PredictResult(a,b,n,originalSequence);
-        for(int i=0;i<predicts.length;++i){
-            System.out.println("DGM(1，1)的第"+i+"个预测结果："+predicts[i]);
-        }
         return predicts[0];
     }
 
@@ -542,8 +734,49 @@ public class MathHandler {
         return totalD / data.length;
     }
 
+    public double distance2(List<Double> usages){
+        double[] data = convertListToArray(usages);
+        Arrays.sort(data);
+        double max_value = usages.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+        double median_value = getMedian(data);
+        return max_value - median_value;
+    }
+
+    public double distance3(List<Double> usages){
+        double[] data = convertListToArray(usages);
+        Arrays.sort(data);
+        double max_value = usages.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+        double avg = getAvg(usages);
+        return max_value - avg;
+    }
+
+    public double distance4(List<Double> usages){
+        double[] data = convertListToArray(usages);
+        Arrays.sort(data);
+        double max_value = usages.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+        double min_value = usages.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
+        return Math.abs(max_value - min_value);
+    }
+
+    public double distance5(List<Double> usages){
+        double[] data = convertListToArray(usages);
+        Arrays.sort(data);
+        double max_value = usages.stream().mapToDouble(Double::doubleValue).max().getAsDouble();
+        double min_value = usages.stream().mapToDouble(Double::doubleValue).min().getAsDouble();
+        return Math.abs((max_value - min_value) / 2);
+    }
+
+    public double distance6(List<Double> usages) {
+        double sd = getStandardDeviation(usages);
+        return sd;
+    }
+
     public double getMedian(double[] data){
         return getStatistics(data).getPercentile(50);
+    }
+
+    public double getAvg(List<Double> usages) {
+        return usages.stream().mapToDouble(Double::doubleValue).sum()/usages.size();
     }
 
     public DescriptiveStatistics getStatistics(final double[] list) {
@@ -554,6 +787,16 @@ public class MathHandler {
         return stats;
     }
 
+    public double getStandardDeviation(List<Double> usages) {
+        double[] data = convertListToArray(usages);
+        double avg = getAvg(usages);
+        double totalpow = 0;
+        for(double num : data){
+            totalpow += Math.pow(num-avg,2);
+        }
+        return Math.sqrt(totalpow / data.length);
+    }
+
     public double[] getLoessParameterEstimates(final double[] y) {
         int n = y.length;
         double[] x = new double[n];
@@ -561,6 +804,54 @@ public class MathHandler {
             x[i] = i + 1;
         }
         return createWeigthedLinearRegression(x, y, getTricubeWeigts(n)).regress().getParameterEstimates();
+    }
+
+    public double[] getRobustLoessParameterEstimates(final double[] y) {
+        int n = y.length;
+        double[] x = new double[n];
+        for (int i = 0; i < n; i++) {
+            x[i] = i + 1;
+        }
+        SimpleRegression tricubeRegression = createWeigthedLinearRegression(x,
+            y, getTricubeWeigts(n));
+        double[] residuals = new double[n];
+        for (int i = 0; i < n; i++) {
+            residuals[i] = y[i] - tricubeRegression.predict(x[i]);
+        }
+        SimpleRegression tricubeBySquareRegression = createWeigthedLinearRegression(
+            x, y, getTricubeBisquareWeigts(residuals));
+
+        double[] estimates = tricubeBySquareRegression.regress()
+            .getParameterEstimates();
+        if (Double.isNaN(estimates[0]) || Double.isNaN(estimates[1])) {
+            return tricubeRegression.regress().getParameterEstimates();
+        }
+        return estimates;
+    }
+
+    public double[] getTricubeBisquareWeigts(final double[] residuals) {
+        int n = residuals.length;
+        double[] weights = getTricubeWeigts(n);
+        double[] weights2 = new double[n];
+        double s6 = getMedian(abs(residuals)) * 6;
+        for (int i = 2; i < n; i++) {
+            double k = Math.pow(1 - Math.pow(residuals[i] / s6, 2), 2);
+            if (k > 0) {
+                weights2[i] = (1 / k) * weights[i];
+            } else {
+                weights2[i] = Double.MAX_VALUE;
+            }
+        }
+        weights2[0] = weights2[1] = weights2[2];
+        return weights2;
+    }
+
+    public static double[] abs(final double[] data) {
+        double[] result = new double[data.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = Math.abs(data[i]);
+        }
+        return result;
     }
 
     public double[] getTricubeWeigts(final int n) {

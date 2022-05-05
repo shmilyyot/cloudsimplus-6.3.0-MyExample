@@ -230,7 +230,7 @@ public class ARIMAModel
 				errData[0] = random.nextGaussian() * Math.sqrt(maCoe[0]);
 			}
 
-			predict = (tmpAR + tmpMA);
+			predict = tmpAR + tmpMA;
 		}
 
 		return predict;

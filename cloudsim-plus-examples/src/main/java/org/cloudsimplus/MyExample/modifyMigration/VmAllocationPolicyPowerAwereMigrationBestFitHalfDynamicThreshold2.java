@@ -16,20 +16,20 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold extends VmAllocationPolicyMigrationStaticThreshold {
+public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold2 extends VmAllocationPolicyMigrationStaticThreshold {
     private MathHandler mathHandler;
 
-    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold(final VmSelectionPolicy vmSelectionPolicy) {
+    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold2(final VmSelectionPolicy vmSelectionPolicy) {
         this(vmSelectionPolicy, DEF_OVER_UTILIZATION_THRESHOLD);
     }
 
-    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold(
+    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold2(
         final VmSelectionPolicy vmSelectionPolicy,
         final double overUtilizationThreshold)
     {
         this(vmSelectionPolicy, overUtilizationThreshold, (BiFunction<VmAllocationPolicy, Vm, Optional<Host>>) null);
     }
-    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold(
+    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold2(
         final VmSelectionPolicy vmSelectionPolicy,
         final double overUtilizationThreshold,
         final MathHandler mathHandler)
@@ -38,7 +38,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
         this.mathHandler = mathHandler;
     }
 
-    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold(
+    public VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold2(
         final VmSelectionPolicy vmSelectionPolicy,
         final double overUtilizationThreshold,
         final BiFunction<VmAllocationPolicy, Vm, Optional<Host>> findHostForVmFunction)
@@ -60,8 +60,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
     //获取host最小剩余资源利用率，用1减过了
     public double[] getHostPredictValue(Host host,double hostCpuUtilization,double hostRamUtilization,boolean max){
         return new double[]{
-            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(mathHandler.reverseList(host.getCpuUtilizationHistory()),Constant.HOST_LogLength,hostCpuUtilization,max) : 1 - mathHandler.ARIMRPredicting(mathHandler.reverseList(host.getCpuUtilizationHistory()),Constant.HOST_LogLength,hostCpuUtilization,max),
-            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(mathHandler.reverseList(host.getRamUtilizationHistory()),Constant.HOST_LogLength,hostRamUtilization,max) : 1- mathHandler.ARIMRPredicting(mathHandler.reverseList(host.getRamUtilizationHistory()),Constant.HOST_LogLength,hostRamUtilization,max)
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(mathHandler.reverseList(host.getCpuUtilizationHistory()),Constant.HOST_LogLength,hostCpuUtilization,max) : 1 - mathHandler.LRPredicting(host.getCpuUtilizationHistory(),Constant.HOST_LogLength,hostCpuUtilization,host),
+            Constant.USING_GM ? 1 - mathHandler.GM11Predicting(mathHandler.reverseList(host.getRamUtilizationHistory()),Constant.HOST_LogLength,hostRamUtilization,max) : 1 - mathHandler.LRPredicting(host.getRamUtilizationHistory(),Constant.HOST_LogLength,hostRamUtilization,host)
         };
     }
 
