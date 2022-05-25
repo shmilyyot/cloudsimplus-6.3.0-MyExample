@@ -1,8 +1,10 @@
 package org.cloudsimplus.MyExample;
 
-import java.io.*;
-import java.util.*;
-
+import com.github.signaflo.timeseries.TestData;
+import com.github.signaflo.timeseries.TimeSeries;
+import com.github.signaflo.timeseries.forecast.Forecast;
+import com.github.signaflo.timeseries.model.arima.Arima;
+import com.github.signaflo.timeseries.model.arima.ArimaOrder;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -11,7 +13,11 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.cloudbus.cloudsim.hosts.Host;
 import org.cloudbus.cloudsim.vms.Vm;
 import org.cloudsimplus.MyExample.ARIMA.ARIMAModel;
-import org.cloudsimplus.MyExample.arima2.ARIMA;
+
+import java.io.*;
+import java.util.*;
+
+import static com.github.signaflo.data.visualization.Plots.plot;
 
 public class MathHandler {
 
@@ -52,7 +58,7 @@ public class MathHandler {
 //        list.add(0.013167293233082706);
 //        list.add(0.015714285714285712);
 //        list.add(0.014454887218045111);
-//        list.add(0.022781954887218046);
+//        list.add(0.01);
 //        list.add(0.02450187969924812);
 //        list.add(0.027077067669172936);
 //        list.add(0.012988721804511277);
@@ -67,8 +73,9 @@ public class MathHandler {
         //ARIMA预测效果更好
 //        System.out.println("Predict value="+mathHandler.ARIMRPrediction(list,list.size()));
 //        System.out.println(mathHandler.LRPredicting(list,list.size()));
-        mathHandler.handlePredictValue(mathHandler);
-
+//        mathHandler.handlePredictValue(mathHandler);
+//        mathHandler.ARIMRPredicting(list,12,1,true);
+        mathHandler.WMAPredicting(list,30,Double.MAX_VALUE, true);
     }
 
     public void handlePredictValue(MathHandler mathHandler) throws IOException {
@@ -76,7 +83,7 @@ public class MathHandler {
         ArrayList<Double> predictData = new ArrayList<>();
         ArrayList<Double> originalDataram = new ArrayList<>();
         ArrayList<Double> predictDataram = new ArrayList<>();
-        BufferedReader br = new BufferedReader(new FileReader("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\originalcpu3.csv"));
+        BufferedReader br = new BufferedReader(new FileReader("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\usages\\originalcpu.csv"));
         String line = null;
         while((line = br.readLine()) != null)
         {
@@ -113,7 +120,7 @@ public class MathHandler {
 
         System.out.println("----------------------------------------------------------------------------------");
 
-        br = new BufferedReader(new FileReader("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\originalram3.csv"));
+        br = new BufferedReader(new FileReader("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\cloudsim-plus-examples\\src\\main\\java\\org\\cloudsimplus\\MyExample\\logs\\usages\\originalram.csv"));
 
         String line2 = null;
         while((line2 = br.readLine()) != null)
@@ -167,23 +174,29 @@ public class MathHandler {
         }
         //释放资源
         bw.close();
+        System.out.println("CPU 评测指标");
         calRMSE(predictData,originalData);
         calMAE(predictData,originalData);
+        calMAPE(predictData,originalData);
+        calThief(predictData,originalData);
+        System.out.println("-----------------------");
+        System.out.println("RAM 评测指标");
         calRMSE(predictDataram,originalDataram);
         calMAE(predictDataram,originalDataram);
-        calMAPE(predictData,originalData);
         calMAPE(predictDataram,originalDataram);
+        calThief(predictDataram,originalDataram);
     }
 
-    public void calRMSE(ArrayList<Double> predictData,ArrayList<Double> originalData)
+    public double calRMSE(ArrayList<Double> predictData,ArrayList<Double> originalData)
     {
         double totalpow = 0.0;
         for(int i = 0; i < predictData.size() - 1; ++i)
         {
             totalpow += Math.pow(predictData.get(i) - originalData.get(i+12), 2);
         }
-        double RMSE = Math.sqrt(totalpow / predictData.size());
+        double RMSE = Math.sqrt(totalpow / (predictData.size()-1));
         System.out.println("RMSE : " + RMSE);
+        return RMSE;
     }
 
     public void calMAE(ArrayList<Double> predictData,ArrayList<Double> originalData)
@@ -193,7 +206,7 @@ public class MathHandler {
         {
             totalmedian += Math.abs(predictData.get(i) - originalData.get(i+12));
         }
-        double MAE = totalmedian / predictData.size();
+        double MAE = totalmedian / (predictData.size()-1);
         System.out.println("MAE : " + MAE);
     }
 
@@ -204,8 +217,28 @@ public class MathHandler {
         {
             totalmedian += Math.abs((predictData.get(i) - originalData.get(i+12)) / originalData.get(i+12));
         }
-        double MAPE = totalmedian / predictData.size() * 100;
+        double MAPE = totalmedian / (predictData.size()-1) * 100;
         System.out.println("MAPE : " + MAPE);
+    }
+
+    public double calThief(ArrayList<Double> predictData,ArrayList<Double> originalData)
+    {
+        double RMSE = calRMSE(predictData,originalData);
+        double totalpow = 0.0;
+        for(int i = 0; i < predictData.size() - 1; ++i)
+        {
+            totalpow += Math.pow(predictData.get(i), 2);
+        }
+        totalpow /= (predictData.size()-1);
+        double totalpowori = 0.0;
+        for(int i = 0; i < predictData.size() - 1; ++i)
+        {
+            totalpowori += Math.pow(originalData.get(i+12), 2);
+        }
+        totalpowori /= (predictData.size()-1);
+        double Thief = RMSE / (Math.sqrt(totalpow) + Math.sqrt(totalpowori));
+        System.out.println("Thief : " + Thief);
+        return Thief;
     }
 
     //余弦相似度（暂时只考虑cpu和mem，所以只有二维）
@@ -272,16 +305,100 @@ public class MathHandler {
         return sum;
     }
 
+    public int countNonZeroBeginning(final double[] data) {
+        int i = data.length - 1;
+        while (i >= 0) {
+            if (data[i--] != 0) {
+                break;
+            }
+        }
+        return i + 2;
+    }
+
+    public double[] trimZeroTail(final double[] data) {
+        return Arrays.copyOfRange(data, 0, countNonZeroBeginning(data));
+    }
+
     public double ARIMRPredicting(List<Double> dataHistory,int n,double utilization,boolean max){
         if(!Constant.USING_PREDICT){
             return utilization;
         }
         //若历史记录不满足log长度，无法预测，直接返回当前利用率当作预测值
-        if(dataHistory.size() < n || checkUtilizationNotAllTheSame(convertListToArray(dataHistory))){
+        if(dataHistory.size() < n || checkhasSame(dataHistory)){
             return utilization;
         }
         double predict = ARIMRPrediction(dataHistory,n);
         return predict;
+    }
+
+//    public double ARIMRPredicting(List<Double> dataHistory,int n,double utilization,boolean max)
+//    {
+//        if(dataHistory.size() < n)
+//        {
+//            return utilization;
+//        }
+//        TimeSeries timeSeries = TimeSeries.from(convertListToArray(dataHistory));
+//        List<ArimaOrder> models = new ArrayList<>();
+//        for (int p = 0; p < 5; p++)
+//            for (int d = 0; d < 1; d++)
+//                for (int q = 0; q < 5; q++) {
+//                    models.add(ArimaOrder.order(p, d, q));
+////                    models.add(ArimaOrder.order(p, d, q, Arima.Drift.INCLUDE));
+////                    models.add(ArimaOrder.order(p, d, q, Arima.Constant.INCLUDE));
+//                }
+//
+//        ArrayList<Arima> fmodels = new ArrayList<Arima>();
+//
+//        Arima tmp;
+//        for (int i = 0; i < models.size(); i++) {
+//            try {
+//                tmp = Arima.model(timeSeries, models.get(i));
+//            } catch (Exception e) {
+//                continue;
+//            }
+//            if (!Double.isNaN(tmp.aic()))
+//                fmodels.add(tmp);
+//        }
+//        Arima optimalModel = fmodels.get(0);
+//        double aic = fmodels.get(0).aic();
+//        double aic_curr;
+//        for (int i = 1; i < fmodels.size(); i++) {
+//            if ((aic_curr = fmodels.get(i).aic()) < aic) {
+//                aic = aic_curr;
+//                optimalModel = fmodels.get(i);
+//            }
+//        }
+////        ArimaOrder modelOrder = ArimaOrder.order(0, 1, 1, 0, 1, 1); // Note that intercept fitting will automatically be turned off
+////        Arima model = Arima.model(timeSeries, modelOrder);
+////        System.out.println(model.aic());
+//        Arima model = optimalModel;
+//        Forecast forecast = model.forecast(1); // To specify the alpha significance level, add it as a second argument.
+////        System.out.println(forecast);
+////        System.out.println(model.coefficients()); // Get and display the estimated coefficients
+////        System.out.println(java.util.Arrays.toString(model.stdErrors()));
+////        plot(model.predictionErrors());
+//        double predictValue = forecast.pointEstimates().mean();
+//        return predictValue;
+//    }
+
+    public double WMAPredicting(List<Double> dataHistory,int n,double utilization,boolean max)
+    {
+        double[] data = convertListToArray(dataHistory);
+        int len = data.length;
+        double k = 0.3;
+        double window1Value = 0.0;
+        for(int i = 0; i < len / 3; ++i)
+        {
+            window1Value += data[i];
+        }
+        double window2Value = 0.0;
+        for(int i = len / 3; i < data.length; ++i)
+        {
+            window2Value += data[i];
+        }
+        double predictValue = window1Value * k / len * 3 + (1 - k) * window2Value / len * 3 / 2;
+//        System.out.println(predictValue);
+        return predictValue;
     }
 
     public double LRPredicting(List<Double> dataHistory,int n,double utilization, Host host)
@@ -374,6 +491,50 @@ public class MathHandler {
         //        System.out.println("Predict value="+predict);
         return sumPredict;
     }
+
+//    public double ARIMRPrediction(List<Double> dataHistory,int n)
+//    {
+//        TimeSeries timeSeries = TimeSeries.from(convertListToArray(dataHistory));
+//        List<ArimaOrder> models = new ArrayList<>();
+//        for (int p = 0; p < 5; p++)
+//            for (int d = 0; d < 2; d++)
+//                for (int q = 0; q < 5; q++) {
+//                    models.add(ArimaOrder.order(p, d, q));
+////                    models.add(ArimaOrder.order(p, d, q, Arima.Drift.INCLUDE));
+////                    models.add(ArimaOrder.order(p, d, q, Arima.Constant.INCLUDE));
+//                }
+//
+//        ArrayList<Arima> fmodels = new ArrayList<Arima>();
+//
+//        Arima tmp;
+//        for (int i = 0; i < models.size(); i++) {
+//            try {
+//                tmp = Arima.model(timeSeries, models.get(i));
+//            } catch (Exception e) {
+//                continue;
+//            }
+//            if (!Double.isNaN(tmp.aic()))
+//                fmodels.add(tmp);
+//        }
+//        Arima optimalModel = fmodels.get(0);
+//        double aic = fmodels.get(0).aic();
+//        double aic_curr;
+//        for (int i = 1; i < fmodels.size(); i++) {
+//            if ((aic_curr = fmodels.get(i).aic()) < aic) {
+//                aic = aic_curr;
+//                optimalModel = fmodels.get(i);
+//            }
+//        }
+////        ArimaOrder modelOrder = ArimaOrder.order(0, 1, 1, 0, 1, 1); // Note that intercept fitting will automatically be turned off
+////        Arima model = Arima.model(timeSeries, modelOrder);
+////        System.out.println(model.aic());
+//        Arima model = optimalModel;
+//        Forecast forecast = model.forecast(1); // To specify the alpha significance level, add it as a second argument.
+//
+////        System.out.println(forecast);
+//        double predictValue = forecast.pointEstimates().mean();
+//        return predictValue;
+//    }
 
     public double DGM21Predicting(List<Double> dataHistory,int n,double utilization,boolean max){
         double[] originalSequence = listToArray(dataHistory,n);
@@ -574,6 +735,18 @@ public class MathHandler {
         double utilization = originalSequence[0];
         for(int i=1;i<originalSequence.length;++i){
             if(originalSequence[i] == utilization) return true;
+        }
+        return false;
+    }
+
+    public boolean checkhasSame(List<Double> originalSequence)
+    {
+        Set<Double> m = new HashSet<>();
+        for(double num : originalSequence) {
+            if(m.contains(num)) {
+                return true;
+            }
+            m.add(num);
         }
         return false;
     }

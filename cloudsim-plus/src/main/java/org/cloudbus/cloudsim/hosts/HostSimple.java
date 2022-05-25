@@ -1787,9 +1787,9 @@ public class HostSimple implements Host, Serializable {
                 utilizationHistory[i] += Math.floor(vm.getUtilizationHistory().get(i) * vm.getMips()) / hostMips;
             }
         }
+        utilizationHistory = statictrimZeroTail(utilizationHistory);
         LinkedList<Double> usages = new LinkedList<>();
         for(double num:utilizationHistory){
-            if(num == 0.0) return usages;
             usages.addLast(num);
         }
         return usages;
@@ -1806,12 +1806,26 @@ public class HostSimple implements Host, Serializable {
                 utilizationHistory[i] += Math.floor(vm.getUtilizationHistoryRam().get(i) * vm.getRam().getCapacity()) / hostRam;
             }
         }
+        utilizationHistory = statictrimZeroTail(utilizationHistory);
         List<Double> usages = new LinkedList<>();
         for(double num:utilizationHistory){
-            if(num == 0.0) return usages;
             usages.add(num);
         }
         return usages;
+    }
+
+    public static double[] statictrimZeroTail(final double[] data) {
+        return Arrays.copyOfRange(data, 0, staticcountNonZeroBeginning(data));
+    }
+
+    public static int staticcountNonZeroBeginning(final double[] data) {
+        int i = data.length - 1;
+        while (i >= 0) {
+            if (data[i--] != 0) {
+                break;
+            }
+        }
+        return i + 2;
     }
 
 }

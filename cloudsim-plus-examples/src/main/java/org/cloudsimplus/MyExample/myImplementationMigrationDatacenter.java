@@ -23,6 +23,7 @@ import org.cloudbus.cloudsim.resources.*;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerSpaceShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared;
 import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeSharedOverSubscription;
+import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumLoad;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumMigrationTime;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyMinimumUtilization;
 import org.cloudbus.cloudsim.selectionpolicies.VmSelectionPolicyRandomSelection;
@@ -517,21 +518,6 @@ public class myImplementationMigrationDatacenter {
 //            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
 //            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
-//            //静态阈值0.9的自己预测版本
-//            myVersion = true;
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitMyVersionThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
-//            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
-//            this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
-
             //PABFD + 回调T的版本
             myVersion = true;
             this.allocationPolicy =
@@ -557,20 +543,7 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
-//            //必须保证有一个static和一个dynamic开着
-//            //PABFD + MtversionMAD算法
-//            dynamicUpperThreshold = true;
-//            this.dynamicUpperAllocationPolicy =
-//                new VmAllocationPolicyPowerAwereMigrationBestFitMyVersionMADThreshold(
-//                    new VmSelectionPolicyMinimumMigrationTime(),
-//                    2.5,
-//                    allocationPolicy,
-//                    mathHandler,
-//                    allHostsRamUtilizationHistoryQueue,
-//                    allHostsCpuUtilizationHistoryQueue,
-//                    allVmsRamUtilizationHistoryQueue,
-//                    allVmsCpuUtilizationHistoryQueue);
-//
+
 //            //PABFD + IQR算法
 //            dynamicUpperThreshold = true;
 //            this.dynamicUpperAllocationPolicy =
@@ -597,12 +570,13 @@ public class myImplementationMigrationDatacenter {
 //                    allVmsRamUtilizationHistoryQueue,
 //                    allVmsCpuUtilizationHistoryQueue);
 
-//            //PASUP + static算法
-//            this.allocationPolicy =
-//                new VmAllocationPolicyPASUP(
-//                    new VmSelectionPolicyUnbalanceUtilization(),
-//                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-//                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.1,
+//            //PABFD + WMA算法
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitWMAThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    1.2,
+//                    allocationPolicy,
 //                    mathHandler,
 //                    allHostsRamUtilizationHistoryQueue,
 //                    allHostsCpuUtilizationHistoryQueue,

@@ -45,7 +45,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold extends Vm
 
 
     protected double getHostUtilizationMad(Host host,List<Double> usages) throws IllegalArgumentException {
-        if(usages.size() >= Constant.HOST_LogLength){
+        if(mathHandler.countNonZeroBeginning(mathHandler.convertListToArray(usages)) >= 12){
             return mathHandler.mad(usages);
         }
         throw new IllegalArgumentException();

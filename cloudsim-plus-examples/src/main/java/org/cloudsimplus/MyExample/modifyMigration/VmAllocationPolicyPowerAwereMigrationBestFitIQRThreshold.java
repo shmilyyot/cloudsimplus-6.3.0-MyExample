@@ -43,7 +43,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
     }
 
     protected double getHostUtilizationIqr(Host host,List<Double> usages) throws IllegalArgumentException {
-        if(usages.size() >= Constant.HOST_LogLength){
+        if(mathHandler.countNonZeroBeginning(mathHandler.convertListToArray(usages)) > 12){
             return mathHandler.iqr(usages);
         }
         throw new IllegalArgumentException();

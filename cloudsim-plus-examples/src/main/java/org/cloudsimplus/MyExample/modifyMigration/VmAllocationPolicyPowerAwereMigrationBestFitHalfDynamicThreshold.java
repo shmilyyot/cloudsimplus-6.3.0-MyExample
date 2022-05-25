@@ -65,41 +65,55 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
         };
     }
 
-
     //重写判断host本身是否过载，用未来利用率预测
     @Override
     public boolean isHostOverloaded(final Host host) {
-        double cpuThreshold = getOverUtilizationThreshold(host), ramThreshold = getRamOverUtilizationThreshold(host);
         if(isHostRamThreshold()){
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();
             boolean canUpCpuThreshold = true,canUpRamThreshold = true;
-            if(hostCpuUtilization > 1.0){
-                decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
-                canUpCpuThreshold = false;
-            }
-            if(hostRamUtilization > 1.0){
-                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
-                canUpRamThreshold = false;
-            }
-            boolean currentOverload = isHostOverloaded(host,hostCpuUtilization,hostRamUtilization);
-            // U > T ,直接返回过载迁移;U <= T,继续往下执行
-            if(currentOverload){
-                return true;
-            }
+//            if(hostCpuUtilization > 1.0){
+//                decreaseCpuThresHold(host,getOverUtilizationThreshold(host),hostCpuUtilization,hostRamUtilization,true);
+//                return true;
+//            }
+//            if(hostRamUtilization > 1.0){
+//                decreaseRamThresHold(host,getRamOverUtilizationThreshold(host),hostCpuUtilization,hostRamUtilization,true);
+//                return true;
+//            }
+//            boolean CpuOverload = isCpuOverload(host,hostCpuUtilization);
+//            boolean RamOverload = isRamOverload(host,hostRamUtilization);
+//            if(CpuOverload && RamOverload){
+//                if(canUpCpuThreshold) increaseCpuThreshold(host,getOverUtilizationThreshold(host));
+//                if(canUpRamThreshold) increaseRamThresHold(host,getRamOverUtilizationThreshold(host));
+////                return isHostOverloaded(host,hostCpuUtilization,hostRamUtilization);
+//            }else if(!CpuOverload && RamOverload){
+//                if(canUpRamThreshold) increaseRamThresHold(host,getRamOverUtilizationThreshold(host));
+//                RamOverload = isRamOverload(host, hostRamUtilization);
+////                return RamOverload;
+//            }else if(CpuOverload){
+//                if(canUpCpuThreshold) increaseCpuThreshold(host,getOverUtilizationThreshold(host));
+//                CpuOverload = isCpuOverload(host, hostCpuUtilization);
+////                return CpuOverload;
+//            }
+
+//            boolean currentOverload = isHostOverloaded(host,hostCpuUtilization,hostRamUtilization);
+//            // U > T ,直接返回过载迁移;U <= T,继续往下执行
+//            if(currentOverload){
+//                return true;
+//            }
+
             if(host.getSimulation().clock() < 1) return false;
+
             boolean futureOverload = false;
             //获取主机未来利用率U'，hostPredict[0]是cpu利用率,hostPredict[1]是内存利用率
             final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
             final double predictCpuUsage = 1 - hostPredict[0],predictRamUsage = 1 - hostPredict[1];
             if(predictCpuUsage > 1.0){
-//                host.setCPU_THRESHOLD(0.9);
-                decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
+                decreaseCpuThresHold(host,getOverUtilizationThreshold(host),hostCpuUtilization,hostRamUtilization,true);
                 canUpCpuThreshold = false;
             }
             if(predictRamUsage > 1.0){
-//                host.setRAM_THRESHOLD(0.9);
-                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
+                decreaseRamThresHold(host,getRamOverUtilizationThreshold(host),hostCpuUtilization,hostRamUtilization,true);
                 canUpRamThreshold = false;
             }
             //观察未来利用率U'和T比较
@@ -108,51 +122,113 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
             //U' <= T ,尝试减小T为T‘
             //cpu和ram的预测值都满足条件
             if(!futureCpuOverload && !futureRamOverload){
-//                decreaseCpuThresHold(host,cpuThreshold,predictCpuUsage,predictRamUsage);
-//                decreaseRamThresHold(host,ramThreshold,predictCpuUsage,predictRamUsage);
                 return false;
-            }else if(!futureCpuOverload && futureRamOverload){
-                //尝试降低cpu的T，增加Ram的T
-                //尝试降低cpu的阈值，失败回退
-//                decreaseCpuThresHold(host,cpuThreshold,predictCpuUsage,hostRamUtilization);
-                //尝试增加ram的T
-                if(canUpRamThreshold) increaseRamThresHold(host,ramThreshold);
+            }else if(!futureCpuOverload){
+                if(canUpRamThreshold) increaseRamThresHold(host,getRamOverUtilizationThreshold(host), hostRamUtilization);
                 futureRamOverload = isHostOverloaded(host,predictCpuUsage,predictRamUsage);
-                if(futureRamOverload){
-                    //如果增加T之后ram依然过载，那就直接过载，哪怕cpu已经满足预测值也不过载的条件
-                    return true;
-                }else{
-                    //增加T之后ram不过载，返回不过载
-                    return false;
-                }
-
-            }else if(futureCpuOverload && !futureRamOverload){
-                //尝试降低ram的T，增加cpu的T
-                //尝试降低ram的阈值，失败回退
-//                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,predictRamUsage);
-                //尝试增加cpu的阈值，失败回退
-                if(canUpCpuThreshold) increaseCpuThreshold(host,cpuThreshold);
+                return futureRamOverload;
+            }else if(!futureRamOverload){
+                if(canUpCpuThreshold) increaseCpuThreshold(host,getOverUtilizationThreshold(host), hostCpuUtilization);
                 futureCpuOverload = isHostOverloaded(host,predictCpuUsage,predictRamUsage);
-                if(futureCpuOverload){
-                    return true;
-                }else{
-                    return false;
-                }
+                return futureCpuOverload;
             }else {
                 //cpu和ram的预测值都大于当前值，尝试都增加T
-                if(canUpCpuThreshold) increaseCpuThreshold(host,cpuThreshold);
-                if(canUpRamThreshold) increaseRamThresHold(host,ramThreshold);
+                if(canUpCpuThreshold) increaseCpuThreshold(host,getOverUtilizationThreshold(host), hostCpuUtilization);
+                if(canUpRamThreshold) increaseRamThresHold(host,getRamOverUtilizationThreshold(host), hostRamUtilization);
                 futureOverload = isHostOverloaded(host,predictCpuUsage,predictRamUsage);
-                if(futureOverload){
-                    return true;
-                }else{
-                    return false;
-                }
+                return futureOverload;
             }
         }else{
             return isHostOverloaded(host, host.getCpuPercentUtilization());
         }
     }
+
+
+//    //重写判断host本身是否过载，用未来利用率预测
+//    @Override
+//    public boolean isHostOverloaded(final Host host) {
+//        double cpuThreshold = getOverUtilizationThreshold(host), ramThreshold = getRamOverUtilizationThreshold(host);
+//        if(isHostRamThreshold()){
+//            final double hostCpuUtilization = host.getCpuPercentUtilization();
+//            final double hostRamUtilization = host.getRamPercentUtilization();
+//            boolean canUpCpuThreshold = true,canUpRamThreshold = true;
+//            if(hostCpuUtilization > 1.0){
+//                decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
+//                canUpCpuThreshold = false;
+//            }
+//            if(hostRamUtilization > 1.0){
+//                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
+//                canUpRamThreshold = false;
+//            }
+//            boolean currentOverload = isHostOverloaded(host,hostCpuUtilization,hostRamUtilization);
+//            // U > T ,直接返回过载迁移;U <= T,继续往下执行
+//            if(currentOverload){
+//                return true;
+//            }
+//            if(host.getSimulation().clock() < 1) return false;
+//            boolean futureOverload = false;
+//            //获取主机未来利用率U'，hostPredict[0]是cpu利用率,hostPredict[1]是内存利用率
+//            final double[] hostPredict = getHostPredictValue(host,hostCpuUtilization,hostRamUtilization,false);
+//            final double predictCpuUsage = 1 - hostPredict[0],predictRamUsage = 1 - hostPredict[1];
+//            if(predictCpuUsage > 1.0){
+//                decreaseCpuThresHold(host,cpuThreshold,hostCpuUtilization,hostRamUtilization,true);
+//                canUpCpuThreshold = false;
+//            }
+//            if(predictRamUsage > 1.0){
+//                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,hostRamUtilization,true);
+//                canUpRamThreshold = false;
+//            }
+//            //观察未来利用率U'和T比较
+//            boolean futureCpuOverload = isHostOverloaded(host,predictCpuUsage,hostRamUtilization);
+//            boolean futureRamOverload = isHostOverloaded(host,hostCpuUtilization,predictRamUsage);
+//            //U' <= T ,尝试减小T为T‘
+//            //cpu和ram的预测值都满足条件
+//            if(!futureCpuOverload && !futureRamOverload){
+////                decreaseCpuThresHold(host,cpuThreshold,predictCpuUsage,predictRamUsage);
+////                decreaseRamThresHold(host,ramThreshold,predictCpuUsage,predictRamUsage);
+//                return false;
+//            }else if(!futureCpuOverload && futureRamOverload){
+//                //尝试降低cpu的T，增加Ram的T
+//                //尝试降低cpu的阈值，失败回退
+////                decreaseCpuThresHold(host,cpuThreshold,predictCpuUsage,hostRamUtilization);
+//                //尝试增加ram的T
+//                if(canUpRamThreshold) increaseRamThresHold(host,ramThreshold);
+//                futureRamOverload = isHostOverloaded(host,predictCpuUsage,predictRamUsage);
+//                if(futureRamOverload){
+//                    //如果增加T之后ram依然过载，那就直接过载，哪怕cpu已经满足预测值也不过载的条件
+//                    return true;
+//                }else{
+//                    //增加T之后ram不过载，返回不过载
+//                    return false;
+//                }
+//
+//            }else if(futureCpuOverload && !futureRamOverload){
+//                //尝试降低ram的T，增加cpu的T
+//                //尝试降低ram的阈值，失败回退
+////                decreaseRamThresHold(host,ramThreshold,hostCpuUtilization,predictRamUsage);
+//                //尝试增加cpu的阈值，失败回退
+//                if(canUpCpuThreshold) increaseCpuThreshold(host,cpuThreshold);
+//                futureCpuOverload = isHostOverloaded(host,predictCpuUsage,predictRamUsage);
+//                if(futureCpuOverload){
+//                    return true;
+//                }else{
+//                    return false;
+//                }
+//            }else {
+//                //cpu和ram的预测值都大于当前值，尝试都增加T
+//                if(canUpCpuThreshold) increaseCpuThreshold(host,cpuThreshold);
+//                if(canUpRamThreshold) increaseRamThresHold(host,ramThreshold);
+//                futureOverload = isHostOverloaded(host,predictCpuUsage,predictRamUsage);
+//                if(futureOverload){
+//                    return true;
+//                }else{
+//                    return false;
+//                }
+//            }
+//        }else{
+//            return isHostOverloaded(host, host.getCpuPercentUtilization());
+//        }
+//    }
 
     protected boolean isNotHostOverloadedAfterAllocation(final Host host, final Vm vm) {
         final Vm tempVm = new VmSimple(vm,true);
@@ -176,6 +252,16 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
         }
     }
 
+    public boolean isCpuOverload(final Host host, final double cpuUsagePercent)
+    {
+        return cpuUsagePercent > getOverUtilizationThreshold(host);
+    }
+
+    public boolean isRamOverload(final Host host, final double ramUsagePercent)
+    {
+        return ramUsagePercent > getRamOverUtilizationThreshold(host);
+    }
+
     public double getModifyDistance(List<Double> usages){
 //        return usages.size() >= Constant.HOST_LogLength ? mathHandler.mad(usages) : 0;
         return usages.size() >= Constant.HOST_LogLength ? mathHandler.distance6(usages) : 0;
@@ -194,17 +280,27 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
         host.setCPU_THRESHOLD(newThreshold);
     }
 
-    public void increaseCpuThreshold(Host host,double cpuThreshold){
-        if(host.getCPU_THRESHOLD() == 1.0) return;
+    public void increaseCpuThreshold(Host host,double cpuThreshold, double hostCpuUtilization){
         double dcpu = getModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory()));
-        if(cpuThreshold + dcpu > 1.0)
+        if(dcpu == 0) return;
+        while(hostCpuUtilization > host.getCPU_THRESHOLD())
         {
-
-//            host.setCPU_THRESHOLD(1);
-            return;
+            if(host.getCPU_THRESHOLD() + dcpu > 1 - dcpu)
+            {
+                host.setCPU_THRESHOLD(1 - dcpu);
+                return;
+            }
+            double newCpuThreshold = host.getCPU_THRESHOLD() + dcpu;
+            host.setCPU_THRESHOLD(newCpuThreshold);
         }
-        double newCpuThreshold = Math.min(cpuThreshold + dcpu, 1.0);
-        host.setCPU_THRESHOLD(newCpuThreshold);
+//        double dcpu = getModifyDistance(mathHandler.reverseList(host.getCpuUtilizationHistory()));
+//        if(cpuThreshold + dcpu > 1 - dcpu)
+//        {
+//            host.setCPU_THRESHOLD(1 - dcpu);
+//            return;
+//        }
+//        double newCpuThreshold = Math.min(cpuThreshold + dcpu, 1.0);
+//        host.setCPU_THRESHOLD(newCpuThreshold);
     }
 
     public void recoverCpuThreadHold(Host host,double originalThreshold){
@@ -217,16 +313,27 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold ex
         host.setRAM_THRESHOLD(newThreshold);
     }
 
-    public void increaseRamThresHold(Host host,double ramThreshold){
-        if(host.getRAM_THRESHOLD() == 1.0) return;
+    public void increaseRamThresHold(Host host,double ramThreshold, double hostRamUtilization){
         double dram = getModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory()));
-        if(ramThreshold + dram > 1.0)
+        if(dram == 0) return;
+        while(hostRamUtilization > host.getRAM_THRESHOLD())
         {
-//            host.setRAM_THRESHOLD(1);
-            return;
+            if(host.getRAM_THRESHOLD() + dram > 1 - dram)
+            {
+                host.setRAM_THRESHOLD(1 - dram);
+                return;
+            }
+            double newRamThreshold = host.getRAM_THRESHOLD() + dram;
+            host.setRAM_THRESHOLD(newRamThreshold);
         }
-        double newRamThreshold = Math.min(ramThreshold + dram, 1.0);
-        host.setRAM_THRESHOLD(newRamThreshold);
+//        double dram = getModifyDistance(mathHandler.reverseList(host.getRamUtilizationHistory()));
+//        if(ramThreshold + dram > 1 - dram)
+//        {
+//            host.setRAM_THRESHOLD(1 - dram);
+//            return;
+//        }
+//        double newRamThreshold = Math.min(ramThreshold + dram, 1.0);
+//        host.setRAM_THRESHOLD(newRamThreshold);
     }
 
     public void recoverRamThreadHold(Host host ,double originalThreshold){

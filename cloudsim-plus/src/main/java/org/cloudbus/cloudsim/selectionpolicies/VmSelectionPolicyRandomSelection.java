@@ -15,6 +15,7 @@ import org.cloudbus.cloudsim.vms.Vm;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * A VM selection policy that randomly select VMs to migrate from a host.
@@ -35,6 +36,7 @@ import java.util.Objects;
  */
 public class VmSelectionPolicyRandomSelection implements VmSelectionPolicy {
     private final ContinuousDistribution rand;
+    private final Random random;
 
     /**
      * Creates a PowerVmSelectionPolicyRandomSelection using
@@ -53,6 +55,7 @@ public class VmSelectionPolicyRandomSelection implements VmSelectionPolicy {
     public VmSelectionPolicyRandomSelection(final ContinuousDistribution rand){
         super();
         this.rand = Objects.requireNonNull(rand);
+        this.random = new Random();
     }
 
 	@Override
@@ -63,7 +66,7 @@ public class VmSelectionPolicyRandomSelection implements VmSelectionPolicy {
 		}
 
 
-		int index = (int)rand.sample()*migratableVms.size();
+		int index = random.nextInt(migratableVms.size());
         return migratableVms.get(index);
 	}
 }

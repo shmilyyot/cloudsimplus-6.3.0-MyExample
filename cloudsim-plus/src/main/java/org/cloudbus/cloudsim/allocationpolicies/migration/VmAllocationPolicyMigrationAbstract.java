@@ -351,7 +351,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             return difference;
         }
 
-        return 0;
+        return Double.MAX_VALUE;
     }
 
     /**
@@ -1216,6 +1216,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends VmAllocationPo
             return host.getPowerModel().getPower(getMaxUtilizationAfterAllocation(host, vm));
         } catch (IllegalArgumentException e) {
             LOGGER.error("Power consumption for {} could not be determined: {}", host, e.getMessage());
+//            return host.getPowerModel().getPower(1.0);
         }
 
         return 0;
