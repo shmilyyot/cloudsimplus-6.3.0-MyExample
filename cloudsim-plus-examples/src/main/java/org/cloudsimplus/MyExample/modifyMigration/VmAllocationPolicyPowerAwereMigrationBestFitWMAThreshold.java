@@ -87,7 +87,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitWMAThreshold extends Vm
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > 1.0 || ramUsagePercent > 1.0;
+        return cpuUsagePercent >= getOverUtilizationThreshold(host) || ramUsagePercent >= getRamOverUtilizationThreshold(host);
     }
 
 }

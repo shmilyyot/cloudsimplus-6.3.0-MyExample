@@ -392,11 +392,11 @@ public class MathHandler {
             window1Value += data[i];
         }
         double window2Value = 0.0;
-        for(int i = len / 3; i < data.length; ++i)
+        for(int i = len / 3; i < len; ++i)
         {
             window2Value += data[i];
         }
-        double predictValue = window1Value * k / len * 3 + (1 - k) * window2Value / len * 3 / 2;
+        double predictValue = window1Value * k / ((double)len/3) + (1 - k) * window2Value / (len - (double)len / 3);
 //        System.out.println(predictValue);
         return predictValue;
     }

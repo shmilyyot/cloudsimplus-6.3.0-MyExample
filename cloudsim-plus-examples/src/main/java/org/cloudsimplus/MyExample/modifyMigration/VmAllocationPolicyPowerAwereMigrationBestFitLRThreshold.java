@@ -74,7 +74,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     protected double getMaximumVmMigrationTime(Host host) {
         long maxRam = Long.MIN_VALUE;
         for (Vm vm : host.getVmList()) {
-            long ram = vm.getRam().getCapacity();
+            long ram = vm.getCurrentRequestedRam();
             if (ram > maxRam) {
                 maxRam = ram;
             }
@@ -84,6 +84,10 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
 
     public double getPredictedUtilization(Host host,List<Double> usages){
         int length = 10;
+        if(usages.size() < length)
+        {
+            return Double.MAX_VALUE;
+        }
         double[] utilizationHistory = mathHandler.convertListToArray(usages);
         double[] utilizationHistoryReversed = new double[length];
         for (int i = 0; i < length; i++) {
@@ -106,9 +110,6 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     public boolean isHostOverloaded(final Host host) {
         List<Double> cpuUsages = host.getCpuUtilizationHistory();
         List<Double> ramUsages = host.getRamUtilizationHistory();
-        if(cpuUsages.size() < Constant.HOST_LogLength || ramUsages.size() < Constant.HOST_LogLength) {
-            return getFallbackVmAllocationPolicy().isHostOverloaded(host);
-        }
         if(isHostRamThreshold()){
             double cpuLrPredict = getPredictedUtilization(host,cpuUsages);
             double ramLrPredict = getPredictedUtilization(host,ramUsages);
@@ -122,7 +123,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     }
 
     protected boolean isHostOverloaded(final Host host, final double cpuUsagePercent, final double ramUsagePercent){
-        return cpuUsagePercent > 1.0 || ramUsagePercent > 1.0;
+        return cpuUsagePercent >= getOverUtilizationThreshold(host) || ramUsagePercent >= getRamOverUtilizationThreshold(host);
     }
 
 }
