@@ -75,7 +75,13 @@ public class MathHandler {
 //        System.out.println(mathHandler.LRPredicting(list,list.size()));
 //        mathHandler.handlePredictValue(mathHandler);
 //        mathHandler.ARIMRPredicting(list,12,1,true);
-        mathHandler.WMAPredicting(list,30,Double.MAX_VALUE, true);
+//        mathHandler.WMAPredicting(list,30,Double.MAX_VALUE, true);
+        BufferedReader br = new BufferedReader(new FileReader("test.txt"));
+        String line = null;
+        while((line = br.readLine()) != null)
+        {
+            System.out.println(line);
+        }
     }
 
     public void handlePredictValue(MathHandler mathHandler) throws IOException {

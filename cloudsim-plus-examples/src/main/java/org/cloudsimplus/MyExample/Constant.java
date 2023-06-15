@@ -60,7 +60,7 @@ public class Constant {
     public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
     public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
     public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-    public static final String MACHINE_FILENAME = "D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\part-00000-of-00001.csv.gz";
+    public static final String MACHINE_FILENAME = "part-00000-of-00001.csv.gz";
     public static final boolean TEST_TRACE = false;
 
     /**
@@ -105,8 +105,8 @@ public class Constant {
     public static final boolean READ_INITIAL_MACHINE_CLOUDLET = false;   //true则只选择在初始machine本来就上对应的cloudlet，false则分离machine和cloudlet对应关系，两者单独生成
     public static final int GOOGLE_EVENT_DAYS_FILE = 16;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172，第一天16
     public static final int GOOGLE_EVENTUSAGE_DAYS_FILE = 16;   //谷歌前十天taskEvent和usageEvent所到的文件下标,默认172
-    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
-    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
+    public static final String SERIAL_CLOUDLETID_PATH = "cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
+    public static final String SERIAL_PRECLOUDLETID_PATH = "cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
 //    public static final String SERIAL_CLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/cloudlets.obj";   //序列化的cloudlet ID路径（经过筛选的）
 //    public static final String SERIAL_PRECLOUDLETID_PATH = "D:/java_workspace/cloudsimplus-6.3.0/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObjects/precloudlets.obj";   //预处理的序列化的cloudlet ID路径（经过筛选的）
     public static final boolean USING_EXISTANCE_PRECLOULETS = false;    //使用外部经过预先处理的cloulet的id，不使用自己生成的
