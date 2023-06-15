@@ -65,7 +65,7 @@ public class VmSimple extends CustomerEntityAbstract implements Vm {
     /** The CPU utilization percentage history. */
     private final List<Double> utilizationHistory = new LinkedList<>();
     private final List<Double> utilizationHistoryRam = new LinkedList<>();
-    private int logLength = 12;
+    private int logLength = 30;
 
 
     /** @see #getCpuUtilizationStats() */

@@ -55,7 +55,7 @@ public class VmSelectionPolicyRandomSelection implements VmSelectionPolicy {
     public VmSelectionPolicyRandomSelection(final ContinuousDistribution rand){
         super();
         this.rand = Objects.requireNonNull(rand);
-        this.random = new Random();
+        this.random = new Random(System.currentTimeMillis());
     }
 
 	@Override
@@ -64,8 +64,6 @@ public class VmSelectionPolicyRandomSelection implements VmSelectionPolicy {
 		if (migratableVms.isEmpty()) {
 			return Vm.NULL;
 		}
-
-
 		int index = random.nextInt(migratableVms.size());
         return migratableVms.get(index);
 	}

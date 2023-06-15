@@ -75,6 +75,7 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
         long maxRam = Long.MIN_VALUE;
         for (Vm vm : host.getVmList()) {
             long ram = vm.getCurrentRequestedRam();
+//            long ram = vm.getRam().getCapacity();
             if (ram > maxRam) {
                 maxRam = ram;
             }
@@ -110,6 +111,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold extends VmA
     public boolean isHostOverloaded(final Host host) {
         List<Double> cpuUsages = host.getCpuUtilizationHistory();
         List<Double> ramUsages = host.getRamUtilizationHistory();
+        host.setCPU_THRESHOLD(1.0);
+        host.setRAM_THRESHOLD(1.0);
         if(isHostRamThreshold()){
             double cpuLrPredict = getPredictedUtilization(host,cpuUsages);
             double ramLrPredict = getPredictedUtilization(host,ramUsages);

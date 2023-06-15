@@ -88,6 +88,8 @@ public class VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold extends Vm
         if(cpuThreshold == Double.MAX_VALUE || ramThreshold == Double.MAX_VALUE) {
             return getFallbackVmAllocationPolicy().isHostOverloaded(host);
         }
+        host.setCPU_THRESHOLD(cpuThreshold);
+        host.setRAM_THRESHOLD(ramThreshold);
         if(isHostRamThreshold()){
             final double hostCpuUtilization = host.getCpuPercentUtilization();
             final double hostRamUtilization = host.getRamPercentUtilization();

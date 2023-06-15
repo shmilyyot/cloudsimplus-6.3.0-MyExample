@@ -47,7 +47,7 @@ public class HostSimple implements Host, Serializable {
     private static long defaultRamCapacity = (long)Conversion.gigaToMega(10);
     private static long defaultBwCapacity = 1000;
     private static long defaultStorageCapacity = (long)Conversion.gigaToMega(500);
-    private static int logLength = 12;
+    private static int logLength = 30;
 
     public double getCPU_THRESHOLD() {
         return CPU_THRESHOLD;

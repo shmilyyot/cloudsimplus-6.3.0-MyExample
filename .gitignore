@@ -33,7 +33,5 @@ Test.java
 ~$*
 
 deploy.sh
-/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/serialObject/
 /cloudsim-plus/src/main/java/org/cloudsimplus/traces/google.rar
-/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/part-00016-of-00500.csv
 /cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/

@@ -857,7 +857,7 @@ public class DatacenterSimple extends CloudSimEntity implements Datacenter, Seri
         }
 
         //大于一定时间停止迁移
-        if(getSimulation().clock() < 600.0 && getSimulation().clock() < 86400.0){
+        if(getSimulation().clock() < 600.0 || getSimulation().clock() > 86400.0){
             return;
         }
 

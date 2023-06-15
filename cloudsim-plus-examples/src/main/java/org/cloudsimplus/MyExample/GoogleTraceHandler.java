@@ -62,8 +62,9 @@ public class GoogleTraceHandler {
     public void buildTraceFileNames(){
         TRACE_FILENAMES = new ArrayList<>(500);
         Usage_FILENAMES = new ArrayList<>(500);
-        TRACE_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_event_process_firstDay\\newevent3.csv");
-        Usage_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
+        TRACE_FILENAMES.add("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\newevent3.csv");
+//        Usage_FILENAMES.add("F:\\paperData\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
+        Usage_FILENAMES.add("D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\newusage_4.csv");
 //        TRACE_FILENAMES.add("D:\\paperWork\\clusterdata2011\\task_event_process_firstDay\\newevent3.csv");
 //        Usage_FILENAMES.add("D:\\paperWork\\clusterdata2011\\task_usage_process_firstDay\\newusage4.csv");
 //        for(int i=0;i<=Constant.GOOGLE_EV

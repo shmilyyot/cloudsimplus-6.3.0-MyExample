@@ -346,12 +346,12 @@ public class CloudSim implements Simulation, Serializable {
             .filter(CloudSimEntity::isAlive)
             .forEach(e -> sendNow(e, CloudSimTags.END_OF_SIMULATION));
         LOGGER.info("{}: Processing last events before simulation shutdown.", clockStr());
-
-        while (true) {
-            if(!runClockTickAndProcessFutureEvents(Double.MAX_VALUE)){
-                return;
-            }
-        }
+        //修改无法正常结束的bug
+//        while (true) {
+//            if(!runClockTickAndProcessFutureEvents(Double.MAX_VALUE)){
+//                return;
+//            }
+//        }
     }
 
     private void printSimulationFinished() {

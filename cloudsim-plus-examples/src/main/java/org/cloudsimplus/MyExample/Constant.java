@@ -34,11 +34,11 @@ public class Constant {
      * 数据中心迁移相关设置
      */
     public static final double HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;    //低阈值
-    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;     //高阈值，一开始加了0.2，其实是1
+    public static final double HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;     //高阈值，一开始加了0.2，其实是1
     /** @see Datacenter#setHostSearchRetryDelay(double) */
     public static final int HOST_SEARCH_RETRY_DELAY = 1;
     public static final double HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.3;
-    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.7;  //高阈值，一开始加了0.2，其实是1
+    public static final double HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION = 0.8;  //高阈值，一开始加了0.2，其实是1
     public static final boolean USING_UNDERLOAD_THRESHOLD = false;
     public static final boolean USING_SINGLE_OVERLOAD = false;
     public static final boolean USING_RAM = true;
@@ -60,7 +60,7 @@ public class Constant {
     public static final String TASK_USAGE_PATH = "F:\\paperData\\clusterdata2011\\task_usage_process_firstDay";
     public static final String LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/log.txt";
     public static final String HOST_LOG_FILE_PATH = "D:/java_workspace/cloudsimplus-6.3.0-MyExample/cloudsim-plus-examples/src/main/java/org/cloudsimplus/MyExample/logs/host_utilization.txt";
-    public static final String MACHINE_FILENAME = "F:/paperData/clusterdata2011/machine_events/part-00000-of-00001.csv.gz";
+    public static final String MACHINE_FILENAME = "D:\\java_workspace\\cloudsimplus-6.3.0-MyExample\\part-00000-of-00001.csv.gz";
     public static final boolean TEST_TRACE = false;
 
     /**

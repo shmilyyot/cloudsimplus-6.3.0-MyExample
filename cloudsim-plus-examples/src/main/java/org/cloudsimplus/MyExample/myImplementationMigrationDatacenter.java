@@ -504,22 +504,22 @@ public class myImplementationMigrationDatacenter {
             //PABFD + static算法 默认算法
             this.allocationPolicy =
                 new VmAllocationPolicyPowerAwereMigrationBestFitStaticThreshold(
-                    new VmSelectionPolicyMC(new VmSelectionPolicyMinimumMigrationTime()),
+                    new VmSelectionPolicyMinimumMigrationTime(),
                     //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
-                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.3,
+                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
                     mathHandler,
                     allHostsRamUtilizationHistoryQueue,
                     allHostsCpuUtilizationHistoryQueue,
                     allVmsRamUtilizationHistoryQueue,
                     allVmsCpuUtilizationHistoryQueue);
-            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.3);
+            this.allocationPolicy.setRamOverUtilizationThreshold(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION+0.2);
             this.allocationPolicy.setUnderUtilizationThreshold(Constant.HOST_CPU_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION,Constant.HOST_RAM_UNDER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
 
 //            //PABFD + 回调T的版本
 //            myVersion = true;
 //            this.allocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitHalfDynamicThreshold(
-//                    new VmSelectionPolicyMC(new VmSelectionPolicyMinimumMigrationTime()),
+//                    new VmSelectionPolicyMinimumMigrationTime(),
 //                    //策略刚开始阈值会比设定值大一点，以放置虚拟机。当所有虚拟机提交到主机后，阈值就会变回设定值
 //                    Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION + 0.2,
 //                    mathHandler);
@@ -528,24 +528,24 @@ public class myImplementationMigrationDatacenter {
 
             //必须保证有一个static和一个dynamic开着
             //PABFD + MAD算法
-            dynamicUpperThreshold = true;
-            this.dynamicUpperAllocationPolicy =
-                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
-                    new VmSelectionPolicyMC(new VmSelectionPolicyMinimumMigrationTime()),
-                    2.5,
-                    allocationPolicy,
-                    mathHandler,
-                    allHostsRamUtilizationHistoryQueue,
-                    allHostsCpuUtilizationHistoryQueue,
-                    allVmsRamUtilizationHistoryQueue,
-                    allVmsCpuUtilizationHistoryQueue);
+//            dynamicUpperThreshold = true;
+//            this.dynamicUpperAllocationPolicy =
+//                new VmAllocationPolicyPowerAwereMigrationBestFitMADThreshold(
+//                    new VmSelectionPolicyMinimumMigrationTime(),
+//                    2.5,
+//                    allocationPolicy,
+//                    mathHandler,
+//                    allHostsRamUtilizationHistoryQueue,
+//                    allHostsCpuUtilizationHistoryQueue,
+//                    allVmsRamUtilizationHistoryQueue,
+//                    allVmsCpuUtilizationHistoryQueue);
 
 
 //            //PABFD + IQR算法
 //            dynamicUpperThreshold = true;
 //            this.dynamicUpperAllocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitIQRThreshold(
-//                    new VmSelectionPolicyMC(new VmSelectionPolicyMinimumMigrationTime()),
+//                    new VmSelectionPolicyMRT(),
 //                    1.5,
 //                    allocationPolicy,
 //                    mathHandler,
@@ -558,7 +558,7 @@ public class myImplementationMigrationDatacenter {
 //            dynamicUpperThreshold = true;
 //            this.dynamicUpperAllocationPolicy =
 //                new VmAllocationPolicyPowerAwereMigrationBestFitLRThreshold(
-//                    new VmSelectionPolicyMC(new VmSelectionPolicyMinimumMigrationTime()),
+//                    new VmSelectionPolicyMRT(),
 //                    1.2,
 //                    allocationPolicy,
 //                    mathHandler,
@@ -930,8 +930,8 @@ public class myImplementationMigrationDatacenter {
         //如果使用自己的版本，所有虚拟机创建完之后，每个host的cpu和ram阈值改回0.8
         if(myVersion){
             hostList.stream().forEach(host -> {
-                host.setCPU_THRESHOLD(Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION );
-                host.setRAM_THRESHOLD(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION );
+                host.setCPU_THRESHOLD(Constant.HOST_CPU_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
+                host.setRAM_THRESHOLD(Constant.HOST_RAM_OVER_UTILIZATION_THRESHOLD_FOR_VM_MIGRATION);
             });
         }
         broker.removeOnVmsCreatedListener(info.getListener());
